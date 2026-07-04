@@ -6,8 +6,8 @@ This is Omar Crosby's personal website — a single-author static blog. The audi
 
 ## Stack
 
-- **Hugo** (extended) — static site generator
-- **Theme**: `themes/puppet` — git submodule from [`roninro/hugo-theme-puppet`](https://github.com/roninro/hugo-theme-puppet)
+- **Hugo** (extended) — static site generator, pinned to **`0.160.1`** in `Dockerfile` and CI
+- **Theme**: `themes/PaperMod` — git submodule from [`adityatelange/hugo-PaperMod`](https://github.com/adityatelange/hugo-PaperMod)
 - **Container**: multi-stage `Dockerfile` → `nginx:alpine` on port 8080
 - **Hosting**: [Fly.io](https://fly.io) — app `omarcrosby-com`, region `iad`
 - **DNS**: AWS Route 53 → Fly shared IPs
@@ -16,24 +16,13 @@ This is Omar Crosby's personal website — a single-author static blog. The audi
 
 ## Hard Constraints
 
-### Hugo version is pinned `< 0.128.0`
+### Hugo pin
 
-The puppet theme uses `resources.ToCSS`, which was removed in Hugo 0.128+. Both `Dockerfile` and `.github/workflows/ci.yml` pin **`0.127.0`**. **Do not upgrade Hugo without first migrating the theme's SASS pipeline to `css.Sass`.**
+Hugo is pinned to `0.160.1` (matches the local Homebrew build). PaperMod supports current Hugo, so — unlike the previous puppet setup — there is no *upper* version bound. Bumps should still land in one PR that updates all three of `Dockerfile`, `.github/workflows/ci.yml`, and this line.
 
-The local Homebrew Hugo (currently 0.160.1) will fail to build this site. Use one of:
+### `themes/PaperMod/` is read-only
 
-```bash
-docker build -t omarcrosby-com .              # container preview
-docker run --rm -p 8080:8080 omarcrosby-com   # then visit http://localhost:8080
-```
-
-or install a pinned Hugo via `go install github.com/gohugoio/hugo@v0.127.0` (needs `CGO_ENABLED=1` + the extended tag) or `asdf`/`mise` version pinning.
-
-See `.claude/rules/hugo-version-lock.md`.
-
-### `themes/puppet/` is read-only
-
-It is a git submodule pointing at an upstream repo. **Never edit files inside `themes/puppet/`.** To customize a theme file, copy it to the same relative path under the site root — Hugo's lookup order gives `layouts/`, `assets/`, `static/`, and `i18n/` at the site root priority over the theme. See `.claude/rules/theme-immutable.md`.
+It is a git submodule pointing at an upstream repo. **Never edit files inside `themes/PaperMod/`.** To customize a theme file, copy it to the same relative path under the site root — Hugo's lookup order gives `layouts/`, `assets/`, `static/`, and `i18n/` at the site root priority over the theme. See `.claude/rules/theme-immutable.md`.
 
 ### Content front matter
 
@@ -65,7 +54,6 @@ flyctl deploy --remote-only
 
 ## Project-Specific Rules, Skills, Agents
 
-- `.claude/rules/hugo-version-lock.md` — do not upgrade Hugo above 0.127.x
 - `.claude/rules/theme-immutable.md` — override at site level, never edit the submodule
 - `.claude/rules/content-frontmatter.md` — required Hugo front matter
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
@@ -84,13 +72,13 @@ flyctl deploy --remote-only
 ├── data/               # Hugo data files (YAML/JSON/TOML)
 ├── i18n/               # Translation strings
 ├── archetypes/         # Templates for `hugo new`
-├── themes/puppet/      # SUBMODULE — read-only
+├── themes/PaperMod/    # SUBMODULE — read-only
 ├── public/             # BUILD OUTPUT — gitignored
 ├── resources/          # Hugo cache — gitignored
 ├── Dockerfile          # Multi-stage build
 ├── nginx.conf          # Serves public/ + www→apex redirect
 ├── fly.toml            # Fly.io app config
-├── config.toml         # Hugo site config
+├── hugo.toml           # Hugo site config
 ├── .semantic-release.yaml
 └── .github/workflows/  # ci.yml, release.yml
 ```
