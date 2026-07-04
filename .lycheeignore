@@ -6,10 +6,12 @@
 ^https?://disqus\.com
 ^https?://giscus\.app
 
+# PaperMod share buttons — Hacker News and Reddit reject unauthenticated GETs
+# (403/503) on their submission endpoints. The links only resolve when a real
+# user clicks and goes through the submission UI.
+^https?://news\.ycombinator\.com/submitlink
+^https?://(www\.)?reddit\.com/submit
+
 # Site's own baseURL — DNS points nowhere until the first Fly deploy.
 # Remove once the site is live.
 ^https?://omarcrosby\.com
-
-# Theme demo placeholder social handles. Content personalization is a
-# follow-up task; remove these once real handles land in config.toml.
-johndoe
