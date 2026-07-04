@@ -1,0 +1,155 @@
+/* Music section — auto-loaded by PaperMod from assets/css/extended/. */
+
+.music-page .post-header {
+  margin-bottom: 2rem;
+}
+
+/* Featured / now-playing block */
+
+.music-featured {
+  margin: 1.5rem 0 3rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.music-embed {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--tertiary);
+}
+
+.music-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.music-featured-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.music-nowplaying {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--secondary);
+}
+
+.music-featured-title {
+  font-size: 1.5rem;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.music-featured-artist {
+  font-size: 1.05rem;
+  color: var(--secondary);
+}
+
+.music-featured-extra,
+.music-featured-added {
+  font-size: 0.85rem;
+  color: var(--secondary);
+}
+
+.music-featured-note {
+  font-style: italic;
+  color: var(--secondary);
+  margin-top: 0.25rem;
+}
+
+/* History list */
+
+.music-history {
+  margin-top: 2rem;
+}
+
+.music-history-heading {
+  font-size: 1.1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.music-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.music-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.85rem;
+  align-items: start;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.music-item:last-child {
+  border-bottom: none;
+}
+
+.music-item-thumb {
+  display: block;
+  line-height: 0;
+}
+
+.music-item-thumb img {
+  width: 120px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--tertiary);
+}
+
+.music-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.music-item-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.music-item-title a {
+  color: inherit;
+  border-bottom: 0;
+}
+
+.music-item-title a:hover {
+  color: var(--primary);
+}
+
+.music-item-artist {
+  font-size: 0.85rem;
+  color: var(--secondary);
+}
+
+.music-item-extra,
+.music-item-added {
+  font-size: 0.75rem;
+  color: var(--secondary);
+}
+
+.music-item-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--secondary);
+  margin-top: 0.15rem;
+}
