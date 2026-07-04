@@ -8,3 +8,7 @@ MD033: false
 
 # First line does not need to be a top-level heading — Hugo front matter can drive it.
 MD041: false
+
+# Compact table pipe style is intentional; keep tables tight and readable.
+# Guards against a future markdownlint-cli2 bump that flips this default on.
+MD060: false
