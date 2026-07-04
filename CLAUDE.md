@@ -56,6 +56,7 @@ flyctl deploy --remote-only
 
 - `.claude/rules/theme-immutable.md` — override at site level, never edit the submodule
 - `.claude/rules/content-frontmatter.md` — required Hugo front matter
+- `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
 - `.claude/commands/verify.md` — `/verify` runs CI gates locally
