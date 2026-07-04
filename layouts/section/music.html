@@ -1,0 +1,94 @@
+{{- define "main" -}}
+{{- $videos := .Site.Data.music -}}
+<article class="post-single music-page">
+  <header class="post-header">
+    <h1 class="post-title">{{ .Title }}</h1>
+    {{- with .Description -}}
+    <div class="post-description">{{ . }}</div>
+    {{- end -}}
+    {{- with .Content -}}
+    <div class="post-content">{{ . }}</div>
+    {{- end -}}
+  </header>
+
+  {{- if $videos -}}
+  {{- $featured := index $videos 0 -}}
+
+  <section class="music-featured" aria-label="Now playing">
+    <div class="music-embed">
+      {{- /*
+        autoplay=1 without mute=1 is intentional; the user asked for
+        sound-on autoplay. Browsers with a strict autoplay policy
+        (Safari, first-visit Chrome) will still block sound and the
+        viewer will need to tap play.
+      */ -}}
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/{{ $featured.youtube_id }}?autoplay=1&playsinline=1&rel=0"
+        title="{{ $featured.title }} — {{ $featured.artist }}"
+        loading="eager"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin">
+      </iframe>
+    </div>
+    <div class="music-featured-meta">
+      <div class="music-nowplaying">Now playing</div>
+      <h2 class="music-featured-title">{{ $featured.title }}</h2>
+      <div class="music-featured-artist">{{ $featured.artist }}</div>
+      {{- $extras := slice -}}
+      {{- with $featured.album }}{{ $extras = $extras | append . }}{{ end -}}
+      {{- with $featured.year }}{{ $extras = $extras | append (printf "%v" .) }}{{ end -}}
+      {{- with $extras -}}
+      <div class="music-featured-extra">{{ delimit . " · " }}</div>
+      {{- end -}}
+      {{- with $featured.note }}<div class="music-featured-note">{{ . }}</div>{{ end -}}
+      <div class="music-featured-added" title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" $featured.added }}">
+        Added {{ dateFormat "Jan 2, 2006 · 3:04 PM" $featured.added }}
+      </div>
+    </div>
+  </section>
+
+  <section class="music-history" aria-label="Music history">
+    <h2 class="music-history-heading">History</h2>
+    <ul class="music-list">
+      {{- range $videos -}}
+      <li class="music-item">
+        <a class="music-item-thumb"
+           href="https://www.youtube.com/watch?v={{ .youtube_id }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="{{ .title }} on YouTube">
+          <img
+            src="https://i.ytimg.com/vi/{{ .youtube_id }}/mqdefault.jpg"
+            alt=""
+            width="120"
+            height="68"
+            loading="lazy">
+        </a>
+        <div class="music-item-meta">
+          <div class="music-item-title">
+            <a href="https://www.youtube.com/watch?v={{ .youtube_id }}"
+               target="_blank"
+               rel="noopener noreferrer">{{ .title }}</a>
+          </div>
+          <div class="music-item-artist">{{ .artist }}</div>
+          {{- $itemExtras := slice -}}
+          {{- with .album }}{{ $itemExtras = $itemExtras | append . }}{{ end -}}
+          {{- with .year }}{{ $itemExtras = $itemExtras | append (printf "%v" .) }}{{ end -}}
+          {{- with $itemExtras -}}
+          <div class="music-item-extra">{{ delimit . " · " }}</div>
+          {{- end -}}
+          <div class="music-item-added" title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" .added }}">
+            {{ dateFormat "Jan 2, 2006" .added }}
+          </div>
+          {{- with .note }}<div class="music-item-note">{{ . }}</div>{{ end -}}
+        </div>
+      </li>
+      {{- end -}}
+    </ul>
+  </section>
+  {{- else -}}
+  <p><em>No videos yet. Use <code>/add-music &lt;url&gt;</code> to add one.</em></p>
+  {{- end -}}
+</article>
+{{- end -}}

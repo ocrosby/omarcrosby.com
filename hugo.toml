@@ -42,6 +42,12 @@ buildExpired = false
 # ---------------------------------------------------------------------------
 
 [[menu.main]]
+  identifier = "music"
+  name = "Music"
+  url = "/music/"
+  weight = 5
+
+[[menu.main]]
   identifier = "posts"
   name = "Blog"
   url = "/posts/"

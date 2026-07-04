@@ -60,6 +60,7 @@ flyctl deploy --remote-only
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
 - `.claude/commands/verify.md` — `/verify` runs CI gates locally
+- `.claude/commands/add-music.md` — `/add-music <youtube-url>` prepends to `data/music.yaml` and direct-commits to `main`
 - `.claude/agents/hugo-reviewer.md` — review Hugo content and layout changes
 - `.claude/skills/hugo-authoring/SKILL.md` — auto-triggers on `content/**/*.md`
 
