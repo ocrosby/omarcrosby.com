@@ -51,7 +51,9 @@ jobs:
 
       - uses: lycheeverse/lychee-action@v2
         with:
-          args: --no-progress --exclude-file .lycheeignore './public/**/*.html'
+          # --base resolves root-relative hrefs (e.g. "/css/bootstrap.min.css").
+          # --accept 999 whitelists LinkedIn's bot-detection response.
+          args: --no-progress --base https://omarcrosby.com --accept 200,203,204,206,999 --exclude-file .lycheeignore './public/**/*.html'
           fail: true
 
   markdown:
