@@ -4,6 +4,7 @@ extend-exclude = [
   "public/",     # generated
   "resources/",  # generated
   "CHANGELOG.md",
+  "data/music.yaml",  # YouTube video IDs look like typos to the checker
 ]
 
 [default]
