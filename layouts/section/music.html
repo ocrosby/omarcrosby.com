@@ -5,12 +5,21 @@
 */ -}}
 {{- $videos := os.ReadFile "data/music.yaml" | transform.Unmarshal -}}
 {{- /*
-  mute=1 is required for autoplay on iOS Safari, all mobile browsers,
-  and desktop Safari — every browser blocks unmuted autoplay outright.
-  Muted autoplay is the only reliable form. The viewer taps the mute
-  icon in the YouTube control bar to enable audio.
+  Two different query strings for two different situations:
+
+  - $initialQuery includes mute=1. It is used for the very first render
+    of the page — the viewer has not interacted yet, so browsers only
+    allow autoplay when the video is muted.
+
+  - $interactiveQuery drops mute=1. It is used by the JS click-swap:
+    the click itself is the user gesture that browsers accept as
+    authorization for sound, so we can autoplay unmuted on swap.
+
+  Both queries also disable captions (cc_load_policy=0) and video
+  annotations (iv_load_policy=3).
 */ -}}
-{{- $embedQuery := "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3" -}}
+{{- $initialQuery := "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3" -}}
+{{- $interactiveQuery := "autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3" -}}
 <article class="post-single music-page">
   <header class="post-header">
     <h1 class="post-title">{{ .Title }}</h1>
@@ -38,7 +47,7 @@
       */ -}}
       <iframe
         id="music-featured-iframe"
-        src="https://www.youtube-nocookie.com/embed/{{ $featured.youtube_id }}?{{ $embedQuery }}"
+        src="https://www.youtube-nocookie.com/embed/{{ $featured.youtube_id }}?{{ $initialQuery }}"
         title="{{ $featured.title }} — {{ $featured.artist }}"
         loading="eager"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -47,7 +56,7 @@
       </iframe>
     </div>
     <div class="music-featured-meta"
-         data-embed-query="{{ $embedQuery }}">
+         data-embed-query="{{ $interactiveQuery }}">
       <div class="music-nowplaying">Now playing</div>
       <h2 class="music-featured-title">{{ $featured.title }}</h2>
       <div class="music-featured-artist">{{ $featured.artist }}</div>
@@ -120,7 +129,9 @@
       var noteEl = featured.querySelector('.music-featured-note');
       var addedEl = featured.querySelector('.music-featured-added');
       if (!iframe || !meta) return;
-      var embedQuery = meta.dataset.embedQuery || 'autoplay=1&mute=1&playsinline=1&rel=0';
+      // The click-swap query intentionally has no mute=1 — the click is the
+      // user gesture that authorizes unmuted playback.
+      var embedQuery = meta.dataset.embedQuery || 'autoplay=1&playsinline=1&rel=0';
 
       function swap(item) {
         var id = item.dataset.youtubeId;
