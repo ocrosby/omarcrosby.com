@@ -1,0 +1,16 @@
+.git
+.github
+.gitignore
+.gitmodules
+.idea
+.hugo_build.lock
+.DS_Store
+
+public/
+resources/_gen/
+node_modules/
+
+README.md
+CHANGELOG.md
+TODO.md
+LICENSE

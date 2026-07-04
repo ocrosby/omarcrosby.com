@@ -1,0 +1,10 @@
+[files]
+extend-exclude = [
+  "themes/",     # vendored theme, not ours to fix
+  "public/",     # generated
+  "resources/",  # generated
+  "CHANGELOG.md",
+]
+
+[default]
+locale = "en-us"

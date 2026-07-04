@@ -1,0 +1,7 @@
+# Local URLs never resolve in CI.
+^https?://localhost
+^https?://127\.0\.0\.1
+
+# Disqus / Giscus / social share targets require an active account/thread; skip.
+^https?://disqus\.com
+^https?://giscus\.app

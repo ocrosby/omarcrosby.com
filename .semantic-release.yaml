@@ -1,0 +1,5 @@
+release_mode: repo
+tag_format: "v{{.Version}}"
+
+branches:
+  - main
