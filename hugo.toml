@@ -75,7 +75,8 @@ buildExpired = false
   description = "Software engineer building sports-data tooling and APIs."
   keywords = ["blog", "software", "engineering", "sports data", "hugo"]
   author = "Omar Crosby"
-  defaultTheme = "auto"
+  # Default to dark; the toggle in the header lets visitors switch to light.
+  defaultTheme = "dark"
   disableThemeToggle = false
 
   ShowReadingTime = true
@@ -131,6 +132,10 @@ buildExpired = false
 [[params.socialIcons]]
   name = "github"
   url = "https://github.com/ocrosby"
+
+[[params.socialIcons]]
+  name = "linkedin"
+  url = "https://www.linkedin.com/in/omarcrosby/"
 
 [[params.socialIcons]]
   name = "email"
