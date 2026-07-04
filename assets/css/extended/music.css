@@ -66,6 +66,13 @@
   margin-top: 0.25rem;
 }
 
+/* Hide empty meta rows so the featured block collapses cleanly when a
+   swap-in video has no album/year/note. */
+.music-featured-extra:empty,
+.music-featured-note:empty {
+  display: none;
+}
+
 /* History list */
 
 .music-history {
@@ -93,8 +100,16 @@
   grid-template-columns: 120px 1fr;
   gap: 0.85rem;
   align-items: start;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.5rem;
   border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.music-item:hover,
+.music-item:focus-within {
+  background: var(--tertiary);
 }
 
 .music-item:last-child {
