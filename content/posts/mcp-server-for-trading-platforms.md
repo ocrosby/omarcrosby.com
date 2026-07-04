@@ -1,7 +1,7 @@
 +++
 title = "Bridging Tradovate, Bookmap, and Thinkorswim to Claude with MCP"
 date = 2026-07-04T11:15:00-04:00
-draft = true
+draft = false
 summary = "market-bridge is an MCP server that gives Claude direct access to real-time /ES futures data from the three platforms I trade on. No CSV exports, no context-switching."
 tags = ["mcp", "trading", "python", "futures", "claude"]
 ShowToc = true

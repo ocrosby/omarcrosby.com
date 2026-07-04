@@ -1,7 +1,7 @@
 +++
 title = "Building MCP servers for NWSL and ECNL soccer data"
 date = 2026-07-04T11:15:00-04:00
-draft = true
+draft = false
 summary = "jk-mcp-nwsl and jk-mcp-ecnl give Claude direct access to live league data — standings, rosters, RPI, results — from three different upstreams stitched into a coherent tool surface."
 tags = ["mcp", "python", "sports-data", "nwsl", "ecnl", "soccer"]
 ShowToc = true

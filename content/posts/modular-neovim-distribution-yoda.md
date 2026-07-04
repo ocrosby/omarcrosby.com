@@ -1,7 +1,7 @@
 +++
 title = "Yoda: what I learned making a Neovim distribution modular"
 date = 2026-07-04T11:15:00-04:00
-draft = true
+draft = false
 summary = "yoda.nvim is a Neovim distribution built from a family of independently useful plugins — yoda-core, yoda-window, yoda-logging, yoda-diagnostics, yoda-terminal, and adapters. Modularity was the design goal, not a refactor after the fact."
 tags = ["neovim", "lua", "nvim-plugin", "yoda"]
 ShowToc = true
