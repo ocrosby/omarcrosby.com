@@ -1,0 +1,148 @@
+baseURL = "https://omarcrosby.com/"
+languageCode = "en-us"
+defaultContentLanguage = "en"
+title = "Omar Crosby"
+theme = "PaperMod"
+
+enableRobotsTXT = true
+enableEmoji = true
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+
+# Pretty section pagination (Hugo 0.128+ modern form).
+[pagination]
+  pagerSize = 5
+
+[minify]
+  disableXML = true
+  minifyOutput = true
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  series = "series"
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[markup.highlight]
+  codeFences = true
+  guessSyntax = true
+  lineNos = false
+  noClasses = false
+  style = "monokai"
+  tabWidth = 2
+
+# ---------------------------------------------------------------------------
+# Menu
+# ---------------------------------------------------------------------------
+
+[[menu.main]]
+  identifier = "posts"
+  name = "Blog"
+  url = "/posts/"
+  weight = 10
+
+[[menu.main]]
+  identifier = "projects"
+  name = "Projects"
+  url = "/projects/"
+  weight = 20
+
+[[menu.main]]
+  identifier = "about"
+  name = "About"
+  url = "/about/"
+  weight = 30
+
+[[menu.main]]
+  identifier = "tags"
+  name = "Tags"
+  url = "/tags/"
+  weight = 40
+
+# ---------------------------------------------------------------------------
+# PaperMod params
+# ---------------------------------------------------------------------------
+
+[params]
+  env = "production"
+  title = "Omar Crosby"
+  description = "Software engineer building sports-data tooling and APIs."
+  keywords = ["blog", "software", "engineering", "sports data", "hugo"]
+  author = "Omar Crosby"
+  defaultTheme = "auto"
+  disableThemeToggle = false
+
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = false
+  ShowRssButtonInSectionTermList = true
+  ShowToc = true
+  TocOpen = false
+  UseHugoToc = true
+
+  comments = false
+  hidemeta = false
+  hideSummary = false
+  disableSpecial1stPost = false
+  disableScrollToTop = false
+
+[params.assets]
+  disableHLJS = true
+  favicon = "/favicon.ico"
+
+# Profile mode — landing page shows a name, tagline, and buttons instead of a post list.
+[params.profileMode]
+  enabled = true
+  title = "Omar Crosby"
+  subtitle = "Software engineer building sports-data tooling and APIs. I write about [FILL IN: distributed systems | soccer analytics | low-level programming]."
+  imageTitle = "Omar"
+  imageWidth = 120
+  imageHeight = 120
+  # imageUrl = "/img/avatar.jpg"   # add later; drop the file under static/img/
+
+  [[params.profileMode.buttons]]
+    name = "Blog"
+    url = "posts"
+  [[params.profileMode.buttons]]
+    name = "Projects"
+    url = "projects"
+  [[params.profileMode.buttons]]
+    name = "About"
+    url = "about"
+
+# Fallback for when profileMode is disabled — shows above the post list.
+[params.homeInfoParams]
+  Title = "Omar Crosby"
+  Content = "Software engineer building sports-data tooling and APIs."
+
+# Social icons rendered in the header and under profileMode buttons.
+[[params.socialIcons]]
+  name = "github"
+  url = "https://github.com/ocrosby"
+
+[[params.socialIcons]]
+  name = "email"
+  url = "mailto:omar.crosby@gmail.com"
+
+[[params.socialIcons]]
+  name = "rss"
+  url = "index.xml"
+
+# Search (Fuse.js) — powered by home JSON output.
+[params.fuseOpts]
+  isCaseSensitive = false
+  shouldSort = true
+  location = 0
+  distance = 1000
+  threshold = 0.4
+  minMatchCharLength = 0
+  keys = ["title", "permalink", "summary", "content"]

@@ -1,5 +1,16 @@
 +++
-title = 'About'
-date = 2023-12-18T14:22:04-05:00
-draft = true
+title = "About"
+date = 2026-07-04T11:15:00-04:00
+draft = false
+description = "About Omar Crosby — software engineer, sports-data infrastructure, cook, soccer fan."
 +++
+
+I'm a software engineer who works across the stack. Day to day, that means **Next.js** and **TypeScript** on the front end and API layer, DevOps and CI work to keep the pipes moving, Linux administration to keep the servers honest, and — when the mood strikes — lower-level programming in **NASM assembly**.
+
+Right now most of my time is going into **sports-data infrastructure**: APIs, data pipelines, and MCP servers that expose league data (NWSL, ECNL/ECRL) as tools other systems can call. It's a mix of scraping, modeling, and thinking hard about caching.
+
+Away from a keyboard, I cook — from scratch, mostly, because measuring things is fun. I watch a lot of film and TV, and I follow soccer more closely than is probably healthy — especially the **NWSL**, and specifically **Gotham FC**.
+
+## Contact
+
+[FILL IN: contact details — email, LinkedIn, Bluesky, or however you want to be reached.]

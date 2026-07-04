@@ -23,12 +23,10 @@ jobs:
 
       - uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.127.0'
+          hugo-version: '0.160.1'
           extended: true
 
       - name: Build site
-        # --panicOnWarning intentionally omitted: the puppet theme emits
-        # deprecation warnings on Hugo 0.127. Revisit after the theme upgrade.
         run: hugo --minify --gc
 
       - uses: actions/upload-artifact@v4
