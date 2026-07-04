@@ -40,7 +40,7 @@ Reject anything else — do not try to be clever. Stop and ask if you cannot ext
 
 Use `WebFetch`:
 
-```
+```text
 url:    https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=<ID>&format=json
 prompt: Return the raw JSON body. Quote the values of these fields exactly: title, author_name, thumbnail_url, provider_name. If the response is not JSON (login wall, HTML, 404), say so and quote what you received.
 ```
@@ -59,7 +59,8 @@ YouTube's video title usually follows one of these shapes:
 | `Song Name` (no dash) | `<author_name>` with `VEVO` stripped | `Song Name` |
 
 Rules:
-- Split on the first ` - `, ` – `, ` — `, or `: ` — whichever appears first.
+
+- Split on the first ` - `, ` – `, ` — `, or a colon followed by a space — whichever appears first.
 - Strip trailing suffixes matching any of `(Official Music Video)`, `(Official Video)`, `[Official Video]`, `(Official Audio)`, `(Audio)`, `(Lyrics)`, `(HD)`, `(4K)`, `(Remastered)`, `(Live)`, or a bare `(YYYY)`.
 - If no split character exists, use the whole title as `title` and use `author_name` (with a trailing `VEVO` stripped) as `artist`.
 
@@ -67,7 +68,7 @@ Rules:
 
 Print a compact preview and ask "OK to add?" — do not proceed on ambiguity:
 
-```
+```text
 Video ID:   <id>
 Title:      <parsed title>
 Artist:     <parsed artist>
@@ -105,7 +106,7 @@ Run `hugo --gc --minify --panicOnWarning` from the repo root. If it exits non-ze
 
 ### 9. Direct-commit to main and push
 
-```
+```bash
 git add data/music.yaml
 ALLOW_MAIN_COMMIT=1 git commit -m 'fix(music): now playing "<title>" by <artist>'
 git push origin main
@@ -135,7 +136,7 @@ Do **not** watch the release workflow — the user checks it themselves.
 
 ## Example
 
-```
+```text
 /add-music https://www.youtube.com/watch?v=dQw4w9WgXcQ --album "Whenever You Need Somebody" --year 1987
 ```
 
