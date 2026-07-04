@@ -76,7 +76,7 @@ flyctl deploy --remote-only
 
 ## Repo Map
 
-```
+```text
 ├── content/            # Hugo content (Markdown + front matter) — YOU own this
 ├── layouts/            # Site-level layout overrides — takes precedence over theme
 ├── assets/             # Site-level assets (SASS, JS) — takes precedence over theme

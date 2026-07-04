@@ -16,11 +16,15 @@ Scaffolds a new post at `content/posts/<slug>.md` with the required front matter
    - Replace non-alphanumerics with `-`
    - Collapse repeated `-`
    - Trim leading/trailing `-`
+
 2. If `content/posts/<slug>.md` already exists, stop and report — do not overwrite.
+
 3. Capture the current ISO 8601 timestamp in local timezone:
+
    ```bash
    date +"%Y-%m-%dT%H:%M:%S%z" | sed 's/\(..\)$/:\1/'
    ```
+
 4. Write `content/posts/<slug>.md` with this exact structure:
 
    ```markdown
@@ -37,7 +41,8 @@ Scaffolds a new post at `content/posts/<slug>.md` with the required front matter
    ```
 
 5. Report the path back to the caller so they can open it:
-   ```
+
+   ```text
    Created content/posts/<slug>.md — flip draft to false when ready to ship.
    ```
 
