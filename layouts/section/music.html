@@ -18,8 +18,10 @@
   Both queries also disable captions (cc_load_policy=0) and video
   annotations (iv_load_policy=3).
 */ -}}
-{{- $initialQuery := "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3" -}}
-{{- $interactiveQuery := "autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3" -}}
+{{- /* enablejsapi=1 is required so the YouTube IFrame Player API below can
+       attach to the featured iframe. */ -}}
+{{- $initialQuery := "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
+{{- $interactiveQuery := "autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
 <article class="post-single music-page">
   <header class="post-header">
     <h1 class="post-title">{{ .Title }}</h1>
@@ -129,43 +131,78 @@
       var noteEl = featured.querySelector('.music-featured-note');
       var addedEl = featured.querySelector('.music-featured-added');
       if (!iframe || !meta) return;
-      // The click-swap query intentionally has no mute=1 — the click is the
-      // user gesture that authorizes unmuted playback.
-      var embedQuery = meta.dataset.embedQuery || 'autoplay=1&playsinline=1&rel=0';
+
+      // Fallback URL query for the iframe.src reload path — used only if
+      // the IFrame Player API fails to load (network error, ad-blocker, etc.).
+      var fallbackQuery = meta.dataset.embedQuery || 'autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1';
+
+      var player = null;
+
+      // Inject the YouTube IFrame API script.
+      var apiTag = document.createElement('script');
+      apiTag.src = 'https://www.youtube.com/iframe_api';
+      apiTag.async = true;
+      document.head.appendChild(apiTag);
+
+      // The IFrame API calls this global when it is ready.
+      window.onYouTubeIframeAPIReady = function () {
+        player = new YT.Player('music-featured-iframe', {
+          events: {
+            onReady: function (event) {
+              // cc_load_policy in the URL is only a hint tied to the viewer's
+              // account preference. unloadModule is the enforcement.
+              try { event.target.unloadModule('captions'); } catch (e) {}
+            }
+          }
+        });
+      };
+
+      function updateMeta(item) {
+        if (titleEl) titleEl.textContent = item.dataset.title || '';
+        if (artistEl) artistEl.textContent = item.dataset.artist || '';
+        if (extraEl) {
+          var parts = [];
+          if (item.dataset.album) parts.push(item.dataset.album);
+          if (item.dataset.year) parts.push(item.dataset.year);
+          extraEl.textContent = parts.join(' · ');
+        }
+        if (noteEl) noteEl.textContent = item.dataset.note || '';
+        if (addedEl) {
+          addedEl.textContent = item.dataset.addedFeatured || '';
+          if (item.dataset.addedTitle) addedEl.title = item.dataset.addedTitle;
+        }
+      }
 
       function swap(item) {
         var id = item.dataset.youtubeId;
-        var title = item.dataset.title || '';
-        var artist = item.dataset.artist || '';
-        var album = item.dataset.album || '';
-        var year = item.dataset.year || '';
-        var note = item.dataset.note || '';
-        var addedTitle = item.dataset.addedTitle || '';
-        var addedFeatured = item.dataset.addedFeatured || '';
         if (!id) return;
+        updateMeta(item);
 
-        iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?' + embedQuery;
-        iframe.title = title + (artist ? ' — ' + artist : '');
-        if (titleEl) titleEl.textContent = title;
-        if (artistEl) artistEl.textContent = artist;
-        if (extraEl) {
-          var parts = [];
-          if (album) parts.push(album);
-          if (year) parts.push(year);
-          extraEl.textContent = parts.join(' · ');
+        if (player && typeof player.loadVideoById === 'function') {
+          // Player API path — the existing YT.Player instance holds the user
+          // gesture context, so cross-origin browsers (iOS Safari especially)
+          // honor unmuted playback across loads.
+          try { player.unMute(); } catch (e) {}
+          player.loadVideoById({ videoId: id });
+          // The captions module can silently re-enable after a load; unload
+          // it again once the new video's metadata has arrived.
+          setTimeout(function () {
+            try { player.unloadModule('captions'); } catch (e) {}
+          }, 750);
+        } else {
+          // Fallback — iframe.src reload. Works, but may not carry the user
+          // gesture on strict browsers, so playback may land muted.
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?' + fallbackQuery;
+          iframe.title = (item.dataset.title || '') + (item.dataset.artist ? ' — ' + item.dataset.artist : '');
         }
-        if (noteEl) noteEl.textContent = note;
-        if (addedEl) {
-          addedEl.textContent = addedFeatured;
-          if (addedTitle) addedEl.title = addedTitle;
-        }
+
         featured.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       document.querySelectorAll('.music-item').forEach(function (item) {
         item.addEventListener('click', function (e) {
-          // Let modifier and non-primary clicks fall through so the browser
-          // can open the YouTube link in a new tab as usual.
+          // Modifier / non-primary clicks fall through to the underlying
+          // <a href> so the browser can open YouTube in a new tab as usual.
           if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
           e.preventDefault();
           swap(item);
