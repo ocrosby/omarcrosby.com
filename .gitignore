@@ -12,3 +12,6 @@ node_modules/
 
 # Session-local checklist (see ~/.claude/CLAUDE.md)
 TODO.md
+
+# Claude Code session-runtime state
+.claude/scheduled_tasks.lock

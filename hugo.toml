@@ -109,15 +109,18 @@ buildExpired = false
   imageHeight = 120
   # imageUrl = "/img/avatar.jpg"   # add later; drop the file under static/img/
 
+  # URLs are rendered verbatim as `href` by PaperMod's profile template.
+  # Always root-relative (leading slash) or absolute — never bare strings.
+  # See .claude/rules/hugo-config-urls.md.
   [[params.profileMode.buttons]]
     name = "Blog"
-    url = "posts"
+    url = "/posts/"
   [[params.profileMode.buttons]]
     name = "Projects"
-    url = "projects"
+    url = "/projects/"
   [[params.profileMode.buttons]]
     name = "About"
-    url = "about"
+    url = "/about/"
 
 # Fallback for when profileMode is disabled — shows above the post list.
 [params.homeInfoParams]
@@ -135,7 +138,7 @@ buildExpired = false
 
 [[params.socialIcons]]
   name = "rss"
-  url = "index.xml"
+  url = "/index.xml"
 
 # Search (Fuse.js) — powered by home JSON output.
 [params.fuseOpts]
