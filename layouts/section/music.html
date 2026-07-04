@@ -1,5 +1,16 @@
 {{- define "main" -}}
-{{- $videos := .Site.Data.music -}}
+{{- /*
+  Read data/music.yaml directly. `.Site.Data.music` was deprecated in
+  Hugo 0.156; os.ReadFile + transform.Unmarshal is the current form.
+*/ -}}
+{{- $videos := os.ReadFile "data/music.yaml" | transform.Unmarshal -}}
+{{- /*
+  mute=1 is required for autoplay on iOS Safari, all mobile browsers,
+  and desktop Safari — every browser blocks unmuted autoplay outright.
+  Muted autoplay is the only reliable form. The viewer taps the mute
+  icon in the YouTube control bar to enable audio.
+*/ -}}
+{{- $embedQuery := "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3" -}}
 <article class="post-single music-page">
   <header class="post-header">
     <h1 class="post-title">{{ .Title }}</h1>
@@ -13,17 +24,21 @@
 
   {{- if $videos -}}
   {{- $featured := index $videos 0 -}}
+  {{- $featuredExtras := slice -}}
+  {{- with $featured.album }}{{ $featuredExtras = $featuredExtras | append . }}{{ end -}}
+  {{- with $featured.year }}{{ $featuredExtras = $featuredExtras | append (printf "%v" .) }}{{ end -}}
 
   <section class="music-featured" aria-label="Now playing">
     <div class="music-embed">
       {{- /*
-        autoplay=1 without mute=1 is intentional; the user asked for
-        sound-on autoplay. Browsers with a strict autoplay policy
-        (Safari, first-visit Chrome) will still block sound and the
-        viewer will need to tap play.
+        mute=1 keeps autoplay working across all browsers/devices.
+        Viewer unmutes with one tap on the mute icon.
+        cc_load_policy=0 disables auto-loading of captions/subtitles.
+        iv_load_policy=3 disables video annotations.
       */ -}}
       <iframe
-        src="https://www.youtube-nocookie.com/embed/{{ $featured.youtube_id }}?autoplay=1&playsinline=1&rel=0"
+        id="music-featured-iframe"
+        src="https://www.youtube-nocookie.com/embed/{{ $featured.youtube_id }}?{{ $embedQuery }}"
         title="{{ $featured.title }} — {{ $featured.artist }}"
         loading="eager"
         allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -31,18 +46,15 @@
         referrerpolicy="strict-origin-when-cross-origin">
       </iframe>
     </div>
-    <div class="music-featured-meta">
+    <div class="music-featured-meta"
+         data-embed-query="{{ $embedQuery }}">
       <div class="music-nowplaying">Now playing</div>
       <h2 class="music-featured-title">{{ $featured.title }}</h2>
       <div class="music-featured-artist">{{ $featured.artist }}</div>
-      {{- $extras := slice -}}
-      {{- with $featured.album }}{{ $extras = $extras | append . }}{{ end -}}
-      {{- with $featured.year }}{{ $extras = $extras | append (printf "%v" .) }}{{ end -}}
-      {{- with $extras -}}
-      <div class="music-featured-extra">{{ delimit . " · " }}</div>
-      {{- end -}}
-      {{- with $featured.note }}<div class="music-featured-note">{{ . }}</div>{{ end -}}
-      <div class="music-featured-added" title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" $featured.added }}">
+      <div class="music-featured-extra">{{ delimit $featuredExtras " · " }}</div>
+      <div class="music-featured-note">{{ with $featured.note }}{{ . }}{{ end }}</div>
+      <div class="music-featured-added"
+           title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" $featured.added }}">
         Added {{ dateFormat "Jan 2, 2006 · 3:04 PM" $featured.added }}
       </div>
     </div>
@@ -52,12 +64,23 @@
     <h2 class="music-history-heading">History</h2>
     <ul class="music-list">
       {{- range $videos -}}
-      <li class="music-item">
+      {{- $itemExtras := slice -}}
+      {{- with .album }}{{ $itemExtras = $itemExtras | append . }}{{ end -}}
+      {{- with .year }}{{ $itemExtras = $itemExtras | append (printf "%v" .) }}{{ end -}}
+      <li class="music-item"
+          data-youtube-id="{{ .youtube_id }}"
+          data-title="{{ .title }}"
+          data-artist="{{ .artist }}"
+          data-album="{{ with .album }}{{ . }}{{ end }}"
+          data-year="{{ with .year }}{{ . }}{{ end }}"
+          data-note="{{ with .note }}{{ . }}{{ end }}"
+          data-added-title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" .added }}"
+          data-added-featured="Added {{ dateFormat "Jan 2, 2006 · 3:04 PM" .added }}">
         <a class="music-item-thumb"
            href="https://www.youtube.com/watch?v={{ .youtube_id }}"
            target="_blank"
            rel="noopener noreferrer"
-           aria-label="{{ .title }} on YouTube">
+           aria-label="Play {{ .title }} in the featured player">
           <img
             src="https://i.ytimg.com/vi/{{ .youtube_id }}/mqdefault.jpg"
             alt=""
@@ -72,9 +95,6 @@
                rel="noopener noreferrer">{{ .title }}</a>
           </div>
           <div class="music-item-artist">{{ .artist }}</div>
-          {{- $itemExtras := slice -}}
-          {{- with .album }}{{ $itemExtras = $itemExtras | append . }}{{ end -}}
-          {{- with .year }}{{ $itemExtras = $itemExtras | append (printf "%v" .) }}{{ end -}}
           {{- with $itemExtras -}}
           <div class="music-item-extra">{{ delimit . " · " }}</div>
           {{- end -}}
@@ -87,6 +107,61 @@
       {{- end -}}
     </ul>
   </section>
+
+  <script>
+    (function () {
+      var featured = document.querySelector('.music-featured');
+      if (!featured) return;
+      var meta = featured.querySelector('.music-featured-meta');
+      var iframe = document.getElementById('music-featured-iframe');
+      var titleEl = featured.querySelector('.music-featured-title');
+      var artistEl = featured.querySelector('.music-featured-artist');
+      var extraEl = featured.querySelector('.music-featured-extra');
+      var noteEl = featured.querySelector('.music-featured-note');
+      var addedEl = featured.querySelector('.music-featured-added');
+      if (!iframe || !meta) return;
+      var embedQuery = meta.dataset.embedQuery || 'autoplay=1&mute=1&playsinline=1&rel=0';
+
+      function swap(item) {
+        var id = item.dataset.youtubeId;
+        var title = item.dataset.title || '';
+        var artist = item.dataset.artist || '';
+        var album = item.dataset.album || '';
+        var year = item.dataset.year || '';
+        var note = item.dataset.note || '';
+        var addedTitle = item.dataset.addedTitle || '';
+        var addedFeatured = item.dataset.addedFeatured || '';
+        if (!id) return;
+
+        iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?' + embedQuery;
+        iframe.title = title + (artist ? ' — ' + artist : '');
+        if (titleEl) titleEl.textContent = title;
+        if (artistEl) artistEl.textContent = artist;
+        if (extraEl) {
+          var parts = [];
+          if (album) parts.push(album);
+          if (year) parts.push(year);
+          extraEl.textContent = parts.join(' · ');
+        }
+        if (noteEl) noteEl.textContent = note;
+        if (addedEl) {
+          addedEl.textContent = addedFeatured;
+          if (addedTitle) addedEl.title = addedTitle;
+        }
+        featured.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      document.querySelectorAll('.music-item').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          // Let modifier and non-primary clicks fall through so the browser
+          // can open the YouTube link in a new tab as usual.
+          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          swap(item);
+        });
+      });
+    })();
+  </script>
   {{- else -}}
   <p><em>No videos yet. Use <code>/add-music &lt;url&gt;</code> to add one.</em></p>
   {{- end -}}
