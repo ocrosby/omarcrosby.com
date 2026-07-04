@@ -1,5 +1,7 @@
 release_mode: repo
 tag_format: "v{{.Version}}"
 
+# The binary expects branch entries as maps with `name` (not bare strings).
 branches:
-  - main
+  - name: main
+    is_default: true
