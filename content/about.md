@@ -25,7 +25,7 @@ The through-line is: **build the boring plumbing well, in the language that fits
 
 ## Experience
 
-- **The Weather Company** — Mar 2025–present. Senior Software Engineer on the SUN team, Go and Python microservices on Azure/K8s.
+- **The Weather Company** — Mar 2025–present. Senior Software Engineer on the SUN QA team; day-to-day is Python backend-test automation, but the role essentially spans team leadership, overall QA evolution, and a lot of software architecture — without the formal titles for any of it.
 - **Fidelity Investments** — 2015–2024. SE in Test → Principal Engineer → Architect over nine years across trading and internal-tooling orgs.
 - **Sageworks** — 2014–2015. Senior Software Engineer on the analytics platform.
 - **Paragon Application Systems** — 2010–2014. Senior Software Engineer on payments-testing simulators.
