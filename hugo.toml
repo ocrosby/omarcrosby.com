@@ -84,7 +84,7 @@ buildExpired = false
 [params]
   env = "production"
   title = "Omar Crosby"
-  description = "Software engineer building sports-data infrastructure, distributed systems, and Neovim developer tooling."
+  description = "Software engineer building sports-data infrastructure, distributed systems, Neovim developer tooling, and code-quality analyzers."
   keywords = ["blog", "software", "engineering", "sports data", "hugo"]
   author = "Omar Crosby"
   # Default to dark; the toggle in the header lets visitors switch to light.
@@ -116,7 +116,7 @@ buildExpired = false
 [params.profileMode]
   enabled = true
   title = "Omar Crosby"
-  subtitle = "Software engineer building sports-data infrastructure, distributed systems, and Neovim developer tooling — with occasional detours into NASM and options-trading signals."
+  subtitle = "Software engineer building sports-data infrastructure, distributed systems, Neovim developer tooling, and code-quality analyzers — with occasional detours into NASM and options-trading signals."
   imageTitle = "Omar"
   imageWidth = 120
   imageHeight = 120
