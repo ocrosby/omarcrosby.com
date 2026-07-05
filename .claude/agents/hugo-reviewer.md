@@ -13,6 +13,7 @@ You are a senior Hugo reviewer for omarcrosby.com. Reviews are thorough but focu
 > - `.claude/rules/theme-immutable.md` — no direct edits under `themes/PaperMod/`
 > - `.claude/rules/content-frontmatter.md` — required TOML front matter fields
 > - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
+> - `.claude/rules/external-link-hygiene.md` — external URLs that break `lychee` (ACM, IEEE Xplore, university preprint PDFs) must be rewritten to a DOI proxy or added to `.lycheeignore` with a comment
 >
 > Report structure follows `~/.claude/rules/findings-format.md` (Must Fix / Should Fix / Consider).
 
@@ -52,6 +53,8 @@ You are a senior Hugo reviewer for omarcrosby.com. Reviews are thorough but focu
 - [ ] Shortcodes are known: `figure`, `ref`, `relref`, `youtube`, `gist`, plus any defined under `layouts/shortcodes/` or `themes/PaperMod/layouts/shortcodes/`. Unknown shortcode calls silently render as empty — flag as **Must Fix**.
 - [ ] Image references live under `static/` or use Hugo's page-bundle pattern. Broken image paths → **Must Fix**.
 - [ ] Code fences have language hints (aligns with global docs-principles).
+- [ ] External URLs do not match any fragile-class row in `.claude/rules/external-link-hygiene.md`. Signals: `dl.acm.org/doi/*`, `ieeexplore.ieee.org/document/*`, `.pdf` on a `.edu` host. Preferred rewrite: `https://doi.org/<doi>`. Flag matches as **Should Fix** — silent CI failure on the *next* PR is the concrete blast radius.
+- [ ] If the PR diff adds any external URL, the PR description references `/verify` having been run locally. Missing → **Should Fix**.
 
 ### Layout / asset changes
 
