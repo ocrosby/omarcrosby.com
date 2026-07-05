@@ -10,7 +10,7 @@
   <div class="post-content">
     {{ .Content }}
 
-    {{- $recipes := .Site.Data.recipes.recipes }}
+    {{- $recipes := (index hugo.Data "recipes" "recipes") }}
     {{- if $recipes }}
       {{- /* Data is pre-sorted by (category, title). Single pass:
              open a new group each time the category changes. */ -}}
