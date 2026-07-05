@@ -12,20 +12,44 @@
 
     {{- $recipes := (index hugo.Data "recipes" "recipes") }}
     {{- if $recipes }}
-      {{- /* Pre-count recipes per category so the <summary> can display
-             "(N)" without a lookahead in the render loop. */ -}}
-      {{- $counts := dict }}
+      {{- /* Category remap. The recipes repo uses one directory per raw
+             category, but several of those directories are sub-types of a
+             larger protein/type. Collapse them at display time so users
+             see fewer, meaningful buckets. Any raw category not listed
+             here passes through unchanged. */ -}}
+      {{- $remap := dict
+          "Bacon"        "Pork"
+          "Crockpot"     "Beef"
+          "Steak"        "Beef"
+          "Ribs"         "Pork"
+          "Trout"        "Fish"
+          "Gumbo"        "Soup"
+          "Sinigang"     "Soup"
+          "Deviled Eggs" "Appetizers"
+      }}
+      {{- /* Apply the remap to every recipe. Re-sort by (new_category,
+             title) so the single-pass grouping below sees all recipes
+             for a given effective category contiguously. Hugo's `sort`
+             is stable, so a two-step sort (title, then category)
+             yields correct nested order. */ -}}
+      {{- $remapped := slice }}
       {{- range $recipes }}
-        {{- $cat := .category | default "General" }}
-        {{- $counts = merge $counts (dict $cat (add (default 0 (index $counts $cat)) 1)) }}
+        {{- $rawCat := .category | default "General" }}
+        {{- $newCat := index $remap $rawCat | default $rawCat }}
+        {{- $remapped = $remapped | append (merge . (dict "category" $newCat)) }}
       {{- end }}
-      {{- /* Data is pre-sorted by (category, title). Single pass:
-             wrap each category in a <details>/<summary> so it collapses.
-             The id lives on the details element so old URL fragments
-             like /recipes/#chicken still scroll to the right section. */ -}}
+      {{- $sorted := sort (sort $remapped "title") "category" }}
+      {{- /* Pre-count for the summary "(N)" label. */ -}}
+      {{- $counts := dict }}
+      {{- range $sorted }}
+        {{- $counts = merge $counts (dict .category (add (default 0 (index $counts .category)) 1)) }}
+      {{- end }}
+      {{- /* Render each effective category as a collapsible details block.
+             id lives on the details element so /recipes/#pork continues
+             to scroll to the right section after the remap. */ -}}
       {{- $prev := "" }}
-      {{- range $recipes }}
-        {{- $cat := .category | default "General" }}
+      {{- range $sorted }}
+        {{- $cat := .category }}
         {{- if ne $cat $prev }}
           {{- if ne $prev "" }}
         </ul>
