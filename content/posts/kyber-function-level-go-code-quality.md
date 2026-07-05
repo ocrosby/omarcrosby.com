@@ -17,7 +17,7 @@ There's a whole category of code-quality question that Go's existing linters don
 
 That's the gap kyber is trying to close. Every function gets a row. Every metric gets a column. Every package and the whole report get a mean line at the bottom. You can read the aggregate without piping through `jq`, and you can read the outliers without losing sight of the middle.
 
-```
+```text
                          mi cog cyc   diff     effrt fln      hal nst npth  read ret   tst
   New                 88.41   0   1      6    259.11   1    43.19   1    1  0.68   1  0.99
   GoAST.ParseFiles   51.03!   5   5 20.14! 14073.98!  18   698.81   3   12 0.31!   4 0.53!
