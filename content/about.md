@@ -23,6 +23,14 @@ Also a scattering of language labs across **Go**, **Python**, **Rust**, **C**, *
 
 The through-line is: **build the boring plumbing well, in the language that fits, and open-source it**.
 
+## Experience
+
+- **The Weather Company** — Mar 2025–present. Senior Software Engineer on the SUN team, Go and Python microservices on Azure/K8s.
+- **Fidelity Investments** — 2015–2024. SE in Test → Principal Engineer → Architect over nine years across trading and internal-tooling orgs.
+- **Sageworks** — 2014–2015. Senior Software Engineer on the analytics platform.
+- **Paragon Application Systems** — 2010–2014. Senior Software Engineer on payments-testing simulators.
+- **IBM / Lenovo** — 2000–2010. Software Engineer → Staff → Senior → Architect across the ThinkPad manufacturing test and firmware stack.
+
 Away from a keyboard, I cook — from scratch, mostly, because measuring things is fun. I watch a lot of film and TV, and I follow soccer more closely than is probably healthy — especially the **NWSL**, and specifically **Gotham FC**.
 
 ## Contact
