@@ -150,16 +150,30 @@
       apiTag.async = true;
       document.head.appendChild(apiTag);
 
+      // cc_load_policy in the URL is only a hint tied to the viewer's account
+      // preference. unloadModule is the enforcement — but it can only unload
+      // captions that have already been loaded, so we call it on every state
+      // transition (initial load, click-swap, auto-advance all funnel through
+      // onStateChange) rather than once at onReady.
+      function killCaptions(p) {
+        if (!p) return;
+        try { p.unloadModule('captions'); } catch (e) {}
+        try { p.unloadModule('cc'); } catch (e) {}
+      }
+
       // The IFrame API calls this global when it is ready.
       window.onYouTubeIframeAPIReady = function () {
         player = new YT.Player('music-featured-iframe', {
           events: {
             onReady: function (event) {
-              // cc_load_policy in the URL is only a hint tied to the viewer's
-              // account preference. unloadModule is the enforcement.
-              try { event.target.unloadModule('captions'); } catch (e) {}
+              killCaptions(event.target);
             },
             onStateChange: function (event) {
+              // Every state transition is another chance for captions to have
+              // slipped back in (new video's metadata loaded, account preference
+              // re-applied, etc.). Cheaper to re-unload than to guess when.
+              killCaptions(event.target);
+
               // Auto-advance: when the current video ends, play the next item in
               // the list. Wraps back to the top so it behaves as a loop.
               // keepMuteState=true so a muted first-visit doesn't try to unmute
@@ -210,11 +224,8 @@
             try { player.unMute(); } catch (e) {}
           }
           player.loadVideoById({ videoId: id });
-          // The captions module can silently re-enable after a load; unload
-          // it again once the new video's metadata has arrived.
-          setTimeout(function () {
-            try { player.unloadModule('captions'); } catch (e) {}
-          }, 750);
+          // onStateChange re-kills captions on every transition, so no extra
+          // timer is needed here.
         } else {
           // Fallback — iframe.src reload. Works, but may not carry the user
           // gesture on strict browsers, so playback may land muted.
