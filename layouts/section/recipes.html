@@ -1,0 +1,52 @@
+{{- define "main" }}
+<article class="post-single">
+  <header class="post-header">
+    <h1 class="post-title">{{ .Title }}</h1>
+    {{- if .Description }}
+    <div class="post-description">{{ .Description }}</div>
+    {{- end }}
+  </header>
+
+  <div class="post-content">
+    {{ .Content }}
+
+    {{- $recipes := .Site.Data.recipes.recipes }}
+    {{- if $recipes }}
+      {{- /* Data is pre-sorted by (category, title). Single pass:
+             open a new group each time the category changes. */ -}}
+      {{- $prev := "" }}
+      {{- range $recipes }}
+        {{- $cat := .category | default "General" }}
+        {{- if ne $cat $prev }}
+          {{- if ne $prev "" }}
+        </ul>
+          {{- end }}
+        <h2 id="{{ $cat | urlize }}">{{ $cat }}</h2>
+        <ul class="recipe-list">
+          {{- $prev = $cat }}
+        {{- end }}
+          <li class="recipe-item">
+            <a href="{{ .url }}" rel="noopener external" target="_blank"><strong>{{ .title }}</strong></a>
+            {{- if .added }}
+            <span class="recipe-added" title="Date added to the recipes repo">· {{ .added }}</span>
+            {{- end }}
+            {{- if .description }}
+            <div class="recipe-description">{{ .description }}</div>
+            {{- end }}
+          </li>
+      {{- end }}
+        </ul>
+    {{- else }}
+      <p><em>No recipes have been synced yet. Run <code>/sync-recipes</code>.</em></p>
+    {{- end }}
+  </div>
+</article>
+
+<style>
+  .recipe-list { list-style: none; padding: 0; }
+  .recipe-item { margin: 0.9em 0; padding-bottom: 0.6em; border-bottom: 1px solid var(--border, #eee); }
+  .recipe-item a { text-decoration: none; }
+  .recipe-added { color: var(--secondary, #888); font-size: 0.85em; margin-left: 0.4em; }
+  .recipe-description { color: var(--secondary, #666); font-size: 0.92em; margin-top: 0.25em; line-height: 1.4; }
+</style>
+{{- end }}
