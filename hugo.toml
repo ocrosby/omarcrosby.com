@@ -154,6 +154,10 @@ buildExpired = false
   url = "https://x.com/crosbyomar"
 
 [[params.socialIcons]]
+  name = "instagram"
+  url = "https://www.instagram.com/omar.crosby/"
+
+[[params.socialIcons]]
   name = "email"
   url = "mailto:omar.crosby@gmail.com"
 
