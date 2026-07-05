@@ -31,3 +31,17 @@
     height: auto;
     margin-bottom: 0.25rem;
 }
+
+/* Light-theme swap for the constellation SVG.
+
+   The default constellation.svg uses bright teal (#5eead4) tuned for the
+   dark background — on white it washes out. Swap to constellation-light.svg
+   (richer teal #0d9488, darker slate anchors, higher stroke opacity) when
+   PaperMod sets data-theme="light" on <html>.
+
+   Uses CSS `content: url()` on the <img> element, which is supported in all
+   modern browsers (Chrome/Safari/Firefox) and swaps the rendered image
+   without needing a template override or picture element. */
+html[data-theme="light"] .profile .profile_inner > img {
+    content: url("/images/constellation-light.svg");
+}
