@@ -62,8 +62,13 @@ YouTube's video title usually follows one of these shapes:
 Rules:
 
 - Split on the first ` - `, ` – `, ` — `, or a colon followed by a space — whichever appears first.
-- Strip trailing suffixes matching any of `(Official Music Video)`, `(Official Video)`, `[Official Video]`, `(Official Audio)`, `(Audio)`, `(Lyrics)`, `(HD)`, `(4K)`, `(Remastered)`, `(Live)`, or a bare `(YYYY)`.
-- If no split character exists, use the whole title as `title` and use `author_name` (with a trailing `VEVO` stripped) as `artist`.
+- Strip trailing suffixes matching any of `(Official Music Video)`, `[Official Music Video]`, `(Official Video)`, `[Official Video]`, `(Official Audio)`, `(Audio)`, `(Lyrics)`, `(HD)`, `(4K)`, `(Official HD Video)`, `(Official 4K Video)`, `(Official 4K Music Video)`, `(Remastered)`, `(Live)`, or a bare `(YYYY)`. The intent is to strip **video-quality / video-role metadata** — bracket vs paren, "HD" vs "4K", "Video" vs "Music Video" are all the same category; apply the same-intent extension when a novel variant appears.
+- Strip trailing `(From "<something>" Soundtrack)` — soundtrack-attribution metadata, same intent as `(Official Music Video)`.
+- Strip a redundant trailing `ft. <name>` if `<name>` is already present in the parsed artist (typical for YouTube titles that list collab artists both comma-separated in the artist AND ft.-suffixed in the title). Keep `ft.` when the featured artist is *not* in the artist field.
+- Keep parenthetical **subtitles** that are part of the canonical song name — `(This Time for Africa)`, `(Who Loves Me)`, `(Human Nature Radio Mix)`, `(feat. Joey Bada$$)` — these are content, not metadata. When the same parenthetical contains BOTH a real subtitle and metadata (e.g. `(Human Nature Radio Mix - Official Video)`), keep the subtitle and strip the metadata.
+- **`author_name` strip list**: strip trailing `VEVO` and trailing ` - Topic` (YouTube's auto-generated-topic-channel convention). Same intent.
+- Comma-separated collab artists (`Artist A, Artist B`) and ampersand collabs (`Artist A & Artist B`) are kept verbatim as the artist — do not split.
+- **If no split character exists at all** (e.g. pipe-separated `SONG | SHOW | CHANNEL` shape, or a single-token title): **do not blindly use the whole title.** Present the raw title + author to the user with a proposed interpretation and ask which mapping to use. `--yes` does not apply here — the parse-safety gate must fire.
 
 ### 5. Confirm with the user
 
@@ -136,6 +141,8 @@ PY
 ### 8. Verify the site still builds
 
 Run `hugo --gc --minify --panicOnWarning` from the repo root. If it exits non-zero, `git restore data/music.yaml` and stop — do not commit.
+
+**Exit-status guardrail.** Do not pipe hugo's output into another command when checking exit status — pipelines return only the last command's status, so `hugo ... 2>&1 | tail -3 && git commit ...` silently commits on a broken build. Either redirect (`hugo ... >/dev/null`) or enable `set -o pipefail` before the pipeline.
 
 ### 9. Direct-commit to main and push
 
