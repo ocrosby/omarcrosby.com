@@ -126,10 +126,14 @@ buildExpired = false
   enabled = true
   title = "Omar Crosby"
   subtitle = "Software engineer building sports-data infrastructure, distributed systems, Neovim developer tooling, and code-quality analyzers — with occasional detours into NASM and options-trading signals."
-  imageTitle = "Omar"
-  imageWidth = 120
-  imageHeight = 120
-  # imageUrl = "/img/avatar.jpg"   # add later; drop the file under static/img/
+  imageTitle = "Constellation of connected nodes"
+  # SVG viewBox is 1200x100 (12:1 wide banner). The attributes below become
+  # width/height on the <img>; assets/css/extended/profile-constellation.css
+  # overrides them with width: 100%; height: auto; max-width: 720px so the
+  # graphic spans the profile column responsively at every viewport size.
+  imageWidth = 1200
+  imageHeight = 100
+  imageUrl = "images/constellation.svg"
 
   # URLs are rendered verbatim as `href` by PaperMod's profile template.
   # Always root-relative (leading slash) or absolute — never bare strings.
