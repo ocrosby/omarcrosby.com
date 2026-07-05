@@ -7,7 +7,7 @@ paths:
 
 # Hugo Authoring
 
-This skill loads when writing or editing content under `content/` or `archetypes/`. The four project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
+This skill loads when writing or editing content under `content/` or `archetypes/`. The five project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md`, `project-title-naming.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
 
 ## Fast path
 

@@ -1,5 +1,5 @@
 +++
-title = "market-bridge"
+title = "Market Bridge"
 date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "MCP server bridging trading platforms (Tradovate, Bookmap, Thinkorswim) to Claude for real-time /ES futures data analysis."

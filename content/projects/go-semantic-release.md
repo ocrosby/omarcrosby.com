@@ -1,5 +1,5 @@
 +++
-title = "go-semantic-release"
+title = "Go Semantic Release"
 date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "A semantic-release implementation in Go. Powers the release workflow behind this site."

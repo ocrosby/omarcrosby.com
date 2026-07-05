@@ -1,5 +1,5 @@
 +++
-title = "strike-pilot"
+title = "Strike Pilot"
 date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "Intraday SPX bias predictor with confidence scoring; converts signals into structured credit-spread ideas or explicit no-trade decisions."
