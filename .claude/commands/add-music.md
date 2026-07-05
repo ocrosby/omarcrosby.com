@@ -16,7 +16,7 @@ Adds a YouTube music video to the top of `data/music.yaml` on the current site, 
 - `--album "<name>"` (optional) — album name to record alongside artist/year
 - `--year <YYYY>` (optional) — release year
 - `--note "<text>"` (optional) — short note (why you added it, what mood)
-- `--yes` (optional) — skip the step-5 confirmation prompt and proceed straight to the duplicate check + prepend. Only use when the split is unambiguous (a single ` - `, ` – `, ` — `, or `: ` in the raw title) — for anything else the confirmation is what catches parse bugs. Also enables **queue-and-batch mode**: if the user fires several `/add-music --yes` invocations back-to-back without waiting for each to finish, treat them as one atomic batch — one build check, one commit per song, one push at the end.
+- `--yes` (optional) — skip the step-5 confirmation prompt and proceed straight to the duplicate check + prepend. Only use when the split is unambiguous (a single ` - `, ` – `, ` — `, or a `:` followed by a space in the raw title) — for anything else the confirmation is what catches parse bugs. Also enables **queue-and-batch mode**: if the user fires several `/add-music --yes` invocations back-to-back without waiting for each to finish, treat them as one atomic batch — one build check, one commit per song, one push at the end.
 
 ## Workflow
 
@@ -81,7 +81,7 @@ Thumbnail:  https://i.ytimg.com/vi/<id>/mqdefault.jpg
 
 Only continue on explicit confirmation.
 
-**`--yes` skip.** If `--yes` was passed, the preview is still printed (so the user can see what happened in the transcript), but the confirmation is bypassed. Only apply `--yes` when the split character (` - `, ` – `, ` — `, or `: `) is present exactly once at the top level of the raw title — otherwise the parse is ambiguous and confirmation must still fire. When in doubt, do not honor `--yes`.
+**`--yes` skip.** If `--yes` was passed, the preview is still printed (so the user can see what happened in the transcript), but the confirmation is bypassed. Only apply `--yes` when the split character (` - `, ` – `, ` — `, or a `:` followed by a space) is present exactly once at the top level of the raw title — otherwise the parse is ambiguous and confirmation must still fire. When in doubt, do not honor `--yes`.
 
 **Queue-and-batch behavior.** If a second `/add-music --yes` fires while a prior one is still processing, treat both as part of a single batch: buffer the parsed entries, verify the site builds once at the end, produce **one commit per song** in queue order (each prepended above the previous, so the last-queued ends up at the top), and push once. Do not push per-song when batching — the release workflow collapses commits per push, so batching yields one deploy instead of N.
 
