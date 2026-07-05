@@ -66,7 +66,7 @@ Two 0–1 scores made from weighted sub-signals:
 - **Readability** — length, nesting depth, median identifier length (loop indices excluded), and comment density.
 - **Testability** — parameter count, side effects (I/O calls and global reads), fraction of interface-typed parameters, and length.
 
-These are heuristic. Buse & Weimer's [readability paper (2010)](https://web.eecs.umich.edu/~weimerw/p/weimer-tse2010-readability-preprint.pdf) trained weights against human ratings; kyber's weights are hand-picked and deliberately simple. Read them as "watch the trend" signals, not as ground truth. A tiny utility function scoring low on readability because it has single-letter loop variables and no comments is not a bug in your function — it's a limit of the metric. Trust the *package-mean* trend more than any single function's value.
+These are heuristic. Buse & Weimer's [readability paper (2010)](https://doi.org/10.1109/TSE.2009.70) trained weights against human ratings; kyber's weights are hand-picked and deliberately simple. Read them as "watch the trend" signals, not as ground truth. A tiny utility function scoring low on readability because it has single-letter loop variables and no comments is not a bug in your function — it's a limit of the metric. Trust the *package-mean* trend more than any single function's value.
 
 ### Maintainability index
 
@@ -134,7 +134,7 @@ Two places, mostly:
 - **Metrics documentation:** [`internal/domain/metrics/README.md`](https://github.com/jedi-knights/kyber/blob/main/internal/domain/metrics/README.md)
 - **McCabe (1976):** [*A Complexity Measure*](https://en.wikipedia.org/wiki/Cyclomatic_complexity)
 - **Campbell (2018):** [Cognitive Complexity white paper (PDF)](https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
-- **Nejmeh (1988):** [*NPATH: A measure of execution path complexity*](https://dl.acm.org/doi/10.1145/42372.42379)
+- **Nejmeh (1988):** [*NPATH: A measure of execution path complexity*](https://doi.org/10.1145/42372.42379)
 - **Halstead (1977):** [*Elements of Software Science*](https://en.wikipedia.org/wiki/Halstead_complexity_measures)
 - **Coleman et al. (1994):** [Maintainability Index range and meaning](https://learn.microsoft.com/en-us/visualstudio/code-quality/code-metrics-maintainability-index-range-and-meaning)
-- **Buse & Weimer (2010):** [*A metric for software readability*](https://web.eecs.umich.edu/~weimerw/p/weimer-tse2010-readability-preprint.pdf)
+- **Buse & Weimer (2010):** [*A metric for software readability*](https://doi.org/10.1109/TSE.2009.70)

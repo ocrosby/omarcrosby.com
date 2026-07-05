@@ -7,12 +7,13 @@ paths:
 
 # Hugo Authoring
 
-This skill loads when writing or editing content under `content/` or `archetypes/`. The three project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-version-lock.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
+This skill loads when writing or editing content under `content/` or `archetypes/`. The four project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
 
 ## Fast path
 
 - **New post**: use `/new-post <title>` (from `.claude/commands/new-post.md`). It scaffolds `content/posts/<slug>.md` with correct front matter.
 - **Preview**: use `/preview`. It builds the Docker image and serves on `http://localhost:8080`. Drafts are excluded from Docker preview — see the draft workflow below.
+- **Verify before ship**: if the diff added *any* external URL, `/verify` is **required** before opening the PR — its lychee gate catches fragile-URL classes (ACM, IEEE Xplore, university preprint PDFs) that only fail once merged. See `.claude/rules/external-link-hygiene.md`. Skipping `/verify` and shipping means the failure lands on *the next PR*, not this one.
 - **Ship**: flip `draft = false`, open a PR with a `feat(content): ...` message, merge → release workflow tags and deploys.
 
 ## Front matter cheat sheet
@@ -46,10 +47,10 @@ Field notes:
 
 1. `/new-post "My Title"` → scaffolds with `draft = true`.
 2. Write. Iterate. Read your own prose out loud.
-3. Optional local draft preview: `hugo server -D` (requires local Hugo `0.101.0–0.127.x` — the Homebrew 0.160+ will fail; see `.claude/rules/hugo-version-lock.md`).
+3. Optional local draft preview: `hugo server -D` (requires local Hugo — the Homebrew 0.160 build works with the current PaperMod submodule).
 4. Flip `draft = false`.
 5. Verify in Docker preview: `/preview`, confirm the post appears in the archive at the expected URL.
-6. `/verify` to run CI gates locally.
+6. **Required if the diff added external URLs — `/verify`.** Its lychee step checks every rendered page against the full external-link set; skipping this is how fragile-URL failures reach `main`. See `.claude/rules/external-link-hygiene.md` for the URL classes that break `lychee`.
 7. Open PR with `feat(content): add "<slug>"` or similar. Merge triggers the release.
 
 ## URL structure
