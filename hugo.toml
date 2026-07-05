@@ -116,7 +116,7 @@ buildExpired = false
 [params.profileMode]
   enabled = true
   title = "Omar Crosby"
-  subtitle = "Software engineer building sports-data tooling and APIs. I write about [FILL IN: distributed systems | soccer analytics | low-level programming]."
+  subtitle = "Software engineer building sports-data infrastructure, distributed systems, and Neovim developer tooling — with occasional detours into NASM and options-trading signals."
   imageTitle = "Omar"
   imageWidth = 120
   imageHeight = 120
