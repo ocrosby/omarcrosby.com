@@ -4,8 +4,15 @@ extend-exclude = [
   "public/",     # generated
   "resources/",  # generated
   "CHANGELOG.md",
-  "data/music.yaml",  # YouTube video IDs look like typos to the checker
+  "data/music.yaml",   # YouTube video IDs look like typos to the checker
+  "data/recipes.yaml", # mirrors filenames + titles from ocrosby/recipes, not our copy to lint
 ]
 
 [default]
 locale = "en-us"
+
+[default.extend-words]
+# Legitimate proper nouns / project names that the default dictionary
+# flags as typos. Add here (identifier form) when the checker complains
+# about something that is actually spelled correctly.
+noice = "noice"    # Neovim plugin name (github.com/folke/noice.nvim)
