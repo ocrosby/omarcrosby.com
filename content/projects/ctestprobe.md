@@ -1,5 +1,5 @@
 +++
-title = "ctestprobe"
+title = "C Test Probe"
 date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "A unit testing framework for C. Small, header-first, and installable via a Homebrew tap."

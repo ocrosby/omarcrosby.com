@@ -14,6 +14,7 @@ You are a senior Hugo reviewer for omarcrosby.com. Reviews are thorough but focu
 > - `.claude/rules/content-frontmatter.md` — required TOML front matter fields
 > - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 > - `.claude/rules/external-link-hygiene.md` — external URLs that break `lychee` (ACM, IEEE Xplore, university preprint PDFs) must be rewritten to a DOI proxy or added to `.lycheeignore` with a comment
+> - `.claude/rules/project-title-naming.md` — `title = "..."` in `content/projects/*.md` must be title-cased, space-separated, with acronyms preserved in ALL CAPS and no dashes
 >
 > Report structure follows `~/.claude/rules/findings-format.md` (Must Fix / Should Fix / Consider).
 
@@ -35,6 +36,7 @@ You are a senior Hugo reviewer for omarcrosby.com. Reviews are thorough but focu
 - [ ] If the PR is titled "publish X" or similar, verify `draft = false`.
 - [ ] `description`, `summary`, `tags`, `categories` recommended but not required — flag as **Consider** if missing on a substantial post.
 - [ ] Tag/category strings match existing values (case-sensitive). New values silently create new taxonomy pages — flag as **Should Fix** if the new value looks like a typo of an existing one.
+- [ ] Files under `content/projects/` follow `.claude/rules/project-title-naming.md` — title is title-cased, space-separated, acronyms preserved in ALL CAPS, no dashes. Flag any dash-containing or all-lowercase title as **Should Fix**.
 
 ### Theme boundary
 

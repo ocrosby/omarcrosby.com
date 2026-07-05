@@ -1,5 +1,5 @@
 +++
-title = "claude-config"
+title = "Claude Config"
 date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "My Claude Code configuration — global CLAUDE.md, custom skills, subagents, hooks, and slash commands, installed as a GNU Stow package."
