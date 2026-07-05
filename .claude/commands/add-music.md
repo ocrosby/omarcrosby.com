@@ -1,6 +1,6 @@
 ---
 description: Add a YouTube music video to data/music.yaml, direct-commit to main, and push. Semantic-release will cut a patch bump and Fly will redeploy. No PR, no branch — this is data churn.
-argument-hint: <youtube-url> [--album "Album"] [--year 1985] [--note "..."] [--yes]
+argument-hint: <youtube-url> [--album "Album"] [--year 1985] [--note "..."]
 ---
 
 # /add-music
@@ -16,7 +16,10 @@ Adds a YouTube music video to the top of `data/music.yaml` on the current site, 
 - `--album "<name>"` (optional) — album name to record alongside artist/year
 - `--year <YYYY>` (optional) — release year
 - `--note "<text>"` (optional) — short note (why you added it, what mood)
-- `--yes` (optional) — skip the step-5 confirmation prompt and proceed straight to the duplicate check + prepend. Only use when the split is unambiguous (a single ` - `, ` – `, ` — `, or a `:` followed by a space in the raw title) — for anything else the confirmation is what catches parse bugs. Also enables **queue-and-batch mode**: if the user fires several `/add-music --yes` invocations back-to-back without waiting for each to finish, treat them as one atomic batch — one build check, one commit per song, one push at the end.
+
+**No confirmation prompt by default.** The parse rules in step 4 are deterministic — when they succeed with an unambiguous split, proceed straight to dedup + prepend + commit + push. Confirmation only fires when the parse itself is ambiguous (see step 5).
+
+**Queue-and-batch is always on.** If a second `/add-music` fires while a prior one is still processing, buffer both as one batch — one build check, one commit per song, one push at the end.
 
 ## Workflow
 
@@ -68,27 +71,40 @@ Rules:
 - Keep parenthetical **subtitles** that are part of the canonical song name — `(This Time for Africa)`, `(Who Loves Me)`, `(Human Nature Radio Mix)`, `(feat. Joey Bada$$)` — these are content, not metadata. When the same parenthetical contains BOTH a real subtitle and metadata (e.g. `(Human Nature Radio Mix - Official Video)`), keep the subtitle and strip the metadata.
 - **`author_name` strip list**: strip trailing `VEVO` and trailing ` - Topic` (YouTube's auto-generated-topic-channel convention). Same intent.
 - Comma-separated collab artists (`Artist A, Artist B`) and ampersand collabs (`Artist A & Artist B`) are kept verbatim as the artist — do not split.
-- **If no split character exists at all** (e.g. pipe-separated `SONG | SHOW | CHANNEL` shape, or a single-token title): **do not blindly use the whole title.** Present the raw title + author to the user with a proposed interpretation and ask which mapping to use. `--yes` does not apply here — the parse-safety gate must fire.
+- **If no split character exists at all** (e.g. pipe-separated `SONG | SHOW | CHANNEL` shape, or a single-token title that is NOT from a Topic channel): **do not blindly use the whole title.** This is one of the cases that triggers the parse-safety gate in step 5.
+- **Topic channels are unambiguous, not a fallback.** When `author_name` ends in ` - Topic`, YouTube's auto-generated-topic-channel convention is: channel name (with ` - Topic` stripped) is the artist, video title is the song. Parse cleanly as artist = stripped author, title = raw title. Do not trigger the parse-safety gate for these.
 
-### 5. Confirm with the user
+### 5. Parse-safety gate — only fires on ambiguous parses
 
-Print a compact preview and ask "OK to add?" — do not proceed on ambiguity:
+The default is to **proceed without asking**. The parse rules in step 4 are deterministic; when they land on an unambiguous result, print a one-line summary and continue directly to dedup + prepend + commit + push.
+
+The gate only fires when the parse itself is ambiguous. These are the trigger cases — nothing else:
+
+- No split character exists AND the source is not a Topic channel (`SONG | SHOW | CHANNEL` shape, single-token title from a non-Topic channel).
+- Multiple candidate splits at the same top-level position (rare — same distance ` - ` and ` – ` both present at competing positions).
+- Trailing suffix in the title that doesn't match any codified strip pattern AND isn't a recognizable canonical subtitle — i.e. a novel variant the parser can't confidently classify.
+
+When the gate fires, print the preview block and wait for explicit confirmation:
 
 ```text
 Video ID:   <id>
-Title:      <parsed title>
-Artist:     <parsed artist>
+Title:      <parsed title>          (or "?")
+Artist:     <parsed artist>         (or "?")
 Album:      <--album flag or "(none)">
 Year:       <--year flag or "(none)">
 Note:       <--note flag or "(none)">
 Thumbnail:  https://i.ytimg.com/vi/<id>/mqdefault.jpg
+Raw title:  <YouTube's title>
+Author:     <YouTube's author_name>
 ```
 
-Only continue on explicit confirmation.
+When the gate does NOT fire (the common case), print a one-liner instead — enough to see what was parsed in the transcript, but do not wait:
 
-**`--yes` skip.** If `--yes` was passed, the preview is still printed (so the user can see what happened in the transcript), but the confirmation is bypassed. Only apply `--yes` when the split character (` - `, ` – `, ` — `, or a `:` followed by a space) is present exactly once at the top level of the raw title — otherwise the parse is ambiguous and confirmation must still fire. When in doubt, do not honor `--yes`.
+```text
+Parsed: "<title>" by <artist>  (stripped: <suffixes>, if any)
+```
 
-**Queue-and-batch behavior.** If a second `/add-music --yes` fires while a prior one is still processing, treat both as part of a single batch: buffer the parsed entries, verify the site builds once at the end, produce **one commit per song** in queue order (each prepended above the previous, so the last-queued ends up at the top), and push once. Do not push per-song when batching — the release workflow collapses commits per push, so batching yields one deploy instead of N.
+**Queue-and-batch (always on).** If a second `/add-music` fires while a prior one is still processing, treat both as one atomic batch: buffer the parsed entries, verify the site builds once at the end, produce **one commit per song** in queue order (each prepended above the previous, so the last-queued ends up at the top), and push once. If any entry in the batch triggers the parse-safety gate, hold that entry — process the unambiguous ones through commit and push, then surface the ambiguous one at the end for confirmation.
 
 ### 6. Check for duplicates — refuse, don't ask
 
