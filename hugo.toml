@@ -69,7 +69,7 @@ buildExpired = false
   identifier = "about"
   name = "About"
   url = "/about/"
-  weight = 30
+  weight = 3
 
 [[menu.main]]
   identifier = "tags"
