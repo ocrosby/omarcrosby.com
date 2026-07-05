@@ -48,6 +48,12 @@ buildExpired = false
   weight = 5
 
 [[menu.main]]
+  identifier = "recipes"
+  name = "Recipes"
+  url = "/recipes/"
+  weight = 7
+
+[[menu.main]]
   identifier = "posts"
   name = "Blog"
   url = "/posts/"
