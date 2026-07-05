@@ -7,10 +7,13 @@ description = "About Omar Crosby — software engineer at The Weather Company, s
 
 I'm a **software engineer at The Weather Company** who works across the stack. Day to day, that means **Next.js** and **TypeScript** on the front end and API layer, DevOps and CI work to keep the pipes moving, Linux administration to keep the servers honest, and — when the mood strikes — lower-level programming in **NASM assembly**.
 
+{{< collapse summary="Background & education" >}}
 Before The Weather Company I was **Director of Software Engineering at Fidelity Investments**. I studied **Applied Mathematics** at **North Carolina State University** (2000–2004), where I spent more time than was strictly reasonable on analysis, algebra, and PDEs. I'm a member of **ACM**, **SIAM**, **IEEE**, and **Mensa**.
+{{< /collapse >}}
 
-Outside the day job, my open-source work splits across two umbrellas — **[github.com/jedi-knights](https://github.com/jedi-knights)** for the larger infrastructure work and **[github.com/ocrosby](https://github.com/ocrosby)** for personal projects, tools, and lab code:
+Outside the day job, my open-source work splits across two umbrellas — **[github.com/jedi-knights](https://github.com/jedi-knights)** for the larger infrastructure work and **[github.com/ocrosby](https://github.com/ocrosby)** for personal projects, tools, and lab code.
 
+{{< collapse summary="Open-source portfolio (7 areas)" >}}
 - **Sports-data infrastructure** — MCP servers exposing NWSL, ECNL/ECRL, and NFL data as tools for LLM clients; Python SDKs for a stack of leagues (NWSL, MLS, USL, NCAA, WPSL, and more); an RPI calculator; a work-in-progress Go match-tracking app.
 - **Trading and market signals** — `market-bridge`, an MCP server bridging Tradovate, Bookmap, and Thinkorswim to Claude for real-time /ES futures data; and `strike-pilot`, a Python SPX-bias / credit-spread signal engine.
 - **Identity and API platform** — a production-style OAuth2/OIDC reference in Go (`identity-platform-go`) built as clean microservices, plus a configurable reverse-proxy gateway (`api-gateway`) with rate limiting, circuit breaking, and MCP routing.
@@ -20,6 +23,7 @@ Outside the day job, my open-source work splits across two umbrellas — **[gith
 - **Dev environment** — `claude-config` (my Claude Code setup, GNU Stow–managed), my Neovim config, my macOS `dotfiles`, and a `learn-neovim` walkthrough.
 
 Also a scattering of language labs across **Go**, **Python**, **Rust**, **C**, **C++**, **TypeScript**, **R**, and **NASM**, plus notes on **physics**, **math**, and **astronomy** calculations — because the best way to learn a language is to build something small in it.
+{{< /collapse >}}
 
 The through-line is: **build the boring plumbing well, in the language that fits, and open-source it**.
 
