@@ -67,6 +67,124 @@ MCP wins over "just make a REST API" for exactly this kind of workload. The tool
 
 If you're building a data feed for a specific league or dataset, MCP is probably the right delivery shape now.
 
+## How to set them up
+
+Both servers speak MCP over HTTP, so any MCP-aware client — Claude Code, Claude Desktop, Cursor, Zed — can connect. A live instance of each runs on Fly.io behind the [`api-gateway`](https://github.com/jedi-knights/api-gateway), which means you don't have to clone a repo, install Python, or manage a venv to start using them.
+
+### Claude Code — hosted (recommended)
+
+One command per server, installed globally so they're available in every project:
+
+```sh
+claude mcp add --transport http --scope user nwsl https://jk-api-gateway.fly.dev/mcp/nwsl
+claude mcp add --transport http --scope user ecnl https://jk-api-gateway.fly.dev/mcp/ecnl
+```
+
+Verify:
+
+```sh
+claude mcp list
+```
+
+You should see both listed with a `✓ Connected` marker. Restart Claude Code if it was already open.
+
+### Claude Desktop — hosted
+
+Open the Claude Desktop config from **Settings → Developer → Edit Config**, or by hand:
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+Add both servers to the `mcpServers` object:
+
+```json
+{
+  "mcpServers": {
+    "nwsl": {
+      "type": "streamable-http",
+      "url": "https://jk-api-gateway.fly.dev/mcp/nwsl"
+    },
+    "ecnl": {
+      "type": "streamable-http",
+      "url": "https://jk-api-gateway.fly.dev/mcp/ecnl"
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving. The NWSL and ECNL tools show up in the tool picker.
+
+### Running locally
+
+If you'd rather run the server on your own machine — for hacking, offline use, or a fully-private setup — each repo's README has the local install path. The short version:
+
+```sh
+git clone https://github.com/jedi-knights/jk-mcp-nwsl.git
+cd jk-mcp-nwsl
+uv sync
+uv run python -m nwsl.server           # stdio mode for Claude Code / Desktop
+# or:
+MCP_TRANSPORT=streamable-http uv run python -m nwsl.server
+```
+
+Same shape for `jk-mcp-ecnl` — just swap the paths and the module name.
+
+## Example prompts
+
+Once either server is connected, natural-language queries chain the tools for you — Claude picks `find_events` → `get_event_overview` → `get_standings` automatically, no ID lookup required from you. A sampling of what the two servers actually unlock:
+
+### Standings and results
+
+> Who is leading the NWSL standings right now?
+>
+> Show me the ECNL Girls Southwest U17 standings.
+>
+> What NWSL matches are scheduled for today?
+>
+> What were last weekend's scores in ECNL Boys Texas U17?
+
+### Team and player detail
+
+> Who scored in the most recent Portland–Carolina match?
+>
+> Who's on the Portland Thorns roster?
+>
+> Show me Kansas City Current's goalkeepers.
+>
+> When does Slammers FC HB Koge play next?
+
+### Player leaderboards
+
+> Who is the top scorer in the NWSL right now?
+>
+> Which NWSL team has the best passing accuracy this season?
+>
+> Compare Portland and Kansas City by points and goals scored this season.
+
+### Schedule strength and adjusted metrics (NWSL)
+
+> Which team has played the toughest schedule so far this season?
+>
+> Show me Gotham's record against the current top 5 teams in the standings.
+>
+> Compare San Diego and Seattle on adjusted points-per-game — who has earned their points the hard way?
+
+### RPI analysis (ECNL)
+
+> Rank the ECNL Girls Southwest U17 flight by RPI.
+>
+> What's Slammers FC's RPI, broken down into WP, OWP, and OOWP?
+>
+> Recompute that flight's RPI using the pre-2024 ½ tie weight.
+
+### Historical
+
+> Who won the 2018 NWSL Regular Season?
+>
+> Show me the 2022 NWSL Challenge Cup standings.
+
+The point of these isn't to memorize a query syntax — the servers work *because* there isn't one. Ask what you'd ask a friend who watches too much soccer, and Claude figures out which tools to call.
+
 ## Where to find it
 
 - **NWSL server:** [github.com/jedi-knights/jk-mcp-nwsl](https://github.com/jedi-knights/jk-mcp-nwsl)
