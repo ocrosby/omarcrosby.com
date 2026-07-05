@@ -14,6 +14,7 @@ Before The Weather Company I was **Director of Software Engineering at Fidelity 
 Outside the day job, my open-source work splits across two umbrellas — **[github.com/jedi-knights](https://github.com/jedi-knights)** for the larger infrastructure work and **[github.com/ocrosby](https://github.com/ocrosby)** for personal projects, tools, and lab code.
 
 {{< collapse summary="Open-source portfolio (7 areas)" >}}
+
 - **Sports-data infrastructure** — MCP servers exposing NWSL, ECNL/ECRL, and NFL data as tools for LLM clients; Python SDKs for a stack of leagues (NWSL, MLS, USL, NCAA, WPSL, and more); an RPI calculator; a work-in-progress Go match-tracking app.
 - **Trading and market signals** — `market-bridge`, an MCP server bridging Tradovate, Bookmap, and Thinkorswim to Claude for real-time /ES futures data; and `strike-pilot`, a Python SPX-bias / credit-spread signal engine.
 - **Identity and API platform** — a production-style OAuth2/OIDC reference in Go (`identity-platform-go`) built as clean microservices, plus a configurable reverse-proxy gateway (`api-gateway`) with rate limiting, circuit breaking, and MCP routing.
