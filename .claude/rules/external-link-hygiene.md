@@ -12,11 +12,12 @@ The following hosts are known to reject `lychee`'s requests. Prefer the alternat
 | IEEE Xplore | `https://ieeexplore.ieee.org/document/...` | 403/418 without authentication | `https://doi.org/10.1109/...` (DOI proxy) |
 | University preprint hosts | `https://web.eecs.umich.edu/~author/paper.pdf`, `https://cs.stanford.edu/~author/...` | TLS `UnknownIssuer` — university CA chains drift on GitHub runners | `https://doi.org/...` (DOI proxy) if the paper is published; publisher landing page otherwise |
 | LinkedIn profiles | `https://linkedin.com/in/handle` | 999 (LinkedIn's anti-bot signal) — already accepted via `--accept 999` in `ci.yml`, but flag if that accept list is removed | Keep as-is with the `--accept 999` list; do not add elsewhere |
+| Instagram profiles | `https://www.instagram.com/handle/` | **429 Too Many Requests from GitHub runner IPs.** Local lychee from a personal IP passes; CI fails because runner IPs share Instagram's global rate-limit bucket. `--accept 429` is unsafe elsewhere. | Add `^https?://(www\.)?instagram\.com` to `.lycheeignore` — this is the only viable fix |
 | Login-walled pages | `https://twitter.com/user/status/...` (post-2023), private GitHub gists | Redirects to a login page that returns a different status | Prefer a public archive (`web.archive.org`) or omit |
 
 ## What to do at authoring time
 
-1. **Before shipping any post that adds external URLs**, run `/verify` — its step-3 lychee gate catches these classes before CI does. If Docker isn't running, start it; do not skip the step.
+1. **Before shipping any post that adds external URLs**, run `/verify` — its step-3 lychee gate catches most fragile-class URLs before CI does. If Docker isn't running, start it; do not skip the step. **Caveat**: 429 rate-limit failures are IP-dependent — local lychee from a personal IP typically passes while GitHub runner IPs share a rate-limit bucket with every other public GH Actions user. If the new URL is a class known for rate-limiting (Instagram, LinkedIn, other high-traffic social), pre-emptively add the ignore entry to `.lycheeignore` even when local `/verify` is green.
 2. **When citing a published paper**, use `https://doi.org/<doi>` in the post itself — DOIs are canonical, permanent, and read cleanly. But be aware: **lychee matches ignore patterns against the starting URL, not the redirect chain.** If the DOI redirects to a fragile host (ACM, IEEE Xplore, etc.), the doi.org URL will *itself* fail lychee. In that case add a specific `^https?://doi\.org/<doi>$` line to `.lycheeignore` with a comment naming the terminal host. Look the DOI up on Google Scholar, Semantic Scholar, or the publisher's landing page.
 3. **When citing a non-paper resource** (spec, standard, docs), prefer the canonical location on a stable host (`w3.org`, `datatracker.ietf.org`, `learn.microsoft.com`, `en.wikipedia.org`) over a personal blog mirror.
 4. **When no stable alternative exists** and the URL is genuinely load-bearing for the post, add the host pattern to `.lycheeignore` with a comment explaining the failure class, and note it in the PR description.
@@ -35,6 +36,7 @@ The following hosts are known to reject `lychee`'s requests. Prefer the alternat
 | `ieeexplore.ieee.org` URL in a post | Rewrite to `doi.org/10.1109/...` |
 | `.pdf` URL on a `.edu` host | Look up the DOI; rewrite. Add host to `.lycheeignore` only as backstop |
 | Bare `linkedin.com/in/*` outside `--accept 999` scope | Confirm the accept list is still in `ci.yml` or ignore |
+| `instagram.com/<handle>` in a diff | Ignore in `.lycheeignore` — do not attempt to check |
 
 ## When this rule fires
 

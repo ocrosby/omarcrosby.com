@@ -29,6 +29,7 @@ Away from a keyboard, I cook — from scratch, mostly, because measuring things 
 
 - LinkedIn — [linkedin.com/in/omarcrosby](https://www.linkedin.com/in/omarcrosby/)
 - X — [x.com/crosbyomar](https://x.com/crosbyomar)
+- Instagram — [instagram.com/omar.crosby](https://www.instagram.com/omar.crosby/)
 - Email — [omar.crosby@gmail.com](mailto:omar.crosby@gmail.com)
 - GitHub (personal) — [github.com/ocrosby](https://github.com/ocrosby)
 - GitHub (projects) — [github.com/jedi-knights](https://github.com/jedi-knights)

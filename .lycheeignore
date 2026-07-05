@@ -12,6 +12,13 @@
 ^https?://news\.ycombinator\.com/submitlink
 ^https?://(www\.)?reddit\.com/submit
 
+# Instagram profile pages — 429 Too Many Requests from GitHub runner IPs.
+# Local lychee from a personal IP passes; CI does not. Same failure class as
+# LinkedIn's 999, but the 429 status can't be added to --accept without
+# masking real rate-limit errors elsewhere. See
+# .claude/rules/external-link-hygiene.md.
+^https?://(www\.)?instagram\.com
+
 # Site's own baseURL — DNS points nowhere until the first Fly deploy.
 # Remove once the site is live.
 ^https?://omarcrosby\.com
