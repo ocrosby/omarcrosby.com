@@ -1,0 +1,17 @@
+{{- /*
+    Site-level extension to PaperMod's <head>.
+
+    PaperMod's head.html emits the classic favicon set (favicon.ico,
+    favicon-{16,32}x{16,32}.png, apple-touch-icon.png, safari-pinned-tab.svg).
+    We add the modern SVG favicon and the high-resolution PNG assets it
+    does not emit by default:
+
+      - image/svg+xml — preferred by modern browsers; scales to any size
+      - 48x48 PNG    — Windows taskbar
+      - 512x512 PNG  — Android home-screen / PWA install
+
+    All eight source files live under static/ and are served from /.
+*/ -}}
+<link rel="icon" type="image/svg+xml" href="{{ "favicon.svg" | absURL }}">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ "favicon-48x48.png" | absURL }}">
+<link rel="icon" type="image/png" sizes="512x512" href="{{ "favicon-512x512.png" | absURL }}">
