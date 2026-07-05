@@ -1,23 +1,29 @@
 /* Profile-mode constellation banner — auto-loaded by PaperMod from
    assets/css/extended/.
 
-   PaperMod's default .profile img rule enforces border-radius: 50% (round
-   avatar) and lets the browser use the img's HTML width/height attributes
-   as the rendered size. Neither is right for a decorative constellation
-   banner that should span the profile column at every viewport width.
+   Two concerns handled here:
 
-   Overrides:
-   - border-radius: 0     — no avatar rounding
-   - width: 100%          — fill the profile column
-   - max-width: 720px     — don't get absurd on ultra-wide monitors
-   - height: auto         — preserve aspect ratio (SVG viewBox is 1200x100)
-   - margin-bottom tweak  — sit closer to the h1 below than PaperMod's
-                             default 1rem gap, matching the constellation's
-                             lightweight visual weight
+   1. Image sizing/shape
+      PaperMod's default .profile img rule enforces border-radius: 50%
+      (round avatar) and lets the browser use the img's HTML width/height
+      attributes as the rendered size. Neither is right for a decorative
+      banner. Override to span the profile column with a max-width cap.
 
-   Scoped narrowly to only the direct-child img of .profile_inner, so any
-   future non-banner image (e.g. a real avatar on a different page) is
-   unaffected. */
+   2. Vertical anchoring
+      PaperMod's default .main .profile has align-items: center and a
+      viewport-tall min-height, which centers the profile_inner column
+      vertically and produces a large whitespace above the image on
+      taller screens. Anchor the column to the top with a small padding
+      instead, so the constellation sits close to the menu without
+      requiring viewport-tall centering. */
+
+.main .profile {
+    align-items: flex-start;
+    min-height: auto;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
 .profile .profile_inner > img {
     border-radius: 0;
     width: 100%;
