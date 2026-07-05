@@ -12,16 +12,27 @@
 
     {{- $recipes := (index hugo.Data "recipes" "recipes") }}
     {{- if $recipes }}
+      {{- /* Pre-count recipes per category so the <summary> can display
+             "(N)" without a lookahead in the render loop. */ -}}
+      {{- $counts := dict }}
+      {{- range $recipes }}
+        {{- $cat := .category | default "General" }}
+        {{- $counts = merge $counts (dict $cat (add (default 0 (index $counts $cat)) 1)) }}
+      {{- end }}
       {{- /* Data is pre-sorted by (category, title). Single pass:
-             open a new group each time the category changes. */ -}}
+             wrap each category in a <details>/<summary> so it collapses.
+             The id lives on the details element so old URL fragments
+             like /recipes/#chicken still scroll to the right section. */ -}}
       {{- $prev := "" }}
       {{- range $recipes }}
         {{- $cat := .category | default "General" }}
         {{- if ne $cat $prev }}
           {{- if ne $prev "" }}
         </ul>
+      </details>
           {{- end }}
-        <h2 id="{{ $cat | urlize }}">{{ $cat }}</h2>
+      <details class="recipe-category" id="{{ $cat | urlize }}">
+        <summary>{{ $cat }} <span class="recipe-count">({{ index $counts $cat }})</span></summary>
         <ul class="recipe-list">
           {{- $prev = $cat }}
         {{- end }}
@@ -36,6 +47,7 @@
           </li>
       {{- end }}
         </ul>
+      </details>
     {{- else }}
       <p><em>No recipes have been synced yet. Run <code>/sync-recipes</code>.</em></p>
     {{- end }}
@@ -43,8 +55,27 @@
 </article>
 
 <style>
-  .recipe-list { list-style: none; padding: 0; }
-  .recipe-item { margin: 0.9em 0; padding-bottom: 0.6em; border-bottom: 1px solid var(--border, #eee); }
+  .recipe-category { margin: 0.75em 0; border-bottom: 1px solid var(--border, #eee); padding-bottom: 0.5em; }
+  .recipe-category > summary {
+    font-size: 1.4em;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.4em 0;
+    list-style: none;
+  }
+  .recipe-category > summary::-webkit-details-marker { display: none; }
+  .recipe-category > summary::before {
+    content: "▸";
+    display: inline-block;
+    width: 1em;
+    color: var(--secondary, #888);
+    transition: transform 0.15s ease;
+  }
+  .recipe-category[open] > summary::before { transform: rotate(90deg); }
+  .recipe-count { color: var(--secondary, #888); font-size: 0.75em; font-weight: 400; margin-left: 0.3em; }
+  .recipe-list { list-style: none; padding: 0 0 0 1.4em; margin-top: 0.4em; }
+  .recipe-item { margin: 0.7em 0; padding-bottom: 0.5em; border-bottom: 1px solid var(--border, #eee); }
+  .recipe-item:last-child { border-bottom: none; }
   .recipe-item a { text-decoration: none; }
   .recipe-added { color: var(--secondary, #888); font-size: 0.85em; margin-left: 0.4em; }
   .recipe-description { color: var(--secondary, #666); font-size: 0.92em; margin-top: 0.25em; line-height: 1.4; }
