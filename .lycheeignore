@@ -6,18 +6,19 @@
 ^https?://disqus\.com
 ^https?://giscus\.app
 
-# PaperMod share buttons — Hacker News and Reddit reject unauthenticated GETs
-# (403/503) on their submission endpoints. The links only resolve when a real
-# user clicks and goes through the submission UI.
-^https?://news\.ycombinator\.com/submitlink
+# PaperMod share buttons — Reddit rejects unauthenticated GETs (403/503) on
+# its submission endpoint. The link only resolves when a real user clicks
+# and goes through the submission UI. (HN submitlink was previously here
+# too; removed after the ShareButtons allowlist stopped rendering it.)
 ^https?://(www\.)?reddit\.com/submit
 
-# Instagram profile pages — 429 Too Many Requests from GitHub runner IPs.
-# Local lychee from a personal IP passes; CI does not. Same failure class as
-# LinkedIn's 999, but the 429 status can't be added to --accept without
-# masking real rate-limit errors elsewhere. See
+# Instagram, Facebook profile pages — 429 Too Many Requests / login-wall
+# redirects from GitHub runner IPs. Local lychee from a personal IP passes;
+# CI does not. Same failure class as LinkedIn's 999, but neither status can
+# be added to --accept without masking real errors elsewhere. See
 # .claude/rules/external-link-hygiene.md.
 ^https?://(www\.)?instagram\.com
+^https?://(www\.)?facebook\.com
 
 # Site's own baseURL — DNS points nowhere until the first Fly deploy.
 # Remove once the site is live.

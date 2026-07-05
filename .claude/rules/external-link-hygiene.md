@@ -13,6 +13,7 @@ The following hosts are known to reject `lychee`'s requests. Prefer the alternat
 | University preprint hosts | `https://web.eecs.umich.edu/~author/paper.pdf`, `https://cs.stanford.edu/~author/...` | TLS `UnknownIssuer` — university CA chains drift on GitHub runners | `https://doi.org/...` (DOI proxy) if the paper is published; publisher landing page otherwise |
 | LinkedIn profiles | `https://linkedin.com/in/handle` | 999 (LinkedIn's anti-bot signal) — already accepted via `--accept 999` in `ci.yml`, but flag if that accept list is removed | Keep as-is with the `--accept 999` list; do not add elsewhere |
 | Instagram profiles | `https://www.instagram.com/handle/` | **429 Too Many Requests from GitHub runner IPs.** Local lychee from a personal IP passes; CI fails because runner IPs share Instagram's global rate-limit bucket. `--accept 429` is unsafe elsewhere. | Add `^https?://(www\.)?instagram\.com` to `.lycheeignore` — this is the only viable fix |
+| Facebook profiles | `https://www.facebook.com/handle/` | Login-wall redirect and/or 429 rate-limit from runner IPs. Same failure class as Instagram. | Add `^https?://(www\.)?facebook\.com` to `.lycheeignore` |
 | Login-walled pages | `https://twitter.com/user/status/...` (post-2023), private GitHub gists | Redirects to a login page that returns a different status | Prefer a public archive (`web.archive.org`) or omit |
 
 ## What to do at authoring time
@@ -37,6 +38,7 @@ The following hosts are known to reject `lychee`'s requests. Prefer the alternat
 | `.pdf` URL on a `.edu` host | Look up the DOI; rewrite. Add host to `.lycheeignore` only as backstop |
 | Bare `linkedin.com/in/*` outside `--accept 999` scope | Confirm the accept list is still in `ci.yml` or ignore |
 | `instagram.com/<handle>` in a diff | Ignore in `.lycheeignore` — do not attempt to check |
+| `facebook.com/<handle>` in a diff | Ignore in `.lycheeignore` — do not attempt to check |
 
 ## When this rule fires
 

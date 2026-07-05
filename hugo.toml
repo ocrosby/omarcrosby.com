@@ -93,6 +93,10 @@ buildExpired = false
 
   ShowReadingTime = true
   ShowShareButtons = true
+  # Explicit share-button allowlist. Omitting this key renders PaperMod's full
+  # default set (adds whatsapp, telegram, ycombinator) — do not remove the key
+  # without intent.
+  ShareButtons = ["x", "linkedin", "reddit", "facebook"]
   ShowPostNavLinks = true
   ShowBreadCrumbs = true
   ShowCodeCopyButtons = true
@@ -156,6 +160,10 @@ buildExpired = false
 [[params.socialIcons]]
   name = "instagram"
   url = "https://www.instagram.com/omar.crosby/"
+
+[[params.socialIcons]]
+  name = "facebook"
+  url = "https://www.facebook.com/omar.crosby/"
 
 [[params.socialIcons]]
   name = "email"
