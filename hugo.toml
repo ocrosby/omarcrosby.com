@@ -87,6 +87,11 @@ buildExpired = false
   description = "Software engineer building sports-data infrastructure, distributed systems, Neovim developer tooling, and code-quality analyzers."
   keywords = ["blog", "software", "engineering", "sports data", "hugo"]
   author = "Omar Crosby"
+  # Site-wide Open Graph / Twitter preview image (1200x630). Consumed by
+  # Hugo's _internal/opengraph.html and _internal/twitter_cards.html via
+  # site.Params.images; setting this both emits og:image on every page and
+  # promotes twitter:card to summary_large_image.
+  images = ["images/og.png"]
   # Default to dark; the toggle in the header lets visitors switch to light.
   defaultTheme = "dark"
   disableThemeToggle = false
