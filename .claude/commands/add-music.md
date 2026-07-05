@@ -70,10 +70,10 @@ Rules:
 - Strip trailing `(From "<something>" Soundtrack)` and `(as featured in <film/show>)` — media-attribution metadata, same intent as `(Official Music Video)`. Both may appear alongside a video-role suffix (e.g. `(Official Video) (as featured in Anyone But You)`); strip repeatedly until no known trailing suffix matches.
 - Strip a redundant trailing `ft. <name>` if `<name>` is already present in the parsed artist (typical for YouTube titles that list collab artists both comma-separated in the artist AND ft.-suffixed in the title). Keep `ft.` when the featured artist is *not* in the artist field.
 - Keep parenthetical **subtitles** that are part of the canonical song name — `(This Time for Africa)`, `(Who Loves Me)`, `(Human Nature Radio Mix)`, `(feat. Joey Bada$$)` — these are content, not metadata. When the same parenthetical contains BOTH a real subtitle and metadata (e.g. `(Human Nature Radio Mix - Official Video)`), keep the subtitle and strip the metadata.
-- **`author_name` strip list**: strip trailing `VEVO` and trailing ` - Topic` (YouTube's auto-generated-topic-channel convention). Same intent.
+- **`author_name` strip list**: strip trailing `VEVO` and trailing " - Topic" (with the leading space; YouTube's auto-generated-topic-channel convention). Same intent.
 - Comma-separated collab artists (`Artist A, Artist B`) and ampersand collabs (`Artist A & Artist B`) are kept verbatim as the artist — do not split.
 - **If no split character exists at all** (e.g. pipe-separated `SONG | SHOW | CHANNEL` shape, or a single-token title that is NOT from a Topic channel): **do not blindly use the whole title.** This is one of the cases that triggers the parse-safety gate in step 5.
-- **Topic channels are unambiguous, not a fallback.** When `author_name` ends in ` - Topic`, YouTube's auto-generated-topic-channel convention is: channel name (with ` - Topic` stripped) is the artist, video title is the song. Parse cleanly as artist = stripped author, title = raw title. Do not trigger the parse-safety gate for these.
+- **Topic channels are unambiguous, not a fallback.** When `author_name` ends in " - Topic", YouTube's auto-generated-topic-channel convention is: channel name (with " - Topic" stripped) is the artist, video title is the song. Parse cleanly as artist = stripped author, title = raw title. Do not trigger the parse-safety gate for these.
 
 ### 5. Parse-safety gate — only fires on ambiguous parses
 
