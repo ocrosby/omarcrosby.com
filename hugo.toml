@@ -150,6 +150,10 @@ buildExpired = false
   url = "https://www.linkedin.com/in/omarcrosby/"
 
 [[params.socialIcons]]
+  name = "x"
+  url = "https://x.com/crosbyomar"
+
+[[params.socialIcons]]
   name = "email"
   url = "mailto:omar.crosby@gmail.com"
 
