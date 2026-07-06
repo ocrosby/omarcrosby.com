@@ -7,20 +7,20 @@
 {{- /*
   Two different query strings for two different situations:
 
-  - $initialQuery includes mute=1. It is used for the very first render
-    of the page — the viewer has not interacted yet, so browsers only
-    allow autoplay when the video is muted.
+  - $initialQuery — used for the very first render of the page. Does NOT
+    include autoplay. The viewer sees the video paused under a
+    "Play with sound" button overlay; clicking the button is the user
+    gesture that lets browsers authorize both playback and audio.
 
-  - $interactiveQuery drops mute=1. It is used by the JS click-swap:
-    the click itself is the user gesture that browsers accept as
-    authorization for sound, so we can autoplay unmuted on swap.
+  - $interactiveQuery — used by the JS iframe.src fallback path in swap().
+    Includes autoplay=1 because that path only fires after a click, so
+    the browser has a gesture context and unmuted playback is allowed.
 
-  Both queries also disable captions (cc_load_policy=0) and video
-  annotations (iv_load_policy=3).
+  Both queries disable captions (cc_load_policy=0) and video annotations
+  (iv_load_policy=3). enablejsapi=1 is required so the IFrame Player API
+  below can attach to the featured iframe.
 */ -}}
-{{- /* enablejsapi=1 is required so the YouTube IFrame Player API below can
-       attach to the featured iframe. */ -}}
-{{- $initialQuery := "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
+{{- $initialQuery := "playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
 {{- $interactiveQuery := "autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
 <article class="post-single music-page">
   <header class="post-header">
@@ -42,8 +42,9 @@
   <section class="music-featured" aria-label="Now playing">
     <div class="music-embed">
       {{- /*
-        mute=1 keeps autoplay working across all browsers/devices.
-        Viewer unmutes with one tap on the mute icon.
+        No autoplay in $initialQuery — the "Play with sound" button below
+        starts playback on click, satisfying the browser's autoplay gesture
+        requirement so sound plays from the first second.
         cc_load_policy=0 disables auto-loading of captions/subtitles.
         iv_load_policy=3 disables video annotations.
       */ -}}
@@ -56,9 +57,14 @@
         allowfullscreen
         referrerpolicy="strict-origin-when-cross-origin">
       </iframe>
+      <button type="button" class="music-play-with-sound" aria-label="Play the video with sound">
+        <span class="music-play-icon" aria-hidden="true">▶</span>
+        <span class="music-play-label">Play with sound</span>
+      </button>
     </div>
     <div class="music-featured-meta"
-         data-embed-query="{{ $interactiveQuery }}">
+         data-embed-query="{{ $interactiveQuery }}"
+         data-initial-query="{{ $initialQuery }}">
       <div class="music-nowplaying">Now playing</div>
       <h2 class="music-featured-title">{{ $featured.title }}</h2>
       <div class="music-featured-artist">{{ $featured.artist }}</div>
@@ -135,6 +141,10 @@
       // Fallback URL query for the iframe.src reload path — used only if
       // the IFrame Player API fails to load (network error, ad-blocker, etc.).
       var fallbackQuery = meta.dataset.embedQuery || 'autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1';
+      // Initial (no-autoplay) query — used by the deep-link iframe.src rewrite
+      // so the target video loads paused under the "Play with sound" overlay,
+      // same UX as the server-rendered items[0] embed.
+      var initialQuery = meta.dataset.initialQuery || 'playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1';
 
       // The full playlist, in DOM order (which matches data/music.yaml — newest first).
       var items = Array.prototype.slice.call(document.querySelectorAll('.music-item'));
@@ -161,24 +171,18 @@
       // (song rolled off, typo), fall through silently — the page still opens
       // on the newest item.
       //
-      // Rewrite the iframe.src to point at the requested video before the
-      // YouTube IFrame API wraps it. That way playback comes for free from the
-      // URL query — the *only* mechanism that reliably autoplays without a
-      // user gesture. loadVideoById() on an already-wrapped player was flaky
-      // across browsers (the previous attempts in PR #40 and PR #41 shipped
-      // fine but didn't actually play the target video on load).
-      //
-      // The muted+autoplay query mirrors the server-rendered initial iframe;
-      // the viewer taps the mute icon once to unmute, same as fresh /music/.
+      // Rewrite iframe.src to point at the requested video before the YouTube
+      // IFrame API wraps it, using the initial (no-autoplay) query so the
+      // video sits paused under the "Play with sound" overlay — same UX as
+      // the server-rendered items[0] embed.
       try {
         var requestedId = new URLSearchParams(window.location.search).get('v');
         if (requestedId) {
           for (var j = 0; j < items.length; j++) {
             if (items[j].dataset.youtubeId === requestedId) {
               if (j !== 0) {
-                var mutedAutoplayQuery = fallbackQuery + '&mute=1';
                 iframe.src = 'https://www.youtube-nocookie.com/embed/'
-                           + requestedId + '?' + mutedAutoplayQuery;
+                           + requestedId + '?' + initialQuery;
                 iframe.title = (items[j].dataset.title || '')
                              + (items[j].dataset.artist ? ' — ' + items[j].dataset.artist : '');
                 updateMeta(items[j]);
@@ -197,6 +201,27 @@
       } catch (e) { /* URLSearchParams unavailable on very old browsers */ }
 
       var player = null;
+      // Tracks whether the viewer has clicked "Play with sound". If they click
+      // before the YouTube API finishes loading, the request is deferred to
+      // onReady below.
+      var pendingPlay = false;
+
+      // Wire the "Play with sound" overlay — user click satisfies the browser
+      // autoplay gesture requirement, so the video plays *with sound* from
+      // the first second. Hide the button after the click so the video is
+      // unobstructed.
+      var playBtn = featured.querySelector('.music-play-with-sound');
+      if (playBtn) {
+        playBtn.addEventListener('click', function () {
+          playBtn.classList.add('is-hidden');
+          if (player && typeof player.playVideo === 'function') {
+            try { player.unMute(); } catch (e) {}
+            try { player.playVideo(); } catch (e) {}
+          } else {
+            pendingPlay = true;
+          }
+        });
+      }
 
       // Inject the YouTube IFrame API script.
       var apiTag = document.createElement('script');
@@ -224,6 +249,14 @@
               // Deep-link is handled by the iframe.src rewrite earlier in the
               // script — the YouTube API wraps whatever video the iframe is
               // currently pointing at, so no runtime video swap is needed here.
+
+              // If the viewer clicked "Play with sound" before the API loaded,
+              // fulfill the deferred request now that the player is ready.
+              if (pendingPlay) {
+                pendingPlay = false;
+                try { event.target.unMute(); } catch (e) {}
+                try { event.target.playVideo(); } catch (e) {}
+              }
             },
             onStateChange: function (event) {
               // Every state transition is another chance for captions to have
