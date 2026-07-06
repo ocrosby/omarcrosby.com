@@ -14,6 +14,7 @@ The following hosts are known to reject `lychee`'s requests. Prefer the alternat
 | LinkedIn profiles | `https://linkedin.com/in/handle` | 999 (LinkedIn's anti-bot signal) — already accepted via `--accept 999` in `ci.yml`, but flag if that accept list is removed | Keep as-is with the `--accept 999` list; do not add elsewhere |
 | Instagram profiles | `https://www.instagram.com/handle/` | **429 Too Many Requests from GitHub runner IPs.** Local lychee from a personal IP passes; CI fails because runner IPs share Instagram's global rate-limit bucket. `--accept 429` is unsafe elsewhere. | Add `^https?://(www\.)?instagram\.com` to `.lycheeignore` — this is the only viable fix |
 | Facebook profiles | `https://www.facebook.com/handle/` | Login-wall redirect and/or 429 rate-limit from runner IPs. Same failure class as Instagram. | Add `^https?://(www\.)?facebook\.com` to `.lycheeignore` |
+| Unsplash landing page | `https://unsplash.com/` | **401 Unauthorized to non-browser user agents.** Marketing/homepage URL blocks lychee's default UA outright; `--accept 401` would mask real auth failures elsewhere. Individual photo pages (`unsplash.com/photos/<id>`) and `images.unsplash.com` CDN URLs are not affected. | Add `^https?://(www\.)?unsplash\.com` to `.lycheeignore` — the only viable fix |
 | Login-walled pages | `https://twitter.com/user/status/...` (post-2023), private GitHub gists | Redirects to a login page that returns a different status | Prefer a public archive (`web.archive.org`) or omit |
 
 ## What to do at authoring time
@@ -39,6 +40,7 @@ The following hosts are known to reject `lychee`'s requests. Prefer the alternat
 | Bare `linkedin.com/in/*` outside `--accept 999` scope | Confirm the accept list is still in `ci.yml` or ignore |
 | `instagram.com/<handle>` in a diff | Ignore in `.lycheeignore` — do not attempt to check |
 | `facebook.com/<handle>` in a diff | Ignore in `.lycheeignore` — do not attempt to check |
+| Bare `unsplash.com/` in a diff (photo credit link, etc.) | Ignore in `.lycheeignore` — 401 to bot UAs |
 
 ## When this rule fires
 
