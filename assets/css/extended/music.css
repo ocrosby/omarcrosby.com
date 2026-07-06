@@ -112,6 +112,16 @@
   background: var(--tertiary);
 }
 
+/* Currently-playing marker — a colored rail on the left plus a subtle
+   backdrop tint so the highlight is distinguishable from :hover (which
+   uses the same background). Applied by the swap() handler in music.html
+   whenever the featured player switches videos, including auto-advance. */
+.music-item.is-playing {
+  background: var(--tertiary);
+  box-shadow: inset 4px 0 0 var(--primary);
+  padding-left: 0.85rem;
+}
+
 .music-item:last-child {
   border-bottom: none;
 }
