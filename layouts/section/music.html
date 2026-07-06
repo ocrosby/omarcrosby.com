@@ -160,14 +160,36 @@
       // of items[0]. If the id doesn't match anything in the current playlist
       // (song rolled off, typo), fall through silently — the page still opens
       // on the newest item.
-      var deepLinkTarget = null;
+      //
+      // Rewrite the iframe.src to point at the requested video before the
+      // YouTube IFrame API wraps it. That way playback comes for free from the
+      // URL query — the *only* mechanism that reliably autoplays without a
+      // user gesture. loadVideoById() on an already-wrapped player was flaky
+      // across browsers (the previous attempts in PR #40 and PR #41 shipped
+      // fine but didn't actually play the target video on load).
+      //
+      // The muted+autoplay query mirrors the server-rendered initial iframe;
+      // the viewer taps the mute icon once to unmute, same as fresh /music/.
       try {
         var requestedId = new URLSearchParams(window.location.search).get('v');
         if (requestedId) {
           for (var j = 0; j < items.length; j++) {
             if (items[j].dataset.youtubeId === requestedId) {
-              // Skip if it's already items[0] — save the redundant swap.
-              if (j !== 0) deepLinkTarget = items[j];
+              if (j !== 0) {
+                var mutedAutoplayQuery = fallbackQuery + '&mute=1';
+                iframe.src = 'https://www.youtube-nocookie.com/embed/'
+                           + requestedId + '?' + mutedAutoplayQuery;
+                iframe.title = (items[j].dataset.title || '')
+                             + (items[j].dataset.artist ? ' — ' + items[j].dataset.artist : '');
+                updateMeta(items[j]);
+                currentIndex = j;
+                setPlayingHighlight(j);
+                try {
+                  var shareUrl = new URL(window.location.href);
+                  shareUrl.searchParams.set('v', requestedId);
+                  window.history.replaceState({}, '', shareUrl.toString());
+                } catch (e) {}
+              }
               break;
             }
           }
@@ -199,28 +221,15 @@
           events: {
             onReady: function (event) {
               killCaptions(event.target);
-              // Deep-link swap is *not* fired here. onReady fires while the
-              // player is still ready-ing — before the initial video actually
-              // transitions into PLAYING. loadVideoById called at that too-early
-              // moment often silently doesn't autoplay the new video. Defer to
-              // the first PLAYING state change in onStateChange below, where
-              // the player is guaranteed to be alive and accepting commands.
+              // Deep-link is handled by the iframe.src rewrite earlier in the
+              // script — the YouTube API wraps whatever video the iframe is
+              // currently pointing at, so no runtime video swap is needed here.
             },
             onStateChange: function (event) {
               // Every state transition is another chance for captions to have
               // slipped back in (new video's metadata loaded, account preference
               // re-applied, etc.). Cheaper to re-unload than to guess when.
               killCaptions(event.target);
-
-              // Deep-link: when the initial (server-rendered) video first
-              // transitions into PLAYING, the player is fully alive. That is
-              // the correct moment to swap in the URL's requested song.
-              // keepMuteState=true: no user gesture yet on fresh page load.
-              if (event.data === YT.PlayerState.PLAYING && deepLinkTarget) {
-                var target = deepLinkTarget;
-                deepLinkTarget = null;
-                swap(target, true);
-              }
 
               // Auto-advance: when the current video ends, play the next item in
               // the list. Wraps back to the top so it behaves as a loop.
