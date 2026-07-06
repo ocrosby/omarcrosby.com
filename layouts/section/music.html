@@ -199,21 +199,28 @@
           events: {
             onReady: function (event) {
               killCaptions(event.target);
-              // If the URL specified ?v=<id> for a different song than items[0],
-              // swap to it now that the Player API is ready. Doing it here (not
-              // synchronously at page load) means loadVideoById is available so
-              // we take the API path — same one auto-advance uses.
-              // keepMuteState=true: no user gesture yet on fresh page load.
-              if (deepLinkTarget) {
-                swap(deepLinkTarget, true);
-                deepLinkTarget = null;
-              }
+              // Deep-link swap is *not* fired here. onReady fires while the
+              // player is still ready-ing — before the initial video actually
+              // transitions into PLAYING. loadVideoById called at that too-early
+              // moment often silently doesn't autoplay the new video. Defer to
+              // the first PLAYING state change in onStateChange below, where
+              // the player is guaranteed to be alive and accepting commands.
             },
             onStateChange: function (event) {
               // Every state transition is another chance for captions to have
               // slipped back in (new video's metadata loaded, account preference
               // re-applied, etc.). Cheaper to re-unload than to guess when.
               killCaptions(event.target);
+
+              // Deep-link: when the initial (server-rendered) video first
+              // transitions into PLAYING, the player is fully alive. That is
+              // the correct moment to swap in the URL's requested song.
+              // keepMuteState=true: no user gesture yet on fresh page load.
+              if (event.data === YT.PlayerState.PLAYING && deepLinkTarget) {
+                var target = deepLinkTarget;
+                deepLinkTarget = null;
+                swap(target, true);
+              }
 
               // Auto-advance: when the current video ends, play the next item in
               // the list. Wraps back to the top so it behaves as a loop.
@@ -271,9 +278,13 @@
           // honor unmuted playback across loads.
           //
           // keepMuteState is set when the transition wasn't user-initiated
-          // (auto-advance on video end). In that case, don't try to unmute
-          // because the browser would block it and we'd just get an error.
-          if (!keepMuteState) {
+          // (auto-advance on video end, deep-link on load). In that case,
+          // explicitly mute *before* loadVideoById — the browser only allows
+          // autoplay on muted media without a user gesture, and the previous
+          // video's mute state doesn't reliably carry across loadVideoById.
+          if (keepMuteState) {
+            try { player.mute(); } catch (e) {}
+          } else {
             try { player.unMute(); } catch (e) {}
           }
           player.loadVideoById({ videoId: id });
