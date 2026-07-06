@@ -59,7 +59,7 @@
       </details>
           {{- end }}
       <details class="recipe-category" id="{{ $cat | urlize }}">
-        <summary>{{ $cat }} <span class="recipe-count">({{ index $counts $cat }})</span></summary>
+        <summary><img class="recipe-icon" src="/images/recipes/{{ $cat | urlize }}.webp" alt="" aria-hidden="true" width="32" height="32" loading="lazy">{{ $cat }} <span class="recipe-count">({{ index $counts $cat }})</span></summary>
         <ul class="recipe-list">
           {{- $prev = $cat }}
         {{- end }}
@@ -75,6 +75,10 @@
       {{- end }}
         </ul>
       </details>
+      <p class="recipe-credits">
+        Category photos from <a href="https://unsplash.com/" rel="noopener external" target="_blank">Unsplash</a>:
+        Sebastian Coman Photography, Tim Toomey, Casey Lee, Stefan Vladimirov, Diego Arenas de Rodrigo, Donald Giannatti, Claudio Schwarz, Hermes Rivera, Sara Julie, and Max Griss.
+      </p>
     {{- else }}
       <p><em>No recipes have been synced yet. Run <code>/sync-recipes</code>.</em></p>
     {{- end }}
@@ -89,6 +93,16 @@
     cursor: pointer;
     padding: 0.4em 0;
     list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  .recipe-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
   }
   .recipe-category > summary::-webkit-details-marker { display: none; }
   .recipe-category > summary::before {
@@ -106,5 +120,6 @@
   .recipe-item a { text-decoration: none; }
   .recipe-added { color: var(--secondary, #888); font-size: 0.85em; margin-left: 0.4em; }
   .recipe-description { color: var(--secondary, #666); font-size: 0.92em; margin-top: 0.25em; line-height: 1.4; }
+  .recipe-credits { color: var(--secondary, #888); font-size: 0.85em; margin-top: 2em; font-style: italic; }
 </style>
 {{- end }}
