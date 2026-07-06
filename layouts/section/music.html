@@ -142,6 +142,20 @@
       // server-rendered iframe features the newest entry.
       var currentIndex = 0;
 
+      // Visual highlight in the history list — mark the currently-playing item so
+      // viewers can see which song they are hearing when they scroll the list.
+      // Initial state matches the server-rendered iframe (items[0]).
+      function setPlayingHighlight(index) {
+        for (var i = 0; i < items.length; i++) {
+          if (i === index) {
+            items[i].classList.add('is-playing');
+          } else {
+            items[i].classList.remove('is-playing');
+          }
+        }
+      }
+      if (items.length > 0) setPlayingHighlight(0);
+
       var player = null;
 
       // Inject the YouTube IFrame API script.
@@ -210,7 +224,10 @@
 
         // Track which item is now featured so onStateChange knows what comes next.
         var idx = items.indexOf(item);
-        if (idx >= 0) currentIndex = idx;
+        if (idx >= 0) {
+          currentIndex = idx;
+          setPlayingHighlight(idx);
+        }
 
         if (player && typeof player.loadVideoById === 'function') {
           // Player API path — the existing YT.Player instance holds the user
