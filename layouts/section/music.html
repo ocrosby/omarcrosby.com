@@ -156,6 +156,24 @@
       }
       if (items.length > 0) setPlayingHighlight(0);
 
+      // Deep-link: /music/?v=<youtube_id> loads with that song featured instead
+      // of items[0]. If the id doesn't match anything in the current playlist
+      // (song rolled off, typo), fall through silently — the page still opens
+      // on the newest item.
+      var deepLinkTarget = null;
+      try {
+        var requestedId = new URLSearchParams(window.location.search).get('v');
+        if (requestedId) {
+          for (var j = 0; j < items.length; j++) {
+            if (items[j].dataset.youtubeId === requestedId) {
+              // Skip if it's already items[0] — save the redundant swap.
+              if (j !== 0) deepLinkTarget = items[j];
+              break;
+            }
+          }
+        }
+      } catch (e) { /* URLSearchParams unavailable on very old browsers */ }
+
       var player = null;
 
       // Inject the YouTube IFrame API script.
@@ -181,6 +199,15 @@
           events: {
             onReady: function (event) {
               killCaptions(event.target);
+              // If the URL specified ?v=<id> for a different song than items[0],
+              // swap to it now that the Player API is ready. Doing it here (not
+              // synchronously at page load) means loadVideoById is available so
+              // we take the API path — same one auto-advance uses.
+              // keepMuteState=true: no user gesture yet on fresh page load.
+              if (deepLinkTarget) {
+                swap(deepLinkTarget, true);
+                deepLinkTarget = null;
+              }
             },
             onStateChange: function (event) {
               // Every state transition is another chance for captions to have
@@ -228,6 +255,15 @@
           currentIndex = idx;
           setPlayingHighlight(idx);
         }
+
+        // Reflect the current song in the URL so the address bar is always a
+        // shareable "play this song" link. Use replaceState (not pushState) so
+        // clicking through the list doesn't stack back-button history entries.
+        try {
+          var shareUrl = new URL(window.location.href);
+          shareUrl.searchParams.set('v', id);
+          window.history.replaceState({}, '', shareUrl.toString());
+        } catch (e) { /* URL API unavailable — silent fallback */ }
 
         if (player && typeof player.loadVideoById === 'function') {
           // Player API path — the existing YT.Player instance holds the user
