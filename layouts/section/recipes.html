@@ -12,11 +12,12 @@
 
     {{- $recipes := (index hugo.Data "recipes" "recipes") }}
     {{- if $recipes }}
-      {{- /* Category remap. The recipes repo uses one directory per raw
-             category, but several of those directories are sub-types of a
-             larger protein/type. Collapse them at display time so users
-             see fewer, meaningful buckets. Any raw category not listed
-             here passes through unchanged. */ -}}
+      {{- /* Category remap. Kept in sync with layouts/recipes/single.html —
+             the raw categories in the recipes repo (Bacon, Crockpot, Steak,
+             etc.) are collapsed into a smaller set of effective categories
+             so both the card grid here and the per-category detail pages
+             count/filter the same way. Any raw category not listed here
+             passes through unchanged. */ -}}
       {{- $remap := dict
           "Bacon"        "Pork"
           "Crockpot"     "Beef"
@@ -30,51 +31,32 @@
           "Sinigang"     "Soups"
           "Deviled Eggs" "Appetizers"
       }}
-      {{- /* Apply the remap to every recipe. Re-sort by (new_category,
-             title) so the single-pass grouping below sees all recipes
-             for a given effective category contiguously. Hugo's `sort`
-             is stable, so a two-step sort (title, then category)
-             yields correct nested order. */ -}}
-      {{- $remapped := slice }}
+      {{- /* Single pass over the recipe list: bucket each recipe into its
+             effective category and increment the count. */ -}}
+      {{- $counts := dict }}
       {{- range $recipes }}
         {{- $rawCat := .category | default "General" }}
         {{- $newCat := index $remap $rawCat | default $rawCat }}
-        {{- $remapped = $remapped | append (merge . (dict "category" $newCat)) }}
+        {{- $counts = merge $counts (dict $newCat (add (default 0 (index $counts $newCat)) 1)) }}
       {{- end }}
-      {{- $sorted := sort (sort $remapped "title") "category" }}
-      {{- /* Pre-count for the summary "(N)" label. */ -}}
-      {{- $counts := dict }}
-      {{- range $sorted }}
-        {{- $counts = merge $counts (dict .category (add (default 0 (index $counts .category)) 1)) }}
+      {{- /* Materialize the counts map as a slice of {name, count} so we
+             can sort by name (map iteration order is not stable in Hugo). */ -}}
+      {{- $categories := slice }}
+      {{- range $cat, $count := $counts }}
+        {{- $categories = $categories | append (dict "name" $cat "count" $count) }}
       {{- end }}
-      {{- /* Render each effective category as a collapsible details block.
-             id lives on the details element so /recipes/#pork continues
-             to scroll to the right section after the remap. */ -}}
-      {{- $prev := "" }}
-      {{- range $sorted }}
-        {{- $cat := .category }}
-        {{- if ne $cat $prev }}
-          {{- if ne $prev "" }}
-        </ul>
-      </details>
-          {{- end }}
-      <details class="recipe-category" id="{{ $cat | urlize }}">
-        <summary><img class="recipe-icon" src="/images/recipes/{{ $cat | urlize }}.webp" alt="" aria-hidden="true" width="32" height="32" loading="lazy">{{ $cat }} <span class="recipe-count">({{ index $counts $cat }})</span></summary>
-        <ul class="recipe-list">
-          {{- $prev = $cat }}
+      {{- $sorted := sort $categories "name" }}
+      <div class="recipe-cards">
+        {{- range $sorted }}
+        <a class="recipe-card" href="/recipes/{{ .name | urlize }}/">
+          <img class="recipe-card-image" src="/images/recipes/{{ .name | urlize }}.webp" alt="" aria-hidden="true" width="200" height="200" loading="lazy">
+          <div class="recipe-card-body">
+            <div class="recipe-card-title">{{ .name }}</div>
+            <div class="recipe-card-count">{{ .count }} recipe{{ if ne .count 1 }}s{{ end }}</div>
+          </div>
+        </a>
         {{- end }}
-          <li class="recipe-item">
-            <a href="{{ .url }}" rel="noopener external" target="_blank"><strong>{{ .title }}</strong></a>
-            {{- if .added }}
-            <span class="recipe-added" title="Date added to the recipes repo">· {{ .added }}</span>
-            {{- end }}
-            {{- if .description }}
-            <div class="recipe-description">{{ .description }}</div>
-            {{- end }}
-          </li>
-      {{- end }}
-        </ul>
-      </details>
+      </div>
       <p class="recipe-credits">
         Category photos from <a href="https://unsplash.com/" rel="noopener external" target="_blank">Unsplash</a>:
         Sebastian Coman Photography, Tim Toomey, Casey Lee, Stefan Vladimirov, Diego Arenas de Rodrigo, Donald Giannatti, Claudio Schwarz, Hermes Rivera, Sara Julie, and Max Griss.
@@ -86,40 +68,35 @@
 </article>
 
 <style>
-  .recipe-category { margin: 0.75em 0; border-bottom: 1px solid var(--border, #eee); padding-bottom: 0.5em; }
-  .recipe-category > summary {
-    font-size: 1.4em;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0.4em 0;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
+  .recipe-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1em;
+    margin-top: 1em;
   }
-  .recipe-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
+  .recipe-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--border, #eee);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .recipe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .recipe-card-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
-    flex-shrink: 0;
   }
-  .recipe-category > summary::-webkit-details-marker { display: none; }
-  .recipe-category > summary::before {
-    content: "▸";
-    display: inline-block;
-    width: 1em;
-    color: var(--secondary, #888);
-    transition: transform 0.15s ease;
-  }
-  .recipe-category[open] > summary::before { transform: rotate(90deg); }
-  .recipe-count { color: var(--secondary, #888); font-size: 0.75em; font-weight: 400; margin-left: 0.3em; }
-  .recipe-list { list-style: none; padding: 0 0 0 1.4em; margin-top: 0.4em; }
-  .recipe-item { margin: 0.7em 0; padding-bottom: 0.5em; border-bottom: 1px solid var(--border, #eee); }
-  .recipe-item:last-child { border-bottom: none; }
-  .recipe-item a { text-decoration: none; }
-  .recipe-added { color: var(--secondary, #888); font-size: 0.85em; margin-left: 0.4em; }
-  .recipe-description { color: var(--secondary, #666); font-size: 0.92em; margin-top: 0.25em; line-height: 1.4; }
+  .recipe-card-body { padding: 0.7em 0.85em 0.85em; }
+  .recipe-card-title { font-size: 1.1em; font-weight: 600; }
+  .recipe-card-count { color: var(--secondary, #888); font-size: 0.85em; margin-top: 0.15em; }
   .recipe-credits { color: var(--secondary, #888); font-size: 0.85em; margin-top: 2em; font-style: italic; }
 </style>
 {{- end }}
