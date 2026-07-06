@@ -137,19 +137,30 @@ Read `data/music.yaml`. Build the new entry with these fields, in this order:
 
 **Then shuffle every entry below the new one.** This prevents session clumps: without a shuffle, several songs added in one sitting sit next to each other in the file, and (since the music layout renders file order) show up as a clump on the page. The freshest add stays fixed at the top; everything else is randomized in place. The `added` timestamp field is preserved verbatim — it's factual metadata about when the entry entered the playlist, not a sort key.
 
-Use this one-shot Python (stdlib only), run from the repo root:
+**Step 7a — Prepend the new entry.** Stdlib-only Python from the repo root:
 
 ```bash
-python3 - <<'PY'
-import pathlib, random, re
+python3 - <<PY
+import pathlib
+new_entry = '''- youtube_id: "<id>"
+  title: "<title>"
+  artist: "<artist>"
+  album: "<album or empty string>"
+  added: <ISO 8601 timestamp>
+  note: "<note or empty string>"
+'''
 path = pathlib.Path("data/music.yaml")
-text = path.read_text()
-entries = [e for e in re.split(r"(?m)^(?=- youtube_id:)", text) if e.strip()]
-head, rest = entries[0], entries[1:]
-random.shuffle(rest)
-path.write_text(head + "".join(rest))
+path.write_text(new_entry + path.read_text())
 PY
 ```
+
+**Step 7b — Shuffle entries 1..N.**
+
+```bash
+python3 scripts/shuffle-music.py
+```
+
+The script keeps the fresh add pinned at position 0 (the "now playing" slot) and randomizes entries 1..N in place. Shared with `/randomize-music`; see `scripts/shuffle-music.py` for the reference implementation.
 
 **Batch behavior.** In queue-and-batch mode, prepend each queued entry in order (last-queued ends up at position 0), then shuffle **once** at the end — not after every prepend. That way the final on-disk state has the freshest add on top with everything else randomized; intermediate shuffles would just be thrown away by the next prepend.
 
