@@ -265,12 +265,12 @@
               killCaptions(event.target);
 
               // Auto-advance: when the current video ends, play the next item in
-              // the list. Wraps back to the top so it behaves as a loop.
-              // keepMuteState=true so a muted first-visit doesn't try to unmute
-              // on auto-advance (which the browser would block anyway).
+              // the list. Wraps back to the top so it behaves as a loop. The
+              // viewer's earlier click on the "Play with sound" overlay is the
+              // gesture context that carries — the next video plays with sound.
               if (event.data === YT.PlayerState.ENDED && items.length > 0) {
                 var nextIndex = (currentIndex + 1) % items.length;
-                swap(items[nextIndex], true);
+                swap(items[nextIndex]);
               }
             }
           }
@@ -293,7 +293,7 @@
         }
       }
 
-      function swap(item, keepMuteState) {
+      function swap(item) {
         var id = item.dataset.youtubeId;
         if (!id) return;
         updateMeta(item);
@@ -316,25 +316,20 @@
 
         if (player && typeof player.loadVideoById === 'function') {
           // Player API path — the existing YT.Player instance holds the user
-          // gesture context, so cross-origin browsers (iOS Safari especially)
-          // honor unmuted playback across loads.
-          //
-          // keepMuteState is set when the transition wasn't user-initiated
-          // (auto-advance on video end, deep-link on load). In that case,
-          // explicitly mute *before* loadVideoById — the browser only allows
-          // autoplay on muted media without a user gesture, and the previous
-          // video's mute state doesn't reliably carry across loadVideoById.
-          if (keepMuteState) {
-            try { player.mute(); } catch (e) {}
-          } else {
-            try { player.unMute(); } catch (e) {}
-          }
+          // gesture context established by the "Play with sound" overlay click,
+          // so unmuted playback carries across every load (user click, auto-
+          // advance, and deep-link routes all end here). Explicitly unMute
+          // because loadVideoById doesn't reliably inherit the previous
+          // video's mute state on some browsers.
+          try { player.unMute(); } catch (e) {}
           player.loadVideoById({ videoId: id });
           // onStateChange re-kills captions on every transition, so no extra
           // timer is needed here.
         } else {
-          // Fallback — iframe.src reload. Works, but may not carry the user
-          // gesture on strict browsers, so playback may land muted.
+          // Fallback — iframe.src reload. Only reached if the Player API
+          // failed to load (network error, ad-blocker). fallbackQuery carries
+          // autoplay=1; the user's click is a fresh gesture so unmuted
+          // playback is allowed.
           iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?' + fallbackQuery;
           iframe.title = (item.dataset.title || '') + (item.dataset.artist ? ' — ' + item.dataset.artist : '');
         }
