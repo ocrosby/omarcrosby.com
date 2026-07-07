@@ -10,6 +10,10 @@ resources/_gen/
 # Node / tooling
 node_modules/
 
+# Python — sync-recipes.py bytecode / test cache
+__pycache__/
+*.pyc
+
 # Session-local checklist (see ~/.claude/CLAUDE.md)
 TODO.md
 
