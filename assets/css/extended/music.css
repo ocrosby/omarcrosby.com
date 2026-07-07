@@ -112,6 +112,79 @@
   display: none;
 }
 
+/* Genre link — clicking it selects that genre in the history filter (see the
+   click handler in music.html), so it doubles as a "more like this" cue. */
+.music-featured-genre {
+  font-size: 0.85rem;
+}
+
+.music-genre-link {
+  color: var(--secondary);
+  border-bottom: 1px dotted var(--border);
+}
+
+.music-genre-link:hover,
+.music-genre-link:focus-visible {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* Transport controls — previous / replay / next / shuffle. 44px minimum
+   target size on every axis meets the touch-target guideline so these are
+   easy to hit on mobile as well as with a mouse. */
+.music-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.music-control {
+  font-family: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme);
+  color: var(--content);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.music-control:hover,
+.music-control:focus-visible {
+  background: var(--tertiary);
+  border-color: var(--primary);
+}
+
+.music-control:active {
+  background: var(--tertiary);
+}
+
+.music-control:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.music-control-shuffle {
+  font-size: 1.05rem;
+  margin-left: 0.25rem;
+}
+
+/* Shuffle is a persistent mode, not a momentary action — the pressed
+   state needs to stay visible after the click, not just on :hover. */
+.music-control-shuffle[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--theme);
+  border-color: var(--primary);
+}
+
 /* History list */
 
 .music-history {
