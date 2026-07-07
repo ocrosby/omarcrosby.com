@@ -35,6 +35,12 @@ Every file under `content/` must have title, date, and draft fields. See `.claud
 - **Non-release** commit types: `docs`, `chore`, `style`, `refactor`, `test`, `build`, `ci`, `perf`. Merged, but the release workflow no-ops.
 - One PR = one `type(scope)` pair — global rule applies.
 
+## Pre-Flight Before `/git ship`
+
+This repo has no `package.json`/`go.mod`/`uv.lock` — so `/git ship`'s generic pre-flight table (in `~/.claude/skills/git/`) finds nothing to run and silently skips straight to commit/push. That leaves this repo's actual CI gates (Hugo build, lychee broken-link check, markdownlint, typos) unchecked until the PR is already open. **Run `/verify` before pushing any PR from this repo** — do not rely on `/git ship`'s pre-flight table to catch Hugo/Markdown/link/typo issues, it doesn't know about them.
+
+If checks fail on an already-open PR, don't assume the diff caused it: `markdownlint` and `typos` scan the **entire repo tree**, not just the diff, so a failure can be pre-existing debt on `main` that every open PR inherits. Confirm with `git diff main..<branch> --stat` — if the failing file isn't in that diff, it's pre-existing. Fix it in its own `fix(ci)` PR rather than folding it into the unrelated change, then rebase.
+
 ## Local Development
 
 ```bash
