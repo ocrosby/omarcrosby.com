@@ -74,6 +74,25 @@
            title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" $featured.added }}">
         Added {{ dateFormat "Jan 2, 2006 · 3:04 PM" $featured.added }}
       </div>
+      <div class="music-featured-genre"{{ if not $featured.genre }} hidden{{ end }}>
+        <a href="{{ with $featured.genre }}?genre={{ urlquery . }}{{ end }}"
+           class="music-genre-link"
+           data-genre="{{ with $featured.genre }}{{ . }}{{ end }}">{{ with $featured.genre }}{{ . }}{{ end }}</a>
+      </div>
+      <div class="music-controls" role="group" aria-label="Playback controls">
+        <button type="button" class="music-control music-control-prev" aria-label="Previous song">
+          <span aria-hidden="true">⏮</span>
+        </button>
+        <button type="button" class="music-control music-control-replay" aria-label="Replay current song">
+          <span aria-hidden="true">⟲</span>
+        </button>
+        <button type="button" class="music-control music-control-next" aria-label="Next song">
+          <span aria-hidden="true">⏭</span>
+        </button>
+        <button type="button" class="music-control music-control-shuffle" aria-label="Shuffle playback" aria-pressed="false">
+          <span aria-hidden="true">🔀</span>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -175,6 +194,8 @@
       var extraEl = featured.querySelector('.music-featured-extra');
       var noteEl = featured.querySelector('.music-featured-note');
       var addedEl = featured.querySelector('.music-featured-added');
+      var genreWrapEl = featured.querySelector('.music-featured-genre');
+      var genreLinkEl = featured.querySelector('.music-genre-link');
       if (!iframe || !meta) return;
 
       // Fallback URL query for the iframe.src reload path — used only if
@@ -201,16 +222,94 @@
       var clearBtn = document.querySelector('.music-filter-clear');
       var filterSelects = Array.prototype.slice.call(document.querySelectorAll('.music-filter'));
 
+      // Transport controls — previous / replay / next / shuffle. Declared
+      // here (ahead of the initial applyFilter() call below) so their
+      // disabled state is correct from the very first render, including a
+      // deep-linked filter that starts out matching nothing.
+      var prevBtn = document.querySelector('.music-control-prev');
+      var nextBtn = document.querySelector('.music-control-next');
+      var replayBtn = document.querySelector('.music-control-replay');
+      var shuffleBtn = document.querySelector('.music-control-shuffle');
+
+      // Shuffle is a persistent mode (like Spotify), not a one-off action.
+      // shuffleOrder holds a randomized permutation of the *matching* item
+      // indices; shufflePos is where currentIndex sits within that order.
+      // Both are rebuilt whenever shuffle turns on or the active filter
+      // changes while shuffle is already on — see regenerateShuffleOrder().
+      var shuffleOn = false;
+      var shuffleOrder = [];
+      var shufflePos = -1;
+
       function matchesFilter(item) {
         if (currentArtist && item.dataset.artist !== currentArtist) return false;
         if (currentGenre && item.dataset.genre !== currentGenre) return false;
         return true;
       }
 
+      // Positive-result modulo — JS's native % can return negative values
+      // for a negative dividend, which breaks wraparound on Previous/shuffle
+      // stepping backward past index 0.
+      function mod(n, m) {
+        return ((n % m) + m) % m;
+      }
+
+      function shuffleArray(arr) {
+        for (var i = arr.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = tmp;
+        }
+        return arr;
+      }
+
+      // Rebuilds the shuffled play order from the currently-matching items
+      // and repositions shufflePos at currentIndex (or -1 if the featured
+      // item doesn't match the active filter — the next shuffle step then
+      // starts cleanly at the beginning of the new order).
+      function regenerateShuffleOrder() {
+        var matching = [];
+        for (var i = 0; i < items.length; i++) {
+          if (matchesFilter(items[i])) matching.push(i);
+        }
+        shuffleOrder = shuffleArray(matching);
+        shufflePos = shuffleOrder.indexOf(currentIndex);
+      }
+
+      // Normal-order stepping — scans from currentIndex in `direction`,
+      // wrapping around the full list, and returns the first item matching
+      // the active filter. O(n) worst case; n is a personal music list
+      // (dozens to low hundreds), same bound the prior auto-advance loop
+      // already relied on.
+      function stepItem(direction) {
+        for (var step = 1; step <= items.length; step++) {
+          var idx = mod(currentIndex + direction * step, items.length);
+          if (matchesFilter(items[idx])) return items[idx];
+        }
+        return null;
+      }
+
+      // Shuffle-order stepping — walks shuffleOrder instead of DOM order.
+      function shuffleStep(direction) {
+        if (!shuffleOrder.length) regenerateShuffleOrder();
+        if (!shuffleOrder.length) return null;
+        shufflePos = mod(shufflePos + direction, shuffleOrder.length);
+        return items[shuffleOrder[shufflePos]];
+      }
+
+      function nextItem() {
+        return shuffleOn ? shuffleStep(1) : stepItem(1);
+      }
+
+      function prevItem() {
+        return shuffleOn ? shuffleStep(-1) : stepItem(-1);
+      }
+
       // Hide items that don't match — including the currently-playing one, so
       // a filter that excludes the featured song hides it from the list too.
-      // Also updates the "no matches" empty-state message and toggles the
-      // Clear button's visibility.
+      // Also updates the "no matches" empty-state message, toggles the Clear
+      // button's visibility, and disables the transport controls when
+      // nothing in the current filter can be played.
       function applyFilter() {
         var visibleCount = 0;
         for (var i = 0; i < items.length; i++) {
@@ -221,6 +320,19 @@
         var filterActive = !!(currentArtist || currentGenre);
         if (clearBtn) clearBtn.hidden = !filterActive;
         if (emptyEl) emptyEl.hidden = !(filterActive && visibleCount === 0);
+        var noMatches = visibleCount === 0;
+        if (prevBtn) prevBtn.disabled = noMatches;
+        if (nextBtn) nextBtn.disabled = noMatches;
+        if (shuffleBtn) shuffleBtn.disabled = noMatches;
+      }
+
+      // Shared by the dropdown change handler and the Clear button: re-render
+      // visibility, keep the shuffle order in sync with the new filter (only
+      // meaningful while shuffle is on), and sync the URL.
+      function onFilterChanged() {
+        applyFilter();
+        if (shuffleOn) regenerateShuffleOrder();
+        syncFilterUrl();
       }
 
       // Reflect filter state in the URL so any filtered view is shareable and
@@ -250,12 +362,14 @@
 
       // Initial filter values from the URL — read once at load, before the
       // deep-link (?v=) handler runs so both filter and target video apply.
+      // Artist and genre are mutually exclusive (see the dropdown handler
+      // below) — an old shared link carrying both prefers genre, since
+      // genre is the primary filter.
       try {
         var params0 = new URLSearchParams(window.location.search);
         var a0 = params0.get('artist');
         var g0 = params0.get('genre');
-        if (a0) { currentArtist = a0; }
-        if (g0) { currentGenre = g0; }
+        if (g0) { currentGenre = g0; } else if (a0) { currentArtist = a0; }
         for (var s = 0; s < filterSelects.length; s++) {
           var sel = filterSelects[s];
           if (sel.dataset.filter === 'artist' && currentArtist) sel.value = currentArtist;
@@ -264,23 +378,54 @@
         applyFilter();
       } catch (e) { /* URLSearchParams unavailable — no initial filter */ }
 
-      // Dropdown handlers — update state, re-render visibility, sync the URL.
+      // Sets one filter dimension and keeps everything else in sync: the
+      // sibling dropdown (artist and genre are mutually exclusive — picking
+      // one clears the other so the two filters never silently combine into
+      // an AND that hides everything), both <select> elements' displayed
+      // value (so a programmatic call, e.g. from the genre link, reflects in
+      // the UI exactly like a manual dropdown pick), and the filtered view.
+      // Shared by the dropdown 'change' handler and the featured genre link.
+      function setFilter(kind, value) {
+        if (kind === 'artist') {
+          currentArtist = value;
+          if (currentArtist) currentGenre = '';
+        } else if (kind === 'genre') {
+          currentGenre = value;
+          if (currentGenre) currentArtist = '';
+        }
+        filterSelects.forEach(function (sel) {
+          if (sel.dataset.filter === 'artist') sel.value = currentArtist;
+          if (sel.dataset.filter === 'genre') sel.value = currentGenre;
+        });
+        onFilterChanged();
+      }
+
+      // Dropdown handlers — delegate to setFilter so manual picks and the
+      // genre link go through identical logic.
       filterSelects.forEach(function (sel) {
         sel.addEventListener('change', function () {
-          if (sel.dataset.filter === 'artist') currentArtist = sel.value;
-          if (sel.dataset.filter === 'genre')  currentGenre  = sel.value;
-          applyFilter();
-          syncFilterUrl();
+          setFilter(sel.dataset.filter, sel.value);
         });
       });
+
+      // Featured genre link — clicking it selects that genre in the history
+      // filter, surfacing similar songs. dataset.genre is kept current by
+      // updateMeta() on every swap, so this always reflects whatever is
+      // actually playing.
+      if (genreLinkEl) {
+        genreLinkEl.addEventListener('click', function (e) {
+          e.preventDefault();
+          var genre = genreLinkEl.dataset.genre;
+          if (genre) setFilter('genre', genre);
+        });
+      }
 
       if (clearBtn) {
         clearBtn.addEventListener('click', function () {
           currentArtist = '';
           currentGenre = '';
           filterSelects.forEach(function (sel) { sel.value = ''; });
-          applyFilter();
-          syncFilterUrl();
+          onFilterChanged();
         });
       }
 
@@ -341,6 +486,44 @@
         });
       }
 
+      // Wire the transport controls. Previous/Next respect the active filter
+      // and shuffle mode via prevItem()/nextItem() (see their definitions
+      // above); Replay restarts the currently-loaded video from 0:00.
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function () {
+          var item = prevItem();
+          if (item) swap(item);
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function () {
+          var item = nextItem();
+          if (item) swap(item);
+        });
+      }
+
+      if (replayBtn) {
+        replayBtn.addEventListener('click', function () {
+          if (player && typeof player.seekTo === 'function') {
+            try { player.unMute(); } catch (e) {}
+            try { player.seekTo(0); } catch (e) {}
+            try { player.playVideo(); } catch (e) {}
+          } else {
+            var id = items[currentIndex] && items[currentIndex].dataset.youtubeId;
+            if (id) iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?' + fallbackQuery;
+          }
+        });
+      }
+
+      if (shuffleBtn) {
+        shuffleBtn.addEventListener('click', function () {
+          shuffleOn = !shuffleOn;
+          shuffleBtn.setAttribute('aria-pressed', String(shuffleOn));
+          if (shuffleOn) regenerateShuffleOrder();
+        });
+      }
+
       // Inject the YouTube IFrame API script.
       var apiTag = document.createElement('script');
       apiTag.src = 'https://www.youtube.com/iframe_api';
@@ -382,18 +565,14 @@
               // re-applied, etc.). Cheaper to re-unload than to guess when.
               killCaptions(event.target);
 
-              // Auto-advance: when the current video ends, play the next item in
-              // the list that matches the active filter. Wraps back to the top
-              // so it behaves as a loop. Scans in DOM order starting after
-              // currentIndex; O(n) worst case, but n <= 200-ish for this file.
-              // The viewer's earlier click on "Play with sound" is the gesture
-              // context that carries — the next video plays with sound.
+              // Auto-advance: when the current video ends, play the next item —
+              // same nextItem() the Next button uses, so this follows shuffle
+              // order when shuffle is on and wraps around the filtered list
+              // either way. The viewer's earlier click on "Play with sound" is
+              // the gesture context that carries — the next video plays with
+              // sound.
               if (event.data === YT.PlayerState.ENDED && items.length > 0) {
-                var next = null;
-                for (var step = 1; step <= items.length; step++) {
-                  var idx = (currentIndex + step) % items.length;
-                  if (matchesFilter(items[idx])) { next = items[idx]; break; }
-                }
+                var next = nextItem();
                 if (next) swap(next);
               }
             }
@@ -415,6 +594,15 @@
           addedEl.textContent = item.dataset.addedFeatured || '';
           if (item.dataset.addedTitle) addedEl.title = item.dataset.addedTitle;
         }
+        if (genreLinkEl && genreWrapEl) {
+          var genre = item.dataset.genre || '';
+          genreWrapEl.hidden = !genre;
+          if (genre) {
+            genreLinkEl.textContent = genre;
+            genreLinkEl.dataset.genre = genre;
+            genreLinkEl.href = '?genre=' + encodeURIComponent(genre);
+          }
+        }
       }
 
       function swap(item) {
@@ -432,6 +620,16 @@
           // deep link). Re-apply so the list reflects the filter accurately —
           // the newly-playing item is hidden from the list if it doesn't match.
           applyFilter();
+          // Keep shuffle's position pointer aligned with wherever playback
+          // actually landed (list click, deep link, Next/Previous, or
+          // auto-advance) — every swap() caller funnels through here, so this
+          // is the one place that needs to know. Only meaningful while
+          // shuffle is on; a miss (item not in the current shuffled order)
+          // leaves shufflePos as-is, same as the mismatched-filter case above.
+          if (shuffleOn) {
+            var shufflePosHit = shuffleOrder.indexOf(idx);
+            if (shufflePosHit !== -1) shufflePos = shufflePosHit;
+          }
         }
 
         // Reflect the current song in the URL so the address bar is always a
