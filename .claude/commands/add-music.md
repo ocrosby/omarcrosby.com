@@ -75,6 +75,23 @@ Rules:
 - **If no split character exists at all** (e.g. pipe-separated `SONG | SHOW | CHANNEL` shape, or a single-token title that is NOT from a Topic channel): **do not blindly use the whole title.** This is one of the cases that triggers the parse-safety gate in step 5.
 - **Topic channels are unambiguous, not a fallback.** When `author_name` ends in " - Topic", YouTube's auto-generated-topic-channel convention is: channel name (with " - Topic" stripped) is the artist, video title is the song. Parse cleanly as artist = stripped author, title = raw title. Do not trigger the parse-safety gate for these.
 
+### 4a. Classify genre
+
+Choose exactly one genre from this closed set (alphabetical):
+
+**Alternative, Country, Disco, Folk, Funk, Gospel, Hip-Hop, Latin, Pop, R&B, Reggae, Rock, Soul, Soundtrack**
+
+The list is closed on purpose — the `/music` filter dropdown depends on it. If a song genuinely doesn't fit any bucket, stop and ask the user to extend the taxonomy; do not invent a new category on the fly. When you extend it, add the new label to `GENRES` in `scripts/backfill-genres.py` and to this list in the same PR.
+
+Classification rules:
+
+- Use song knowledge, not an external lookup. For well-known songs the choice is unambiguous.
+- **Soundtrack vs. artist's usual bucket.** Choose `Soundtrack` when the recording is defined by the film/musical context (Halle Bailey's "Part of Your World" from *The Little Mermaid*; Alessia Cara's "How Far I'll Go" from *Moana*; Peabo Bryson + Regina Belle's "A Whole New World"). Choose the artist's normal bucket when the song is a standalone hit that happens to also appear on a soundtrack (Deniece Williams' "Let's Hear It for the Boy" is `Pop`, even though it's on the *Footloose* OST).
+- **Boundary calls (Pop Rock, Reggae-Fusion, Country-Pop, etc.).** Pick the more commonly cited primary genre in AllMusic / MusicBrainz's top-level tag. If you'd have to flip a coin, trigger the parse-safety gate — better to confirm than guess.
+- **Featured artist doesn't change genre.** "Meant to Be (feat. Florida Georgia Line)" is `Country` because the recording sits in that bucket, not the featured artist's usual one.
+
+Add the chosen genre to the one-line summary and the parse-safety preview block in step 5.
+
 ### 5. Parse-safety gate — only fires on ambiguous parses
 
 The default is to **proceed without asking**. The parse rules in step 4 are deterministic; when they land on an unambiguous result, print a one-line summary and continue directly to dedup + prepend + commit + push.
@@ -84,6 +101,7 @@ The gate only fires when the parse itself is ambiguous. These are the trigger ca
 - No split character exists AND the source is not a Topic channel (`SONG | SHOW | CHANNEL` shape, single-token title from a non-Topic channel).
 - Multiple candidate splits at the same top-level position (rare — same distance ` - ` and ` – ` both present at competing positions).
 - Trailing suffix in the title that doesn't match any codified strip pattern AND isn't a recognizable canonical subtitle — i.e. a novel variant the parser can't confidently classify.
+- Genre classification (from step 4a) is a coin-flip between two codified buckets, OR the song doesn't fit any codified bucket at all.
 
 When the gate fires, print the preview block and wait for explicit confirmation:
 
@@ -91,6 +109,7 @@ When the gate fires, print the preview block and wait for explicit confirmation:
 Video ID:   <id>
 Title:      <parsed title>          (or "?")
 Artist:     <parsed artist>         (or "?")
+Genre:      <parsed genre>          (or "?")
 Album:      <--album flag or "(none)">
 Year:       <--year flag or "(none)">
 Note:       <--note flag or "(none)">
@@ -102,7 +121,7 @@ Author:     <YouTube's author_name>
 When the gate does NOT fire (the common case), print a one-liner instead — enough to see what was parsed in the transcript, but do not wait:
 
 ```text
-Parsed: "<title>" by <artist>  (stripped: <suffixes>, if any)
+Parsed: "<title>" by <artist> [<genre>]  (stripped: <suffixes>, if any)
 ```
 
 **Queue-and-batch (always on).** If a second `/add-music` fires while a prior one is still processing, treat both as one atomic batch: buffer the parsed entries, verify the site builds once at the end, produce **one commit per song** in queue order (each prepended above the previous, so the last-queued ends up at the top), and push once. If any entry in the batch triggers the parse-safety gate, hold that entry — process the unambiguous ones through commit and push, then surface the ambiguous one at the end for confirmation.
@@ -128,10 +147,13 @@ Read `data/music.yaml`. Build the new entry with these fields, in this order:
   title: "<title>"
   artist: "<artist>"
   album: "<album or empty string>"
+  genre: "<genre>"
   year: <year integer, or omit the line entirely if not provided>
   added: <ISO 8601 timestamp in America/New_York, e.g. 2026-07-04T14:35:12-04:00>
   note: "<note or empty string>"
 ```
+
+`genre` is required for new adds — from the classification decided in step 4a. It must be one of the codified values (see step 4a) so the site's genre filter keeps a closed set.
 
 **Prepend** the new entry above all existing entries. It occupies position 0 — the "now playing" slot — and is never shuffled.
 
@@ -146,6 +168,7 @@ new_entry = '''- youtube_id: "<id>"
   title: "<title>"
   artist: "<artist>"
   album: "<album or empty string>"
+  genre: "<genre>"
   added: <ISO 8601 timestamp>
   note: "<note or empty string>"
 '''
