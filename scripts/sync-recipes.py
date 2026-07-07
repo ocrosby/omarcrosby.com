@@ -55,22 +55,128 @@ ARGS: argparse.Namespace  # populated in main()
 
 _FRONTMATTER_RE = re.compile(r"^(?:---|\+\+\+)\s*\n(.*?)\n(?:---|\+\+\+)\s*\n", re.DOTALL)
 _H1_RE = re.compile(r"^\s*#\s+(.+?)\s*$", re.MULTILINE)
+# Markdown structural markers we do NOT want as fallback titles: ##+
+# headings, bullet lists, numbered lists. Plain-prose first lines
+# (including emoji-prefixed ones like "🥗 Chicken Salad") do NOT match
+# and remain eligible as titles when no H1 is present. The trailing
+# ``(?:\s|$)`` catches bare markers left by ``strip()`` — e.g. a source
+# line of ``"- "`` becomes ``"-"`` after stripping and still needs to
+# be recognized as a bullet.
+_STRUCTURE_LINE_RE = re.compile(r"^(?:#+|[-*•]|\d+[.)])(?:\s|$)")
+# Filenames that mean "the recipe is named after its parent directory",
+# not after the file itself — e.g. sinigang/README.md, trout/index.md.
+_CONTAINER_FILENAMES = frozenset({"index", "readme"})
 
 
 def _extract_frontmatter_field(fm: str, field_name: str) -> str | None:
-    # Handles both TOML and YAML "key = value" / "key: value" — good enough for
-    # our use, and we don't want to pull in yaml/tomllib for a two-field extraction.
+    """Extract a single scalar field from a TOML/YAML frontmatter block.
+
+    Handles both `key = value` (TOML) and `key: value` (YAML) — good enough
+    for our two-field extraction. Prefer this over pulling in `tomllib` or
+    `yaml` for what remains a stdlib-only script.
+
+    Args:
+        fm: Raw frontmatter text (already stripped of delimiter lines).
+        field_name: Field to extract, case-sensitive.
+
+    Returns:
+        The unquoted, stripped value, or None if the field is absent.
+    """
     pattern = re.compile(rf'^\s*{field_name}\s*[:=]\s*"?([^"\n]+?)"?\s*$', re.MULTILINE)
     m = pattern.search(fm)
     return m.group(1).strip() if m else None
 
 
-def _first_nonempty_line(text: str) -> str:
+def _first_content_line(text: str) -> str:
+    """Return the first line that looks like a title, not markdown structure.
+
+    Skips (in order, per line):
+      * blank lines
+      * ##+ headings, bullet lists, numbered lists (``_STRUCTURE_LINE_RE``)
+      * lines ending with ``:`` — section headers like ``Ingredients:`` and
+        ``Directions:`` that upstream recipes sometimes use as plain text
+        without a ``#`` prefix. No real recipe title ends with a colon.
+      * lines starting with a lowercase letter — sentences and recipe
+        steps, not titles. Real titles begin with an uppercase letter or a
+        symbol (emoji, digit).
+
+    Emoji-prefixed prose (``🥗 Chicken Salad``) and other plain-text first
+    lines survive this filter and become the title when no H1 is present.
+
+    Args:
+        text: Body text with frontmatter already stripped.
+
+    Returns:
+        The first title-like line, or "" if none found.
+    """
     for line in text.splitlines():
         s = line.strip()
-        if s:
-            return s
+        if not s or _STRUCTURE_LINE_RE.match(s) or s.endswith(":"):
+            continue
+        if s[0].islower():
+            continue
+        return s
     return ""
+
+
+def _title_from_path(rel_path: str) -> str:
+    """Derive a Title-Cased title from the file path.
+
+    For files named ``index.md`` or ``README.md``, uses the parent directory
+    name so ``trout/index.md`` becomes ``Trout`` (not ``Index``) and
+    ``sinigang/README.md`` becomes ``Sinigang`` (not ``Readme``). Regular
+    files use their own filename stem.
+
+    Args:
+        rel_path: Path relative to the recipes repo root.
+
+    Returns:
+        Title-Cased string. Underscores and hyphens become spaces.
+    """
+    p = Path(rel_path)
+    stem = p.parent.name if p.stem.lower() in _CONTAINER_FILENAMES else p.stem
+    return stem.replace("-", " ").replace("_", " ").title()
+
+
+def _derive_title(body: str, frontmatter_title: str | None, rel_path: str) -> str:
+    """Derive a recipe title from the best-available source.
+
+    Precedence (highest first):
+      1. Frontmatter ``title`` field
+      2. First H1 (``# Title``) in the body
+      3. First content line — the first line that isn't blank, a ##+ heading,
+         or a list marker. Preserves emoji-prefixed titles like
+         ``🥗 Chicken Salad`` when the author didn't use an H1.
+      4. Path-based fallback: parent-dir name for ``index.md``/``README.md``,
+         otherwise the filename stem.
+
+    Step 3 skipping ##+ headings and list markers is the fix for the
+    ``Ingredients:`` and ``Index`` regressions — files that lead with
+    ``## Foo`` followed by a bulleted list now fall all the way through to
+    step 4 instead of picking up ``Foo`` as the title.
+
+    Args:
+        body: Body text (frontmatter already stripped).
+        frontmatter_title: Value of the ``title`` field, or None.
+        rel_path: Path relative to the recipes repo root.
+
+    Returns:
+        The derived title with common markdown noise stripped.
+    """
+    if frontmatter_title:
+        raw = frontmatter_title
+    else:
+        m = _H1_RE.search(body)
+        if m:
+            raw = m.group(1).strip()
+        else:
+            first = _first_content_line(body)
+            raw = first or _title_from_path(rel_path)
+
+    # Strip leading "#" and collapse whitespace for anything that slipped
+    # through with heading noise.
+    cleaned = raw.lstrip("# ").strip()
+    return re.sub(r"\s+", " ", cleaned)
 
 
 def _first_paragraph_after_title(text: str, title_line: str) -> str:
@@ -123,20 +229,9 @@ def parse_recipe(md_path: Path, rel_path: str) -> Recipe | None:
         description = _extract_frontmatter_field(fm, "description")
         body = raw[fm_match.end():]
 
-    # 2. Title: frontmatter > first H1 > first non-empty line > filename slug.
-    if not title:
-        m = _H1_RE.search(body)
-        if m:
-            title = m.group(1).strip()
-    if not title:
-        first = _first_nonempty_line(body)
-        # If the first line is an H1-ish line without the "# " prefix (e.g. an
-        # emoji-prefixed title), take it as-is.
-        title = first if first else Path(rel_path).stem.replace("-", " ").replace("_", " ").title()
-
-    # Clean common Markdown noise around the title.
-    title = title.lstrip("# ").strip()
-    title = re.sub(r"\s+", " ", title)
+    # 2. Title derivation delegated to _derive_title so its precedence and
+    #    cleanup rules are testable in isolation from I/O.
+    title = _derive_title(body, title, rel_path)
 
     # 3. Description: frontmatter > first paragraph after title > blank.
     if not description:
