@@ -77,9 +77,7 @@ Rules:
 
 ### 4a. Classify genre
 
-Choose exactly one genre from this closed set (alphabetical):
-
-**Alternative, Country, Disco, Folk, Funk, Gospel, Hip-Hop, Latin, Pop, R&B, Reggae, Rock, Soul, Soundtrack**
+Choose exactly one genre from this closed set (alphabetical): **Alternative, Country, Disco, Folk, Funk, Gospel, Hip-Hop, Latin, Pop, R&B, Reggae, Rock, Soul, Soundtrack**.
 
 The list is closed on purpose — the `/music` filter dropdown depends on it. If a song genuinely doesn't fit any bucket, stop and ask the user to extend the taxonomy; do not invent a new category on the fly. When you extend it, add the new label to `GENRES` in `scripts/backfill-genres.py` and to this list in the same PR.
 
