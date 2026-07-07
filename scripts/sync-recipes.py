@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
@@ -272,6 +273,167 @@ def _git_first_added(md_path: Path, rel_path: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Image fetching (Unsplash scrape + ImageMagick resize)
+# --------------------------------------------------------------------------- #
+
+_UNSPLASH_PHOTO_ID_RE = re.compile(
+    r'unsplash\.com/photos/[^"\'>\s]*-([A-Za-z0-9_-]{11})'
+)
+
+
+def _slug_for_path(rel_path: str) -> str:
+    """Return the image filename slug for a recipe path.
+
+    Mirrors the transform in ``layouts/recipes/single.html``:
+    strip the trailing ``.md``, replace ``/`` with ``-``, lowercase.
+    So ``bacon/baking.md`` → ``bacon-baking``.
+
+    Args:
+        rel_path: Path relative to the recipes repo root.
+
+    Returns:
+        Lowercase, hyphen-joined slug with no extension.
+    """
+    return re.sub(r"\.md$", "", rel_path).replace("/", "-").lower()
+
+
+def _extract_photo_ids(html: str, limit: int = 6) -> list[str]:
+    """Return up to ``limit`` unique Unsplash photo IDs from a search page.
+
+    Photo IDs are the 11-char suffix after the final ``-`` in URLs of the
+    form ``unsplash.com/photos/<slug>-<id>``. We don't try to filter
+    Premium photos here — Premium downloads 403 at the ``/download``
+    endpoint without a tracking-ID param, so ``_fetch_recipe_image``
+    walks the returned list until one works.
+
+    Order in the returned list preserves order on the page (most relevant
+    first), and duplicates are collapsed so we don't retry the same photo.
+
+    Args:
+        html: Raw HTML from ``https://unsplash.com/s/photos/<query>``.
+        limit: Cap on IDs returned; each additional entry is an extra
+               retry cost for the caller.
+
+    Returns:
+        A list of photo IDs, empty if the page has no visible photo links.
+    """
+    seen: list[str] = []
+    for m in _UNSPLASH_PHOTO_ID_RE.finditer(html):
+        pid = m.group(1)
+        if pid not in seen:
+            seen.append(pid)
+        if len(seen) >= limit:
+            break
+    return seen
+
+
+def _curl_get(url: str, dest: Path | None = None, timeout: int = 30) -> bytes | None:
+    """Fetch ``url`` via ``curl`` and return the body, or write it to ``dest``.
+
+    Uses the system ``curl`` rather than ``urllib.request`` for two reasons:
+    (1) macOS's system Python ships without a bundled cert store, so
+    ``urllib`` fails TLS verification out of the box; (2) Unsplash rate-
+    limits requests carrying a custom User-Agent, but accepts curl's
+    default UA (``curl/8.x``). Follows redirects, fails on any 4xx/5xx.
+
+    Args:
+        url: Fully-qualified HTTPS URL.
+        dest: If provided, stream the body to this path and return b"".
+              If None, return the body bytes.
+        timeout: Max seconds for the whole request.
+
+    Returns:
+        Response body (or b"" when streamed to dest), or None on error.
+        Errors are logged to stderr but not raised.
+    """
+    cmd = ["curl", "-sfL", "--max-time", str(timeout)]
+    if dest is not None:
+        cmd.extend(["-o", str(dest), url])
+        try:
+            subprocess.check_call(cmd, stderr=subprocess.DEVNULL)
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            sys.stderr.write(f"  [warn] curl {url}: {e}\n")
+            return None
+        return b""
+    cmd.append(url)
+    try:
+        return subprocess.check_output(cmd, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        sys.stderr.write(f"  [warn] curl {url}: {e}\n")
+        return None
+
+
+def _fetch_recipe_image(title: str, dest: Path, tmp_dir: Path) -> bool:
+    """Search Unsplash for ``title``, download the top hit, resize to WebP.
+
+    Idempotent: returns immediately if ``dest`` already exists. Failure is
+    non-fatal — the layout's ``onerror`` fallback shows the category image,
+    so a missed fetch degrades gracefully.
+
+    Requires ``curl`` and ``magick`` (ImageMagick) on PATH.
+
+    Args:
+        title: Recipe title, used verbatim as the Unsplash search query.
+        dest: Final path for the 200×200 WebP.
+        tmp_dir: Directory for intermediate JPG downloads.
+
+    Returns:
+        True on success (including "already exists"). False on any failure
+        — network error, no results, Premium-only results, or resize error.
+        The reason is logged to stderr but not raised.
+    """
+    if dest.exists():
+        return True
+
+    query = urllib.parse.quote_plus(title)
+    search_url = f"https://unsplash.com/s/photos/{query}"
+    body = _curl_get(search_url, timeout=15)
+    if body is None:
+        sys.stderr.write(f"  [warn] search failed for {title!r}\n")
+        return False
+
+    html = body.decode("utf-8", errors="replace")
+    photo_ids = _extract_photo_ids(html)
+    if not photo_ids:
+        sys.stderr.write(f"  [warn] no photo found for {title!r}\n")
+        return False
+
+    tmp_jpg = tmp_dir / f"{dest.stem}.jpg"
+    # Try each candidate in order — Premium photos 403 on the plain
+    # ``/download?w=800`` endpoint, so we walk past them to the first
+    # standard-license photo that actually downloads.
+    downloaded = False
+    for pid in photo_ids:
+        download_url = f"https://unsplash.com/photos/{pid}/download?w=800"
+        if _curl_get(download_url, dest=tmp_jpg, timeout=30) is not None:
+            downloaded = True
+            break
+    if not downloaded:
+        sys.stderr.write(f"  [warn] all candidates failed to download for {title!r}\n")
+        return False
+
+    try:
+        subprocess.check_call(
+            [
+                "magick", str(tmp_jpg),
+                "-resize", "200x200^",
+                "-gravity", "center",
+                "-extent", "200x200",
+                "-quality", "82",
+                str(dest),
+            ],
+            stderr=subprocess.DEVNULL,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        sys.stderr.write(f"  [warn] resize failed for {title!r}: {e}\n")
+        return False
+    finally:
+        tmp_jpg.unlink(missing_ok=True)
+
+    return True
+
+
+# --------------------------------------------------------------------------- #
 # YAML emission (stdlib-only)
 # --------------------------------------------------------------------------- #
 
@@ -334,6 +496,12 @@ def main(argv: Iterable[str] | None = None) -> int:
                     help=f"Output YAML path (default: {DEFAULT_OUT})")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the YAML to stdout instead of writing to --out")
+    ap.add_argument("--fetch-images", action="store_true",
+                    help="After writing YAML, fetch a per-recipe Unsplash "
+                         "photo for any recipe missing an image at "
+                         "static/images/recipes/dishes/<slug>.webp. Requires "
+                         "`magick` on PATH; skips recipes whose image already "
+                         "exists so it's safe to re-run.")
     ARGS = ap.parse_args(list(argv) if argv is not None else None)
 
     with tempfile.TemporaryDirectory(prefix="recipes-sync-") as tmp:
@@ -369,7 +537,52 @@ def main(argv: Iterable[str] | None = None) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(yaml_text, encoding="utf-8")
     sys.stderr.write(f"Wrote {len(recipes)} recipes to {out}\n")
+
+    if ARGS.fetch_images:
+        _fetch_missing_images(recipes)
+
     return 0
+
+
+def _fetch_missing_images(recipes: list[Recipe]) -> None:
+    """Fetch Unsplash photos for any recipe missing a local thumbnail.
+
+    Iterates ``recipes`` and for each one whose target file at
+    ``static/images/recipes/dishes/<slug>.webp`` is absent, searches
+    Unsplash by title and downloads+resizes the top hit. Idempotent —
+    recipes with an existing file are counted as "skipped" and left
+    untouched, so a user's manual replacement never gets clobbered.
+
+    Non-fatal on any single recipe: a failed fetch just logs to stderr
+    and moves on. The layout's ``<img onerror>`` handles missing files
+    at render time by falling back to the category photo.
+
+    Args:
+        recipes: The recipe list emitted by ``main()``.
+    """
+    script_root = Path(__file__).resolve().parent.parent
+    dishes_dir = script_root / "static/images/recipes/dishes"
+    dishes_dir.mkdir(parents=True, exist_ok=True)
+
+    sys.stderr.write("Fetching missing recipe images...\n")
+    fetched = skipped = failed = 0
+    with tempfile.TemporaryDirectory(prefix="recipes-fetch-") as tmp:
+        tmp_dir = Path(tmp)
+        for r in recipes:
+            slug = _slug_for_path(r.path)
+            dest = dishes_dir / f"{slug}.webp"
+            if dest.exists():
+                skipped += 1
+                continue
+            if _fetch_recipe_image(r.title, dest, tmp_dir):
+                fetched += 1
+                sys.stderr.write(f"  fetched {slug}.webp\n")
+            else:
+                failed += 1
+
+    sys.stderr.write(
+        f"Images: {fetched} fetched, {skipped} skipped (already present), {failed} failed\n"
+    )
 
 
 if __name__ == "__main__":

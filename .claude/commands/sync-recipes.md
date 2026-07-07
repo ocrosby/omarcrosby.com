@@ -30,24 +30,27 @@ python3 scripts/sync-recipes.py --dry-run
 
 Print stdout and stop. Do not touch `data/recipes.yaml`, do not commit.
 
-### 3. Regenerate `data/recipes.yaml`
+### 3. Regenerate `data/recipes.yaml` and fetch missing per-recipe images
 
 Run:
 
 ```bash
-python3 scripts/sync-recipes.py
+python3 scripts/sync-recipes.py --fetch-images
 ```
 
-The script clones `ocrosby/recipes` to a temp dir, extracts metadata, and writes `data/recipes.yaml`. It prints the count of recipes written to stderr.
+The script clones `ocrosby/recipes` to a temp dir, extracts metadata, writes `data/recipes.yaml`, then walks the recipe list and fetches an Unsplash thumbnail for any recipe missing one under `static/images/recipes/dishes/<slug>.webp`. Existing images are skipped (idempotent) — the user's curated picks are never clobbered.
+
+Requires `curl` and `magick` (ImageMagick) on PATH. Failure to fetch a single image is non-fatal — the layout falls back to the category photo via `<img onerror>`.
 
 ### 4. Diff check
 
-If `git diff --quiet data/recipes.yaml`, nothing changed — report `No changes — recipe index is already up to date.` and stop. Do not commit an empty change.
+If `git diff --quiet data/recipes.yaml static/images/recipes/dishes/`, nothing changed — report `No changes — recipe index and images are already up to date.` and stop. Do not commit an empty change.
 
 If there is a diff, show a compact summary of what changed:
 
 ```bash
 git diff --stat data/recipes.yaml
+git status --short static/images/recipes/dishes/
 ```
 
 ### 5. Verify the site still builds
@@ -59,7 +62,7 @@ Run `hugo --gc --minify --panicOnWarning` from the repo root. If it exits non-ze
 Build the commit message from the diff — count how many recipes were added, removed, or modified:
 
 ```bash
-git add data/recipes.yaml
+git add data/recipes.yaml static/images/recipes/dishes/
 ALLOW_MAIN_COMMIT=1 git commit -m 'fix(recipes): sync from ocrosby/recipes (<N> total)'
 git push origin main
 ```

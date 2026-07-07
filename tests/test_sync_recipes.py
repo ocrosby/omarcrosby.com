@@ -121,5 +121,84 @@ class DeriveTitleTests(unittest.TestCase):
         )
 
 
+class SlugForPathTests(unittest.TestCase):
+    """The image filename slug must match what layouts/recipes/single.html builds.
+
+    Layout does: ``.path | replaceRE "\\.md$" "" | replaceRE "/" "-" | lower``.
+    The Python helper must produce the same string byte-for-byte, or fetched
+    images will land at paths the layout can't find.
+    """
+
+    def test_nested_path_hyphenates_and_strips_md(self):
+        self.assertEqual(sync_recipes._slug_for_path("bacon/baking.md"), "bacon-baking")
+
+    def test_root_file(self):
+        self.assertEqual(sync_recipes._slug_for_path("lasagna.md"), "lasagna")
+
+    def test_readme_lowercased(self):
+        # Layout lowercases via `| lower`; the Python side must match.
+        self.assertEqual(
+            sync_recipes._slug_for_path("sinigang/README.md"), "sinigang-readme",
+        )
+
+    def test_deeply_nested(self):
+        self.assertEqual(
+            sync_recipes._slug_for_path("ribs/pork/pan.md"), "ribs-pork-pan",
+        )
+
+
+class ExtractPhotoIdsTests(unittest.TestCase):
+    """Parse Unsplash search HTML for a list of photo IDs.
+
+    Photo IDs are the last 11 chars after the final ``-`` in URLs of the
+    form ``unsplash.com/photos/<slug>-<id>``. The extractor returns an
+    ordered list so the fetcher can walk past Premium photos (which 403
+    on the download endpoint) to the first standard-license hit.
+    """
+
+    def test_returns_first_photo_id(self):
+        html = 'lorem <a href="https://unsplash.com/photos/roast-lamb-abcDEF12345">'
+        self.assertEqual(sync_recipes._extract_photo_ids(html), ["abcDEF12345"])
+
+    def test_returns_empty_when_no_photos(self):
+        html = "<html>No results found.</html>"
+        self.assertEqual(sync_recipes._extract_photo_ids(html), [])
+
+    def test_preserves_order_and_deduplicates(self):
+        # The real Unsplash HTML repeats each photo URL twice (once in a
+        # card link, once in a hidden download URL). The extractor collapses
+        # duplicates while preserving on-page order.
+        html = (
+            'href="https://unsplash.com/photos/first-photo-aaaaaaaaaaa" '
+            'href="https://unsplash.com/photos/first-photo-aaaaaaaaaaa" '
+            'href="https://unsplash.com/photos/second-bbbbbbbbbbb"'
+        )
+        self.assertEqual(
+            sync_recipes._extract_photo_ids(html),
+            ["aaaaaaaaaaa", "bbbbbbbbbbb"],
+        )
+
+    def test_respects_limit(self):
+        html = " ".join(
+            f'href="https://unsplash.com/photos/x-{"a" * 10}{c}"' for c in "0123456789"
+        )
+        self.assertEqual(len(sync_recipes._extract_photo_ids(html, limit=3)), 3)
+
+
+class FetchRecipeImageTests(unittest.TestCase):
+    """Only the idempotency path is unit-testable without network mocking."""
+
+    def test_skips_when_dest_already_exists(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            dest = tmp_path / "beef-stew.webp"
+            dest.write_bytes(b"already here")
+            # No network is touched; returns True instantly and dest is unchanged.
+            result = sync_recipes._fetch_recipe_image("Beef Stew", dest, tmp_path)
+            self.assertTrue(result)
+            self.assertEqual(dest.read_bytes(), b"already here")
+
+
 if __name__ == "__main__":
     unittest.main()
