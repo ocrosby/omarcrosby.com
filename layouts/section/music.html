@@ -114,6 +114,16 @@
     <div class="music-history-header">
       <h2 class="music-history-heading">History</h2>
       <div class="music-filters" role="group" aria-label="Filter history">
+        <label class="music-filter-label music-filter-label-search">
+          <span class="music-filter-caption">Search</span>
+          <input type="search"
+                 class="music-filter music-filter-search"
+                 data-filter="search"
+                 placeholder="Title or artist"
+                 autocomplete="off"
+                 spellcheck="false"
+                 aria-label="Fuzzy search by title or artist">
+        </label>
         <label class="music-filter-label">
           <span class="music-filter-caption">Genre</span>
           <select class="music-filter" data-filter="genre">
@@ -212,15 +222,42 @@
       // server-rendered iframe features the newest entry.
       var currentIndex = 0;
 
-      // Filter state — the two dropdowns above the list. Empty string means
-      // "no filter" (the sentinel "All artists" / "All genres" option value).
-      // Auto-advance walks *visible* items (see matchesFilter + findNext).
+      // Filter state — the two dropdowns and the search input above the list.
+      // Empty string means "no filter" (the sentinel "All artists" / "All genres"
+      // option value, or an empty query). Auto-advance walks *visible* items
+      // (see matchesFilter + findNext).
       var currentArtist = '';
       var currentGenre = '';
+      var currentQuery = '';
       var listEl = document.querySelector('.music-list');
       var emptyEl = document.querySelector('.music-empty');
       var clearBtn = document.querySelector('.music-filter-clear');
-      var filterSelects = Array.prototype.slice.call(document.querySelectorAll('.music-filter'));
+      var searchInput = document.querySelector('.music-filter-search');
+      // Selects only — the search input is a separate control with its own
+      // event handling and URL sync path.
+      var filterSelects = Array.prototype.slice.call(document.querySelectorAll('select.music-filter'));
+
+      // Subsequence match — the "fuzzy finder" flavor. Characters of `needle`
+      // must appear in `haystack` in order but not necessarily contiguous.
+      // Case-insensitive. O(len(haystack)) per call, so applyFilter is O(n·L)
+      // for n items and L = max haystack length — fine at ~200 items.
+      function subseq(needle, haystack) {
+        if (!needle) return true;
+        var n = needle.toLowerCase();
+        var h = (haystack || '').toLowerCase();
+        var i = 0, j = 0;
+        while (i < n.length && j < h.length) {
+          if (n.charCodeAt(i) === h.charCodeAt(j)) i++;
+          j++;
+        }
+        return i === n.length;
+      }
+
+      function matchesSearch(item) {
+        if (!currentQuery) return true;
+        return subseq(currentQuery, item.dataset.title)
+            || subseq(currentQuery, item.dataset.artist);
+      }
 
       // Transport controls — previous / replay / next / shuffle. Declared
       // here (ahead of the initial applyFilter() call below) so their
@@ -243,6 +280,7 @@
       function matchesFilter(item) {
         if (currentArtist && item.dataset.artist !== currentArtist) return false;
         if (currentGenre && item.dataset.genre !== currentGenre) return false;
+        if (!matchesSearch(item)) return false;
         return true;
       }
 
@@ -317,7 +355,7 @@
           items[i].classList.toggle('is-filtered-out', !keep);
           if (keep) visibleCount++;
         }
-        var filterActive = !!(currentArtist || currentGenre);
+        var filterActive = !!(currentArtist || currentGenre || currentQuery);
         if (clearBtn) clearBtn.hidden = !filterActive;
         if (emptyEl) emptyEl.hidden = !(filterActive && visibleCount === 0);
         var noMatches = visibleCount === 0;
@@ -342,6 +380,7 @@
           var u = new URL(window.location.href);
           if (currentArtist) u.searchParams.set('artist', currentArtist); else u.searchParams.delete('artist');
           if (currentGenre) u.searchParams.set('genre', currentGenre); else u.searchParams.delete('genre');
+          if (currentQuery) u.searchParams.set('q', currentQuery); else u.searchParams.delete('q');
           window.history.replaceState({}, '', u.toString());
         } catch (e) { /* URL API unavailable — silent fallback */ }
       }
@@ -369,12 +408,18 @@
         var params0 = new URLSearchParams(window.location.search);
         var a0 = params0.get('artist');
         var g0 = params0.get('genre');
+        // Artist/genre stay mutually exclusive (see setFilter below) so an old
+        // shared link carrying both prefers genre — genre is the primary filter.
+        // Search (q) is orthogonal: it cross-cuts whichever artist/genre is set.
         if (g0) { currentGenre = g0; } else if (a0) { currentArtist = a0; }
+        var q0 = params0.get('q');
+        if (q0) { currentQuery = q0; }
         for (var s = 0; s < filterSelects.length; s++) {
           var sel = filterSelects[s];
           if (sel.dataset.filter === 'artist' && currentArtist) sel.value = currentArtist;
           if (sel.dataset.filter === 'genre'  && currentGenre)  sel.value = currentGenre;
         }
+        if (searchInput && currentQuery) searchInput.value = currentQuery;
         applyFilter();
       } catch (e) { /* URLSearchParams unavailable — no initial filter */ }
 
@@ -420,11 +465,23 @@
         });
       }
 
+      // Search input — apply on every keystroke. n·L is trivial at this scale;
+      // no debounce needed. `input` covers typing, paste, and the browser's
+      // built-in <input type="search"> clear affordance.
+      if (searchInput) {
+        searchInput.addEventListener('input', function () {
+          currentQuery = searchInput.value.trim();
+          onFilterChanged();
+        });
+      }
+
       if (clearBtn) {
         clearBtn.addEventListener('click', function () {
           currentArtist = '';
           currentGenre = '';
+          currentQuery = '';
           filterSelects.forEach(function (sel) { sel.value = ''; });
+          if (searchInput) searchInput.value = '';
           onFilterChanged();
         });
       }

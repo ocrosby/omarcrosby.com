@@ -242,6 +242,18 @@
   min-width: 10rem;
 }
 
+.music-filter-search {
+  min-width: 14rem;
+}
+
+.music-filter-label-search {
+  flex: 1 1 14rem;
+}
+
+.music-filter-label-search .music-filter-search {
+  width: 100%;
+}
+
 .music-filter-clear {
   font-family: inherit;
   font-size: 0.8rem;
