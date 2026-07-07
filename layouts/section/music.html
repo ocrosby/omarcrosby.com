@@ -77,8 +77,46 @@
     </div>
   </section>
 
+  {{- /*
+    Build sorted, unique lists of artists and genres for the filter dropdowns.
+    Both stay alphabetical — the "All ..." sentinel option is prepended by the
+    template so it always leads the list regardless of collation.
+  */ -}}
+  {{- $artists := slice -}}
+  {{- $genres := slice -}}
+  {{- range $videos -}}
+  {{- with .artist }}{{ $artists = $artists | append . }}{{ end -}}
+  {{- with .genre }}{{ $genres = $genres | append . }}{{ end -}}
+  {{- end -}}
+  {{- $artists = $artists | uniq | sort -}}
+  {{- $genres = $genres | uniq | sort -}}
+
   <section class="music-history" aria-label="Music history">
-    <h2 class="music-history-heading">History</h2>
+    <div class="music-history-header">
+      <h2 class="music-history-heading">History</h2>
+      <div class="music-filters" role="group" aria-label="Filter history">
+        <label class="music-filter-label">
+          <span class="music-filter-caption">Artist</span>
+          <select class="music-filter" data-filter="artist">
+            <option value="">All artists</option>
+            {{- range $artists }}
+            <option value="{{ . }}">{{ . }}</option>
+            {{- end }}
+          </select>
+        </label>
+        <label class="music-filter-label">
+          <span class="music-filter-caption">Genre</span>
+          <select class="music-filter" data-filter="genre">
+            <option value="">All genres</option>
+            {{- range $genres }}
+            <option value="{{ . }}">{{ . }}</option>
+            {{- end }}
+          </select>
+        </label>
+        <button type="button" class="music-filter-clear" hidden>Clear</button>
+      </div>
+    </div>
+    <p class="music-empty" role="status" hidden>No songs match this filter.</p>
     <ul class="music-list">
       {{- range $videos -}}
       {{- $itemExtras := slice -}}
@@ -88,6 +126,7 @@
           data-youtube-id="{{ .youtube_id }}"
           data-title="{{ .title }}"
           data-artist="{{ .artist }}"
+          data-genre="{{ with .genre }}{{ . }}{{ end }}"
           data-album="{{ with .album }}{{ . }}{{ end }}"
           data-year="{{ with .year }}{{ . }}{{ end }}"
           data-note="{{ with .note }}{{ . }}{{ end }}"
@@ -152,6 +191,49 @@
       // server-rendered iframe features the newest entry.
       var currentIndex = 0;
 
+      // Filter state — the two dropdowns above the list. Empty string means
+      // "no filter" (the sentinel "All artists" / "All genres" option value).
+      // Auto-advance walks *visible* items (see matchesFilter + findNext).
+      var currentArtist = '';
+      var currentGenre = '';
+      var listEl = document.querySelector('.music-list');
+      var emptyEl = document.querySelector('.music-empty');
+      var clearBtn = document.querySelector('.music-filter-clear');
+      var filterSelects = Array.prototype.slice.call(document.querySelectorAll('.music-filter'));
+
+      function matchesFilter(item) {
+        if (currentArtist && item.dataset.artist !== currentArtist) return false;
+        if (currentGenre && item.dataset.genre !== currentGenre) return false;
+        return true;
+      }
+
+      // Hide items that don't match, EXCEPT the currently-playing one — the
+      // "Now playing" highlight is more useful visible than the filter is
+      // strict. Also updates the "no matches" empty-state message and toggles
+      // the Clear button's visibility.
+      function applyFilter() {
+        var visibleCount = 0;
+        for (var i = 0; i < items.length; i++) {
+          var keep = matchesFilter(items[i]) || i === currentIndex;
+          items[i].classList.toggle('is-filtered-out', !keep);
+          if (matchesFilter(items[i])) visibleCount++;
+        }
+        var filterActive = !!(currentArtist || currentGenre);
+        if (clearBtn) clearBtn.hidden = !filterActive;
+        if (emptyEl) emptyEl.hidden = !(filterActive && visibleCount === 0);
+      }
+
+      // Reflect filter state in the URL so any filtered view is shareable and
+      // survives reload. replaceState (not pushState) keeps back-button clean.
+      function syncFilterUrl() {
+        try {
+          var u = new URL(window.location.href);
+          if (currentArtist) u.searchParams.set('artist', currentArtist); else u.searchParams.delete('artist');
+          if (currentGenre) u.searchParams.set('genre', currentGenre); else u.searchParams.delete('genre');
+          window.history.replaceState({}, '', u.toString());
+        } catch (e) { /* URL API unavailable — silent fallback */ }
+      }
+
       // Visual highlight in the history list — mark the currently-playing item so
       // viewers can see which song they are hearing when they scroll the list.
       // Initial state matches the server-rendered iframe (items[0]).
@@ -165,6 +247,42 @@
         }
       }
       if (items.length > 0) setPlayingHighlight(0);
+
+      // Initial filter values from the URL — read once at load, before the
+      // deep-link (?v=) handler runs so both filter and target video apply.
+      try {
+        var params0 = new URLSearchParams(window.location.search);
+        var a0 = params0.get('artist');
+        var g0 = params0.get('genre');
+        if (a0) { currentArtist = a0; }
+        if (g0) { currentGenre = g0; }
+        for (var s = 0; s < filterSelects.length; s++) {
+          var sel = filterSelects[s];
+          if (sel.dataset.filter === 'artist' && currentArtist) sel.value = currentArtist;
+          if (sel.dataset.filter === 'genre'  && currentGenre)  sel.value = currentGenre;
+        }
+        applyFilter();
+      } catch (e) { /* URLSearchParams unavailable — no initial filter */ }
+
+      // Dropdown handlers — update state, re-render visibility, sync the URL.
+      filterSelects.forEach(function (sel) {
+        sel.addEventListener('change', function () {
+          if (sel.dataset.filter === 'artist') currentArtist = sel.value;
+          if (sel.dataset.filter === 'genre')  currentGenre  = sel.value;
+          applyFilter();
+          syncFilterUrl();
+        });
+      });
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+          currentArtist = '';
+          currentGenre = '';
+          filterSelects.forEach(function (sel) { sel.value = ''; });
+          applyFilter();
+          syncFilterUrl();
+        });
+      }
 
       // Deep-link: /music/?v=<youtube_id> loads with that song featured instead
       // of items[0]. If the id doesn't match anything in the current playlist
@@ -265,12 +383,18 @@
               killCaptions(event.target);
 
               // Auto-advance: when the current video ends, play the next item in
-              // the list. Wraps back to the top so it behaves as a loop. The
-              // viewer's earlier click on the "Play with sound" overlay is the
-              // gesture context that carries — the next video plays with sound.
+              // the list that matches the active filter. Wraps back to the top
+              // so it behaves as a loop. Scans in DOM order starting after
+              // currentIndex; O(n) worst case, but n <= 200-ish for this file.
+              // The viewer's earlier click on "Play with sound" is the gesture
+              // context that carries — the next video plays with sound.
               if (event.data === YT.PlayerState.ENDED && items.length > 0) {
-                var nextIndex = (currentIndex + 1) % items.length;
-                swap(items[nextIndex]);
+                var next = null;
+                for (var step = 1; step <= items.length; step++) {
+                  var idx = (currentIndex + step) % items.length;
+                  if (matchesFilter(items[idx])) { next = items[idx]; break; }
+                }
+                if (next) swap(next);
               }
             }
           }
@@ -303,6 +427,10 @@
         if (idx >= 0) {
           currentIndex = idx;
           setPlayingHighlight(idx);
+          // The new current item may sit outside the active filter (e.g. user
+          // filtered by Rock but clicked a Pop item). Re-apply so the current
+          // stays visible (see applyFilter's `|| i === currentIndex` clause).
+          applyFilter();
         }
 
         // Reflect the current song in the URL so the address bar is always a
