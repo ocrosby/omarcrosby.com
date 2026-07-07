@@ -80,16 +80,16 @@
            data-genre="{{ with $featured.genre }}{{ . }}{{ end }}">{{ with $featured.genre }}{{ . }}{{ end }}</a>
       </div>
       <div class="music-controls" role="group" aria-label="Playback controls">
-        <button type="button" class="music-control music-control-prev" aria-label="Previous song">
+        <button type="button" class="music-control music-control-prev" aria-label="Previous song" title="Previous song">
           <span aria-hidden="true">⏮</span>
         </button>
-        <button type="button" class="music-control music-control-replay" aria-label="Replay current song">
+        <button type="button" class="music-control music-control-replay" aria-label="Replay current song" title="Replay current song">
           <span aria-hidden="true">⟲</span>
         </button>
-        <button type="button" class="music-control music-control-next" aria-label="Next song">
+        <button type="button" class="music-control music-control-next" aria-label="Next song" title="Next song">
           <span aria-hidden="true">⏭</span>
         </button>
-        <button type="button" class="music-control music-control-shuffle" aria-label="Shuffle playback" aria-pressed="false">
+        <button type="button" class="music-control music-control-shuffle" aria-label="Turn shuffle on" aria-pressed="false" title="Turn shuffle on">
           <span aria-hidden="true">🔀</span>
         </button>
       </div>
@@ -520,6 +520,12 @@
         shuffleBtn.addEventListener('click', function () {
           shuffleOn = !shuffleOn;
           shuffleBtn.setAttribute('aria-pressed', String(shuffleOn));
+          // Keep the hover tooltip and accessible name describing the action
+          // the *next* click will take, not the current state — matches how
+          // "Play with sound" style toggle labels read elsewhere on the page.
+          var label = shuffleOn ? 'Turn shuffle off' : 'Turn shuffle on';
+          shuffleBtn.title = label;
+          shuffleBtn.setAttribute('aria-label', label);
           if (shuffleOn) regenerateShuffleOrder();
         });
       }
