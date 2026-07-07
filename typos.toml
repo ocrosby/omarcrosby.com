@@ -4,8 +4,9 @@ extend-exclude = [
   "public/",     # generated
   "resources/",  # generated
   "CHANGELOG.md",
-  "data/music.yaml",   # YouTube video IDs look like typos to the checker
-  "data/recipes.yaml", # mirrors filenames + titles from ocrosby/recipes, not our copy to lint
+  "data/music.yaml",           # YouTube video IDs look like typos to the checker
+  "data/recipes.yaml",         # mirrors filenames + titles from ocrosby/recipes, not our copy to lint
+  "scripts/backfill-genres.py", # YouTube video IDs as dict keys — same false-positive class as data/music.yaml
 ]
 
 [default]
