@@ -40,19 +40,33 @@
       {{- end }}
       {{- $sorted := sort $filtered "title" }}
       {{- if $sorted }}
-      <ul class="recipe-list">
+      {{- /* Fallback thumbnail if a per-recipe photo is missing: use the
+             category photo. Injected via <img onerror> so build never needs
+             to check static-file existence. */ -}}
+      {{- $fallbackURL := printf "/images/recipes/%s.webp" (urlize $currentCategory) }}
+      <div class="recipe-cards">
         {{- range $sorted }}
-        <li class="recipe-item">
-          <a href="{{ .url }}" rel="noopener external" target="_blank"><strong>{{ .title }}</strong></a>
-          {{- if .added }}
-          <span class="recipe-added" title="Date added to the recipes repo">· {{ .added }}</span>
-          {{- end }}
-          {{- if .description }}
-          <div class="recipe-description">{{ .description }}</div>
-          {{- end }}
-        </li>
+          {{- /* Per-recipe slug derived from .path: replace slashes with
+                 hyphens, strip .md, lowercase. Matches the naming under
+                 static/images/recipes/dishes/. */ -}}
+          {{- $slug := .path | replaceRE "\\.md$" "" | replaceRE "/" "-" | lower }}
+        <a class="recipe-card" href="{{ .url }}" rel="noopener external" target="_blank">
+          <img class="recipe-card-image" src="/images/recipes/dishes/{{ $slug }}.webp" alt="" aria-hidden="true" width="200" height="200" loading="lazy" onerror="this.src='{{ $fallbackURL }}';this.onerror=null">
+          <div class="recipe-card-body">
+            <div class="recipe-card-title">{{ .title }}</div>
+            {{- if .description }}
+            <div class="recipe-card-description">{{ .description }}</div>
+            {{- end }}
+            {{- if .added }}
+            <div class="recipe-card-added" title="Date added to the recipes repo">{{ .added }}</div>
+            {{- end }}
+          </div>
+        </a>
         {{- end }}
-      </ul>
+      </div>
+      <p class="recipe-credits">
+        Recipe photos from <a href="https://unsplash.com/" rel="noopener external" target="_blank">Unsplash</a>.
+      </p>
       {{- else }}
       <p><em>No recipes in this category yet.</em></p>
       {{- end }}
@@ -66,11 +80,45 @@
   .recipes-backlink { margin: 0 0 0.75em; font-size: 0.9em; }
   .recipes-backlink a { color: var(--secondary, #888); text-decoration: none; }
   .recipes-backlink a:hover { color: var(--primary, #333); }
-  .recipe-list { list-style: none; padding: 0; margin-top: 1em; }
-  .recipe-item { margin: 0.7em 0; padding-bottom: 0.5em; border-bottom: 1px solid var(--border, #eee); }
-  .recipe-item:last-child { border-bottom: none; }
-  .recipe-item a { text-decoration: none; }
-  .recipe-added { color: var(--secondary, #888); font-size: 0.85em; margin-left: 0.4em; }
-  .recipe-description { color: var(--secondary, #666); font-size: 0.92em; margin-top: 0.25em; line-height: 1.4; }
+  .recipe-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1em;
+    margin-top: 1em;
+  }
+  .recipe-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--border, #eee);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .recipe-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .recipe-card-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+  .recipe-card-body { padding: 0.7em 0.85em 0.85em; }
+  .recipe-card-title { font-size: 1.05em; font-weight: 600; line-height: 1.3; }
+  .recipe-card-description {
+    color: var(--secondary, #666);
+    font-size: 0.88em;
+    margin-top: 0.4em;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .recipe-card-added { color: var(--secondary, #888); font-size: 0.8em; margin-top: 0.5em; }
+  .recipe-credits { color: var(--secondary, #888); font-size: 0.85em; margin-top: 2em; font-style: italic; }
 </style>
 {{- end }}
