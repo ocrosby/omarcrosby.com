@@ -50,8 +50,12 @@ jobs:
       - uses: lycheeverse/lychee-action@v2
         with:
           # --base resolves root-relative hrefs (e.g. "/css/bootstrap.min.css").
-          # --accept 999 whitelists LinkedIn's bot-detection response.
-          args: --no-progress --base https://omarcrosby.com --accept 200,203,204,206,999 --exclude-file .lycheeignore './public/**/*.html'
+          # Accept list rationale:
+          #   200/203/204/206 — normal success responses (206 = partial content).
+          #   202 Accepted — the request landed but processing is queued; the URL is real.
+          #     Some sites behind bot-management (e.g. agilealliance.org) reply 202 to lychee.
+          #   999 — LinkedIn's bot-detection response; treat as "URL exists".
+          args: --no-progress --base https://omarcrosby.com --accept 200,202,203,204,206,999 --exclude-file .lycheeignore './public/**/*.html'
           fail: true
 
   markdown:
