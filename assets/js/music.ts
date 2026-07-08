@@ -174,7 +174,7 @@ declare global {
   // indices; shufflePos is where currentIndex sits within that order.
   // Both are rebuilt whenever shuffle turns on or the active filter
   // changes while shuffle is already on — see regenerateShuffleOrder().
-  let shuffleOn = false;
+  let shuffleOn = true;
   let shuffleOrder: number[] = [];
   let shufflePos = -1;
 
