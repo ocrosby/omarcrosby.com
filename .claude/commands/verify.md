@@ -31,8 +31,11 @@ Stops at the first failure. Exit status matches CI: if `/verify` passes locally,
    docker create --name omarcrosby-verify-tmp omarcrosby-com:verify >/dev/null
    docker cp omarcrosby-verify-tmp:/usr/share/nginx/html ./public-verify
    docker rm omarcrosby-verify-tmp >/dev/null
+   # Accept list must stay in sync with .github/workflows/ci.yml.
+   # 200/203/204/206 — success; 202 — Accepted (bot-detected sites);
+   # 999 — LinkedIn's bot-detection response.
    docker run --rm -v "$PWD:/w" -w /w lycheeverse/lychee:latest \
-     --no-progress --base https://omarcrosby.com --accept 200,203,204,206,999 \
+     --no-progress --base https://omarcrosby.com --accept 200,202,203,204,206,999 \
      --exclude-file .lycheeignore './public-verify/**/*.html' \
      || { echo "FAIL: broken links"; rm -rf ./public-verify; exit 1; }
    rm -rf ./public-verify
