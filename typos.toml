@@ -17,3 +17,5 @@ locale = "en-us"
 # flags as typos. Add here (identifier form) when the checker complains
 # about something that is actually spelled correctly.
 noice = "noice"    # Neovim plugin name (github.com/folke/noice.nvim)
+decorder = "decorder" # golangci-lint linter name (not "decoder")
+importas = "importas" # golangci-lint linter name (not "imports")
