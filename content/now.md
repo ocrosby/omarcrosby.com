@@ -1,15 +1,11 @@
 +++
 title = "Now"
-date = 2026-07-10T01:32:17-04:00
+date = 2026-07-10T05:38:48-04:00
 draft = false
 description = "What I'm focused on right now — updated monthly. Following the nownownow.com convention."
 
 [cover]
 image = "/images/og/meta/now.jpg"
-# Emit og:image for social sharing without rendering the wide branded
-# card at the top of the article body. PaperMod's opengraph.html reads
-# cover.image regardless of this flag.
-hiddenInSingle = true
 +++
 
 *Updated 2026-07-10.*
