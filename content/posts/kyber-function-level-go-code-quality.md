@@ -4,6 +4,7 @@ date = 2026-07-05T08:00:00-04:00
 draft = false
 summary = "Existing Go linters tell you which lines break a rule. kyber tells you which functions carry the most risk, using twelve metrics — McCabe, cognitive, Halstead, maintainability index, and structural signals — in one pipeline."
 tags = ["go", "static-analysis", "code-quality", "complexity-metrics", "sarif"]
+categories = ["Code Quality"]
 ShowToc = true
 +++
 

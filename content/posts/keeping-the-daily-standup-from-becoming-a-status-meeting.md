@@ -4,6 +4,7 @@ date = 2026-07-07T09:33:30-04:00
 draft = false
 summary = "Some teams have quietly turned the daily standup into a status report — going around the room instead of walking the board, and asking for updates from people who aren't touching a single story that sprint. Here's what the Agile literature actually says a standup is for, and a few small structural fixes."
 tags = ["agile", "scrum", "engineering-management", "standups"]
+categories = ["Engineering Leadership"]
 ShowToc = true
 +++
 

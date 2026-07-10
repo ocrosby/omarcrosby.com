@@ -4,7 +4,7 @@ date = "2026-07-09T09:08:56-04:00"
 draft = false
 description = "Writing the test before the implementation forces you to design the seam first. That's where dependency injection comes from — not from discipline applied after the fact."
 tags = ["go", "testing", "tdd", "dependency-injection", "software-design"]
-categories = []
+categories = ["Code Quality"]
 ShowToc = true
 +++
 
