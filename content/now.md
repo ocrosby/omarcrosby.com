@@ -1,6 +1,6 @@
 +++
 title = "Now"
-date = 2026-07-10T15:08:34-04:00
+date = 2026-07-10T15:28:49-04:00
 draft = false
 description = "What I'm focused on right now — updated monthly. Following the nownownow.com convention."
 
@@ -28,7 +28,7 @@ Active open-source work:
 
 ## Site
 
-The site itself got a substantial personal-brand pass this week: [topic-pillar categories](/categories/), per-post OpenGraph images, cross-links between [projects](/projects/) and their [deep-dive posts](/posts/), a [/uses/](/uses/) page, and per-song shareable URLs on the music page with branded OG previews (paste any [/music/](/music/) song URL into a message and see what I mean).
+The site itself got a substantial personal-brand pass recently: [topic-pillar categories](/categories/), per-post OpenGraph images, cross-links between [projects](/projects/) and their [deep-dive posts](/posts/), a [/uses/](/uses/) page, and per-song shareable URLs on the music page with branded OG previews (paste any [/music/](/music/) song URL into a message and see what I mean).
 
 ## Day job
 
