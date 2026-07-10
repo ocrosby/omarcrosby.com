@@ -47,6 +47,7 @@ Every edit to `content/now.md` must bump **both** the front-matter `date` field 
 - Follow global Conventional Commits (see `~/.claude/CLAUDE.md`).
 - **Release-triggering** commit types: `feat`, `fix`, and breaking-changes (`!` or `BREAKING CHANGE:` footer). These bump the version and cut a Fly deploy.
 - **Non-release** commit types: `docs`, `chore`, `style`, `refactor`, `test`, `build`, `ci`, `perf`. Merged, but the release workflow no-ops.
+- **UI-visible changes must use `feat` or `fix`, never `chore`.** If a diff changes anything a visitor could see or interact with — content, layouts, styles, nav, homepage buttons, header links, images, front matter that affects rendering, JS behavior — the commit type must be `feat` (new visible surface) or `fix` (correction / adjustment to existing visible surface). `chore` merges to `main` without triggering the Fly deploy, so a UI-labeled `chore` commit silently ships nothing until the next release-triggering commit arrives — the change is on `main` but not on the live site. `chore` is reserved for build-tooling / CI / dependency updates / non-visible housekeeping. When in doubt, prefer `fix`.
 - One PR = one `type(scope)` pair — global rule applies.
 
 ## Pre-Flight Before `/git ship`
