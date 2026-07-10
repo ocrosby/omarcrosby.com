@@ -1,0 +1,47 @@
+{{- /*
+  Related-posts widget. Called by PaperMod's layouts/single.html right after
+  the post body (see themes/PaperMod/layouts/single.html — the
+  `extend_post_content.html` partial call). This override adds a "Related
+  posts" section to every single-post page under content/posts/.
+
+  Only renders on post pages — the same partial fires on any Kind=page
+  single, so gate on section = "posts" to avoid surfacing on /about/,
+  /uses/, /now/, projects, etc.
+
+  Ranking comes from Hugo's built-in Related content config in hugo.toml —
+  categories weighted 100, tags 60, same-year 10. Threshold 80 means only
+  posts with a strong signal show; a lonely-category post (e.g. Holocron in
+  Distributed Systems) may end up with zero related, in which case the
+  section quietly disappears rather than showing filler.
+
+  Rendered as a compact three-item list — title + one-line summary +
+  category pillar — matching the site's typography without the full post-
+  card treatment (which would compete visually with the article body above).
+*/ -}}
+{{- if eq .Section "posts" -}}
+  {{- $related := site.RegularPages.Related . | first 3 -}}
+  {{- with $related -}}
+  <section class="related-posts" aria-labelledby="related-posts-heading">
+    <h2 id="related-posts-heading" class="related-posts-heading">Related posts</h2>
+    <ul class="related-posts-list">
+      {{- range . -}}
+      {{- $cat := "" -}}
+      {{- with .Params.categories -}}
+        {{- $cat = index . 0 -}}
+      {{- end -}}
+      <li class="related-posts-item">
+        <a class="related-posts-link" href="{{ .RelPermalink }}">
+          <div class="related-posts-title">{{ .Title }}</div>
+          {{- with .Summary | default .Description -}}
+          <div class="related-posts-summary">{{ . | plainify | truncate 200 }}</div>
+          {{- end -}}
+          {{- with $cat -}}
+          <div class="related-posts-category">{{ . }}</div>
+          {{- end -}}
+        </a>
+      </li>
+      {{- end -}}
+    </ul>
+  </section>
+  {{- end -}}
+{{- end -}}
