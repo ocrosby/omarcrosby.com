@@ -748,7 +748,9 @@ declare global {
   for (const item of items) {
     item.addEventListener("click", (e) => {
       // Modifier / non-primary clicks fall through to the underlying
-      // <a href> so the browser can open YouTube in a new tab as usual.
+      // <a href> so cmd/ctrl-click opens the per-song page in a new tab
+      // and middle-click / shift-click behave as expected. Only plain
+      // primary-button clicks trigger the in-place featured-player swap.
       if (
         (e as MouseEvent).button !== 0 ||
         e.metaKey ||
