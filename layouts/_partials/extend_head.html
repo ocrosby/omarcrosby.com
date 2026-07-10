@@ -17,6 +17,18 @@
 <link rel="icon" type="image/png" sizes="512x512" href="{{ "favicon-512x512.png" | absURL }}">
 
 {{- /*
+    Brand typography — Fraunces, humanist variable serif from Google
+    Fonts, used for h1/h2/h3 via assets/css/extended/brand-warmth.css.
+    preconnect warms up the DNS + TLS handshake; `display=swap` lets
+    body text render on the system sans first, then falls into
+    Fraunces once the woff2 arrives. Weight range 300-700 covers h1
+    down to h5; the opsz axis handles display-sizes gracefully.
+*/ -}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&display=swap">
+
+{{- /*
     Turbo Drive — SPA-style navigation without a JS framework rewrite.
     Intercepts internal link clicks, swaps <body> in place, and preserves
     elements marked data-turbo-permanent across page loads. Enables the

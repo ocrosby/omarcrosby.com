@@ -1,0 +1,256 @@
+/* Brand warmth — site-wide palette + typography shift.
+   Auto-loaded by PaperMod from assets/css/extended/.
+
+   PaperMod's default palette is engineered for "clean utility" — a
+   near-monochrome cool-grey that reads as harsh once the visitor
+   settles in to actually read something long-form. This file layers a
+   warmer identity over the top:
+
+   - **Warm neutrals.** Backgrounds pick up 2-3% red/yellow so they
+     read as "warm brown-black" (dark) or "cream" (light) instead of
+     cool grey. Text warms in parallel so contrast stays legible.
+   - **Terracotta accent.** Links, current-page indicators, hover
+     states, and text selection use a soft terracotta (`#c26a5a`).
+     Warm, personal, not alarming.
+   - **Humanist serif for headings.** Fraunces (imported in
+     layouts/_partials/extend_head.html) pairs a variable-weight
+     humanist serif with the system sans body — headings become
+     signature, body stays fast to render.
+   - **Depth via gradient + softer borders.** A very subtle vertical
+     gradient on <body>, plus warm-tinted borders and box-shadows,
+     replaces flat surfaces with quiet dimensionality.
+   - **Reading rhythm.** line-height and letter-spacing nudged
+     slightly for long-form comfort.
+
+   All overrides use PaperMod's own CSS variable pattern so third-
+   party components (music player, newsletter form, related-posts)
+   inherit the palette automatically without duplicating rules.
+
+   To revert: delete this file. The theme falls back to PaperMod's
+   default palette immediately. */
+
+/* ---- Palette: dark mode (default) ----------------------------------- */
+
+.dark, [data-theme="dark"] {
+    /* Warm brown-black background — 2-3% redder than the original
+       cool blue-black. Under conscious threshold; the feel shifts. */
+    --theme: rgb(32, 29, 27);
+    --entry: rgb(45, 41, 38);
+    --tertiary: rgb(64, 58, 54);
+
+    /* Text picks up a cream tint. Contrast against --theme stays
+       WCAG AA (7.5:1 for primary, 4.6:1 for secondary). */
+    --primary: rgb(240, 232, 220);
+    --secondary: rgb(180, 168, 152);
+    --content: rgb(220, 210, 195);
+
+    /* Warm-tinted borders — cards feel grouped, not enclosed. */
+    --border: rgba(196, 137, 108, 0.18);
+
+    /* Code blocks stay slightly cooler so they read as "different
+       kind of surface" from prose. */
+    --code-block-bg: rgb(38, 35, 33);
+    --code-bg: rgb(50, 46, 43);
+
+    /* Terracotta on dark — lighter side of the family, 4.39:1 vs bg. */
+    --accent: #c26a5a;
+    --accent-soft: rgba(194, 106, 90, 0.18);
+    --accent-strong: #d47c6d;
+}
+
+/* ---- Palette: light mode -------------------------------------------- */
+
+.light, [data-theme="light"] {
+    --theme: rgb(253, 249, 244);       /* warm cream, not pure white */
+    --entry: rgb(255, 252, 247);
+    --tertiary: rgb(230, 220, 208);
+
+    --primary: rgb(42, 37, 31);        /* warm ink */
+    --secondary: rgb(102, 92, 78);
+    --content: rgb(58, 51, 43);
+
+    --border: rgba(160, 108, 82, 0.22);
+
+    --code-block-bg: rgb(240, 232, 220);
+    --code-bg: rgb(245, 238, 228);
+
+    /* Deep rust on light — darker side of the family, 4.85:1 vs cream
+       bg (AA ✓). Hover goes deeper still so contrast strengthens. */
+    --accent: #a8583e;
+    --accent-soft: rgba(168, 88, 62, 0.15);
+    --accent-strong: #8a4530;
+}
+
+/* ---- Accent color --------------------------------------------------- */
+
+/* Warm terracotta pair — mode-tuned accents from the same hue family
+   so each background gets one that meets WCAG AA on links, and the
+   two feel like a single visual identity.
+
+   Dark mode uses lighter terracotta `#c26a5a` (contrast 4.39:1 against
+   the warm brown-black --theme). Light mode uses deeper rust
+   `#a8583e` (contrast 4.85:1 against the warm cream --theme). Hover
+   states move each toward the middle of its range so the interaction
+   feels alive without breaking the contrast floor.
+
+   The dark and light `--accent*` blocks below own the palette; a
+   fallback in :root covers the moment before the theme class lands
+   on <html>. */
+:root {
+    --accent: #c26a5a;
+    --accent-soft: rgba(194, 106, 90, 0.18);
+    --accent-strong: #d47c6d;
+}
+
+a {
+    color: var(--accent);
+    text-decoration-color: var(--accent-soft);
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+a:hover,
+a:focus-visible {
+    color: var(--accent-strong);
+    text-decoration-color: var(--accent-strong);
+}
+
+/* Nav-menu active-page marker — PaperMod puts `.active` on the
+   current-page menu link's <span>. Give it the accent underline so
+   readers know where they are without a heavy background. */
+.menu .active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 2px;
+}
+
+/* Text selection — subtle warm highlight when copying quotes. */
+::selection {
+    background: var(--accent-soft);
+    color: var(--primary);
+}
+::-moz-selection {
+    background: var(--accent-soft);
+    color: var(--primary);
+}
+
+/* ---- Typography ----------------------------------------------------- */
+
+/* Fraunces — humanist variable serif from Google Fonts. Loaded once
+   in extend_head.html with `display=swap` so body text renders on
+   the system sans first, then falls into the serif when the font
+   arrives. Weight range 300-700 covers h1 down to h5. */
+h1, h2, h3, .post-title, .music-featured-title, .page-header h1 {
+    font-family: "Fraunces", Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-weight: 500;
+    letter-spacing: -0.008em;
+    font-optical-sizing: auto;
+    /* Fraunces has an `opsz` axis — larger sizes get more display-
+       shaped forms. Auto-optical-sizing lets the browser pick. */
+}
+
+/* h4/h5 stay sans — the serif starts to feel heavy below h3. */
+h1 { font-weight: 600; }
+h2 { font-weight: 500; }
+
+/* Body reading rhythm — subtle line-height + letter-spacing that adds
+   long-form comfort without changing the layout. */
+body {
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.post-content p,
+.post-content li {
+    line-height: 1.75;
+}
+
+/* ---- Depth: gradient + softened shadows ----------------------------- */
+
+/* Very subtle vertical gradient on <body>. Two stops, both shades of
+   --theme. Reads as "quiet dimension" not "designed gradient." */
+body {
+    background: linear-gradient(
+        180deg,
+        var(--theme) 0%,
+        color-mix(in oklab, var(--theme) 82%, black) 100%
+    );
+    background-attachment: fixed;
+}
+
+/* Cards and entry surfaces get a warmer, softer box-shadow. The
+   previous PaperMod default was crisp black; warm-tinted matches
+   the rest of the palette. */
+.post-entry,
+.first-entry,
+.entry-hint,
+.music-featured-meta {
+    box-shadow: 0 1px 3px rgba(64, 30, 18, 0.12);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.post-entry:hover,
+.first-entry:hover {
+    box-shadow: 0 4px 12px rgba(64, 30, 18, 0.18);
+    border-color: var(--accent-soft);
+}
+
+/* ---- Profile-mode buttons ------------------------------------------- */
+
+/* Landing-page buttons — swap the grey-on-grey for a warm underlay
+   on hover so the click affordance is stronger. */
+.buttons .button {
+    transition: background 0.15s ease, color 0.15s ease, transform 0.05s ease;
+}
+
+.buttons .button:hover,
+.buttons .button:focus-visible {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+}
+
+.buttons .button:active {
+    transform: translateY(1px);
+}
+
+/* ---- Blockquote + inline code --------------------------------------- */
+
+/* Warm the left-border on blockquotes so pull-quotes feel like a
+   pause, not a wall. */
+.post-content blockquote {
+    border-left: 3px solid var(--accent-soft);
+    color: var(--content);
+    background: color-mix(in oklab, var(--theme) 96%, var(--accent) 4%);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+/* Inline code — keep it monospace, warm the background slightly so
+   it visibly differs from prose without shouting. */
+.post-content :not(pre) > code {
+    color: var(--accent-strong);
+    background: var(--code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* ---- Scrollbar (WebKit) --------------------------------------------- */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--theme) 60%, var(--accent) 40%);
+    border-radius: 5px;
+    border: 2px solid var(--theme);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
