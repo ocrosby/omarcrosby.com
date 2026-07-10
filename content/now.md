@@ -1,11 +1,14 @@
 +++
 title = "Now"
-date = 2026-07-09T23:53:59-04:00
+date = 2026-07-10T00:30:08-04:00
 draft = false
 description = "What I'm focused on right now — updated monthly. Following the nownownow.com convention."
+
+[cover]
+image = "/images/og/meta/now.jpg"
 +++
 
-*Updated 2026-07-09.*
+*Updated 2026-07-10.*
 
 Following the [nownownow.com](https://nownownow.com) convention — this page reflects **current** focus, not an exhaustive to-do list. If the date at the top is more than about 45 days old, I've fallen behind on updates; ping me on [LinkedIn](https://www.linkedin.com/in/omarcrosby/).
 

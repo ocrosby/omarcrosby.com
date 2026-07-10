@@ -3,6 +3,9 @@ title = "Uses"
 date = 2026-07-09T22:15:00-04:00
 draft = false
 description = "The editor, shell, languages, and hosting stack I actually use — for anyone who wandered over from uses.tech."
+
+[cover]
+image = "/images/og/meta/uses.jpg"
 +++
 
 The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech). For what I'm actively focused on this month, see [/now/]({{< ref "now.md" >}}).
