@@ -211,21 +211,31 @@ buildExpired = false
   # URLs are rendered verbatim as `href` by PaperMod's profile template.
   # Always root-relative (leading slash) or absolute — never bare strings.
   # See .claude/rules/hugo-config-urls.md.
+  # `description` — one-sentence hover tooltip (rendered as the <a> title
+  # attribute by layouts/_partials/index_profile.html override). Tells
+  # the visitor what they'll see on the destination page. Falls back to
+  # `name` if omitted; keep the description present so hover UX is
+  # consistent across every button.
   [[params.profileMode.buttons]]
     name = "Blog"
     url = "/posts/"
+    description = "Long-form technical writing on Go, distributed systems, testing, Neovim, and code quality."
   [[params.profileMode.buttons]]
     name = "Projects"
     url = "/projects/"
+    description = "Open-source tools and side projects I've built — most live under github.com/jedi-knights."
   [[params.profileMode.buttons]]
     name = "About"
     url = "/about/"
+    description = "Who I am, what I work on day to day, and my professional background."
   [[params.profileMode.buttons]]
     name = "Uses"
     url = "/uses/"
+    description = "The editor, shell, languages, hardware, and hosting stack I actually reach for."
   [[params.profileMode.buttons]]
     name = "Now"
     url = "/now/"
+    description = "What I'm actively focused on this month — writing, projects in flight, and what I'm learning."
 
 # Fallback for when profileMode is disabled — shows above the post list.
 [params.homeInfoParams]
