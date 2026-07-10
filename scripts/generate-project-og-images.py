@@ -36,12 +36,13 @@ OUT_DIR = REPO_ROOT / "static" / "images" / "og" / "projects"
 # Design tokens — same as scripts/generate-og-images.py (posts).
 WIDTH = 1200
 HEIGHT = 630
-BG = "#1d1e20"
-FG = "#ffffff"
-MUTED = "#8a8a8a"
+BG = "#201d1b"          # warm brown-black — matches site --theme dark
+FG = "#f0e8dc"          # cream — matches site --primary dark
+MUTED = "#b4a898"       # warm secondary — matches site --secondary dark
+ACCENT = "#c26a5a"      # terracotta — matches site --accent dark
 MUTED_STRONG = "#c4c4c5"
-FONT_BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-FONT_REGULAR = "/System/Library/Fonts/Supplemental/Arial.ttf"
+FONT_BOLD = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-700.ttf")
+FONT_REGULAR = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-regular.ttf")
 
 PAD = 80
 LABEL_PT = 26
@@ -89,7 +90,7 @@ def render(slug: str, title: str, summary: str) -> Path:
         "-size", f"{WIDTH}x{HEIGHT}",
         f"xc:{BG}",
         # 2. Section label.
-        "-fill", MUTED,
+        "-fill", ACCENT,
         "-font", FONT_BOLD,
         "-pointsize", str(LABEL_PT),
         "-gravity", "NorthWest",
