@@ -1,0 +1,37 @@
+/* Profile-mode hero image — auto-loaded by PaperMod from
+   assets/css/extended/.
+
+   Two concerns handled here:
+
+   1. Image sizing/shape
+      PaperMod's default .profile img rule keeps border-radius: 50% and
+      uses the img's HTML width/height attributes as the rendered size.
+      Left alone, the 461x463 source photo renders too small (or too
+      large depending on viewport). Constrain to a max-width around
+      260px and preserve the circular clip so the headshot reads as an
+      avatar rather than a page banner.
+
+   2. Vertical anchoring
+      PaperMod's default .main .profile has align-items: center and a
+      viewport-tall min-height, which centers the profile_inner column
+      vertically and produces a large whitespace above the image on
+      taller screens. Anchor to the top with a small padding instead,
+      so the headshot sits close to the menu without requiring
+      viewport-tall centering. */
+
+.main .profile {
+    align-items: flex-start;
+    min-height: auto;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.profile .profile_inner > img {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 0.75rem;
+}
