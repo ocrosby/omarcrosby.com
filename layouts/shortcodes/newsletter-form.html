@@ -1,0 +1,53 @@
+{{- /*
+    Newsletter subscribe form — shortcode for content/subscribe.md.
+
+    Rendered only when both:
+      1. hugo.IsProduction is true (params.env = "production" qualifies).
+      2. site.Params.buttondown.username is set to a non-empty string
+         in hugo.toml.
+
+    When neither condition holds, this shortcode renders a placeholder
+    <p> so the surrounding page reads "coming soon" copy cleanly.
+
+    Setup (parallel to the goatcounter scaffolding in
+    layouts/_partials/extend_head.html):
+
+      1. Sign up at https://buttondown.com — pick a username like
+         `omarcrosby`. That username becomes part of the embed URL:
+         https://buttondown.com/api/emails/embed-subscribe/<username>
+      2. Set params.buttondown.username = "omarcrosby" in hugo.toml.
+      3. Merge. This shortcode starts rendering the actual form on the
+         next Fly deploy.
+
+    To swap to a different provider later (Kit / MailerLite / Beehiiv
+    / etc.), edit this shortcode's <form action=...> and hidden fields
+    to match the provider's embed template. The subscribe page copy in
+    content/subscribe.md stays put — the shortcode is the swap point.
+*/ -}}
+{{- $username := site.Params.buttondown.username | default "" -}}
+{{- if and hugo.IsProduction $username -}}
+<form
+    action="https://buttondown.com/api/emails/embed-subscribe/{{ $username }}"
+    method="post"
+    target="popupwindow"
+    onsubmit="window.open('https://buttondown.com/{{ $username }}', 'popupwindow')"
+    class="newsletter-form">
+  <label class="newsletter-form-label" for="newsletter-email">Email address</label>
+  <input
+      class="newsletter-form-input"
+      type="email"
+      name="email"
+      id="newsletter-email"
+      placeholder="you@example.com"
+      required>
+  <button type="submit" class="newsletter-form-submit">Subscribe</button>
+</form>
+<p class="newsletter-form-fineprint">
+  Powered by <a href="https://buttondown.com" target="_blank" rel="noopener">Buttondown</a>.
+  You'll get every new post, nothing else. Unsubscribe any time.
+</p>
+{{- else -}}
+<p class="newsletter-form-placeholder">
+  <em>Email subscribe form will appear here once the newsletter is wired up.</em>
+</p>
+{{- end -}}

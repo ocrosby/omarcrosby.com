@@ -1,0 +1,83 @@
+/* Newsletter subscribe form — auto-loaded by PaperMod from
+   assets/css/extended/. Rendered by the {{< newsletter-form >}}
+   shortcode in content/subscribe.md, and shows only when
+   params.buttondown.username is set in hugo.toml.
+
+   Layout goals:
+   - Feel like the site's other forms (music filter search input,
+     header theme-toggle) — inputs match the theme's --code-bg and
+     --border tokens; the submit button matches the theme's --primary
+     accent.
+   - On narrow viewports, stack input and button vertically; on wider,
+     keep them on one row.
+   - Placeholder <p> (when the newsletter isn't wired up) reads as
+     muted prose, not as broken UI. */
+
+.newsletter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: stretch;
+    margin: 1rem 0 0.5rem;
+}
+
+.newsletter-form-label {
+    /* Visually hidden but present for screen readers. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.newsletter-form-input {
+    flex: 1 1 240px;
+    min-width: 0;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--code-bg);
+    color: var(--content);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.newsletter-form-input:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.newsletter-form-submit {
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius);
+    border: 0;
+    background: var(--primary);
+    color: var(--theme);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.newsletter-form-submit:hover,
+.newsletter-form-submit:focus-visible {
+    opacity: 0.85;
+}
+
+.newsletter-form-fineprint {
+    font-size: 0.85rem;
+    color: var(--secondary);
+    margin: 0.25rem 0 1rem;
+}
+
+.newsletter-form-placeholder {
+    color: var(--secondary);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    background: var(--code-bg);
+    border: 1px dashed var(--border);
+}

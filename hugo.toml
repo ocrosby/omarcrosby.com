@@ -159,6 +159,20 @@ buildExpired = false
 [params.goatcounter]
   code = "omarcrosby"
 
+# Newsletter — Buttondown (developer-friendly, indie-web, free up to 100
+# subscribers). Setup:
+#   1. Sign up at buttondown.com. Pick a username like `omarcrosby`.
+#   2. Set `username` below to that username.
+#   3. Merge. The {{< newsletter-form >}} shortcode in
+#      content/subscribe.md starts rendering the real form; until then
+#      it renders a "coming soon" placeholder.
+#
+# To swap providers (Kit / MailerLite / Beehiiv / etc.), edit the form
+# action URL and hidden fields inside layouts/shortcodes/newsletter-form.html
+# to match their embed shape. The subscribe page copy stays put.
+[params.buttondown]
+  username = ""
+
 # Persistent site-header avatar — small circular headshot next to the
 # "Omar Crosby" title on every page. PaperMod's header.html reads
 # label.icon (via resources.Get first, then absURL fallback), and
