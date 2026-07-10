@@ -139,9 +139,24 @@ declare global {
   const items = Array.from(
     document.querySelectorAll<MusicItemElement>(".music-item"),
   );
-  // Index of the featured / currently-playing video. Starts at 0 because the
-  // server-rendered iframe features the newest entry.
+  // Index of the featured / currently-playing video. Server-side the
+  // featured slot may be items[0] (the newest song, on /music/) or an
+  // arbitrary item (on /music/<id>/ shared-song pages emitted by
+  // content/music/_content.gotmpl). Read the featured id from the meta
+  // block's data-featured-youtube-id attribute (case-preserved) and
+  // find its index in the DOM-rendered items list. Falls back to 0 if
+  // the attribute is missing or matches nothing.
+  const featuredMeta = document.querySelector<HTMLElement>(".music-featured-meta");
+  const featuredYoutubeId = featuredMeta?.dataset.featuredYoutubeId || "";
   let currentIndex = 0;
+  if (featuredYoutubeId) {
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].dataset.youtubeId === featuredYoutubeId) {
+        currentIndex = i;
+        break;
+      }
+    }
+  }
 
   // Filter state — the two dropdowns and the search input above the list.
   // Empty string means "no filter" (the sentinel "All artists" / "All genres"
@@ -327,7 +342,7 @@ declare global {
       }
     }
   }
-  if (items.length > 0) setPlayingHighlight(0);
+  if (items.length > 0) setPlayingHighlight(currentIndex);
 
   // Initial filter values from the URL — read once at load, before the
   // deep-link (?v=) handler runs so both filter and target video apply.
