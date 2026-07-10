@@ -45,13 +45,13 @@ buildExpired = false
   identifier = "music"
   name = "Music"
   url = "/music/"
-  weight = 5
+  weight = 30
 
 [[menu.main]]
   identifier = "recipes"
   name = "Recipes"
   url = "/recipes/"
-  weight = 7
+  weight = 32
 
 [[menu.main]]
   identifier = "posts"
