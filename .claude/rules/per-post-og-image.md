@@ -28,14 +28,17 @@ Before opening any PR that adds a post under `content/posts/`:
 
    It walks `content/posts/*.md`, parses title + primary category from front matter, and writes `static/images/og/<slug>.png`. Adding a new post → the script generates its image on the next run. Editing an existing post's title or category → rerun the script to refresh that post's image.
 
-2. Ensure the post's front matter carries a `[cover]` block pointing at its image:
+2. Ensure the post's front matter carries a `[cover]` block pointing at its image, with `hiddenInList = true`:
 
    ```toml
    [cover]
    image = "/images/og/<slug>.png"
+   hiddenInList = true
    ```
 
    Placed as the last block inside the front matter (TOML tables must follow all top-level keys). The path is root-relative; PaperMod's opengraph template runs it through `absURL`.
+
+   `hiddenInList = true` suppresses PaperMod's auto-rendering of the cover image as a full-width banner in list views (`/posts/`, `/categories/<slug>/`, `/tags/<tag>/`, etc.). Without it, each list card renders 60% branded banner + 40% text and the list gets much taller than useful. The banner still renders on the single post page (that's intended and matches the `/about/` treatment), and `og:image` still emits — PaperMod's `opengraph.html` reads `Params.cover.image` regardless of any `hidden*` flag. Established in PR #87 after all 13 existing posts were backported.
 
 3. Verify `og:image` in the rendered HTML resolves to the per-post PNG, not `og.png`:
 
@@ -51,8 +54,9 @@ Before opening any PR that adds a post under `content/posts/`:
 | Signal | Fix |
 |---|---|
 | New file under `content/posts/` in the diff, no matching `static/images/og/<slug>.png` | Run `python3 scripts/generate-og-images.py`, stage the new PNG |
-| Post's front matter lacks a `[cover]` block | Add `[cover]\nimage = "/images/og/<slug>.png"` before the closing `+++` |
+| Post's front matter lacks a `[cover]` block | Add `[cover]\nimage = "/images/og/<slug>.png"\nhiddenInList = true` before the closing `+++` |
 | Post's `[cover].image` points at `images/og.png` or another shared file | Replace with `/images/og/<slug>.png` and generate the per-post image |
+| Post's `[cover]` block has `image = ...` but no `hiddenInList = true` | Add the line — list views (`/posts/`, `/categories/<slug>/`, tag pages) render each card with a full-width branded banner otherwise |
 | Post's title changed but `static/images/og/<slug>.png` hasn't been regenerated | Re-run the generator; commit the refreshed PNG |
 | `scripts/generate-og-images.py` reports `SKIP <post>: no title in front matter` | The post is missing `title` — fix the front matter first (see `.claude/rules/content-frontmatter.md`) |
 
@@ -66,6 +70,7 @@ Before opening any PR that adds a post under `content/posts/`:
 ## Report as
 
 - **Must Fix** — a new post lands without an OG image, or the `[cover]` block is missing, or the referenced image doesn't exist under `static/images/og/`. The whole SEO/discovery gain from PR #71 collapses on the first post that skips this.
+- **Must Fix** — `[cover]` block is present but `hiddenInList = true` is missing. Every list view (`/posts/`, `/categories/<slug>/`, tag pages) renders each post as a big banner + a tiny text summary. The list becomes 60% branding, 40% scannable content — the whole scanability-of-the-list gain from PR #70 (topic pillars) collapses.
 - **Should Fix** — the post's title has changed since the last OG generation and the image no longer matches the current title.
 
 ## Exceptions
