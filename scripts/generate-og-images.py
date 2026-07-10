@@ -31,11 +31,12 @@ OUT_DIR = REPO_ROOT / "static" / "images" / "og"
 # Design tokens — echo the site's dark theme (--theme rgb(29, 30, 32)).
 WIDTH = 1200
 HEIGHT = 630
-BG = "#1d1e20"
-FG = "#ffffff"
-MUTED = "#8a8a8a"
-FONT_BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-FONT_REGULAR = "/System/Library/Fonts/Supplemental/Arial.ttf"
+BG = "#201d1b"          # warm brown-black — matches site --theme dark
+FG = "#f0e8dc"          # cream — matches site --primary dark
+MUTED = "#b4a898"       # warm secondary — matches site --secondary dark
+ACCENT = "#c26a5a"      # terracotta — matches site --accent dark
+FONT_BOLD = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-700.ttf")
+FONT_REGULAR = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-regular.ttf")
 TITLE_PT = 60
 LABEL_PT = 26
 MARK_PT = 28
@@ -84,7 +85,7 @@ def render(slug: str, title: str, category: str) -> Path:
         "-size", f"{WIDTH}x{HEIGHT}",
         f"xc:{BG}",
         # Category label (uppercase, muted, top-left).
-        "-fill", MUTED,
+        "-fill", ACCENT,
         "-font", FONT_BOLD,
         "-pointsize", str(LABEL_PT),
         "-gravity", "NorthWest",

@@ -33,12 +33,13 @@ META_DIR = STATIC_IMAGES / "og" / "meta"
 # and match generate-og-images.py + generate-music-og-images.py.
 WIDTH = 1200
 HEIGHT = 630
-BG = "#1d1e20"
-FG = "#ffffff"
+BG = "#201d1b"          # warm brown-black — matches site --theme dark
+FG = "#f0e8dc"          # cream — matches site --primary dark
 MUTED_STRONG = "#c4c4c5"
-MUTED = "#8a8a8a"
-FONT_BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-FONT_REGULAR = "/System/Library/Fonts/Supplemental/Arial.ttf"
+MUTED = "#b4a898"       # warm secondary — matches site --secondary dark
+ACCENT = "#c26a5a"      # terracotta — matches site --accent dark
+FONT_BOLD = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-700.ttf")
+FONT_REGULAR = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-regular.ttf")
 
 PHOTO_SIZE = 400
 PAD = 80
@@ -118,7 +119,7 @@ def render(label: str, title: str, subtitle: str, out: Path) -> None:
         "-compose", "Over",
         "-composite",
         # 3. Section label.
-        "-fill", MUTED,
+        "-fill", ACCENT,
         "-font", FONT_BOLD,
         "-pointsize", str(LABEL_PT),
         "-gravity", "NorthWest",

@@ -34,12 +34,13 @@ CACHE_DIR = REPO_ROOT / "scripts" / ".thumbnail-cache"
 # like the same site.
 WIDTH = 1200
 HEIGHT = 630
-BG = "#1d1e20"
-FG = "#ffffff"
+BG = "#201d1b"          # warm brown-black — matches site --theme dark
+FG = "#f0e8dc"          # cream — matches site --primary dark
 MUTED_STRONG = "#c4c4c5"  # artist text
-MUTED = "#8a8a8a"          # section label, album line, site mark
-FONT_BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
-FONT_REGULAR = "/System/Library/Fonts/Supplemental/Arial.ttf"
+MUTED = "#b4a898"       # warm secondary — matches site --secondary dark
+ACCENT = "#c26a5a"      # terracotta — matches site --accent dark
+FONT_BOLD = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-700.ttf")
+FONT_REGULAR = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-regular.ttf")
 
 # Layout constants — thumbnail on the left, text stack on the right.
 PAD = 80
@@ -185,7 +186,7 @@ def render(entry: dict, thumb: Path) -> Path:
         "-size", f"{WIDTH}x{HEIGHT}",
         f"xc:{BG}",
         # 2. Section label ("MUSIC") top-left.
-        "-fill", MUTED,
+        "-fill", ACCENT,
         "-font", FONT_BOLD,
         "-pointsize", str(LABEL_PT),
         "-gravity", "NorthWest",
