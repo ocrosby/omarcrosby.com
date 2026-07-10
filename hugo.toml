@@ -171,7 +171,7 @@ buildExpired = false
 # action URL and hidden fields inside layouts/shortcodes/newsletter-form.html
 # to match their embed shape. The subscribe page copy stays put.
 [params.buttondown]
-  username = ""
+  username = "omarcrosby"
 
 # Persistent site-header avatar — small circular headshot next to the
 # "Omar Crosby" title on every page. PaperMod's header.html reads
