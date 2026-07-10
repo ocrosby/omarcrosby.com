@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "A community-driven Neovim distribution and a family of modular plugins — logging, diagnostics, window management, YAML, pytest, and more."
 tags = ["neovim", "lua", "nvim-plugin"]
+
+[cover]
+image = "/images/og/projects/yoda-nvim.png"
+hiddenInList = true
 +++
 
 A Neovim distribution that boots with sensible defaults, plus a family of small modular plugins so pieces are usable outside of Yoda itself.

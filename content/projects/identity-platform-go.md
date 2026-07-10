@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "A production-style OAuth2/OIDC reference in Go, built as pure microservices — each service independently deployable with its own database."
 tags = ["oauth2", "oidc", "go", "microservices"]
+
+[cover]
+image = "/images/og/projects/identity-platform-go.png"
+hiddenInList = true
 +++
 
 A working reference for OAuth2 and OIDC in Go, shaped as a proper microservices deployment rather than a monolith with routes. Each service is independently deployable, owns its own database, and follows a ports-and-adapters interior.

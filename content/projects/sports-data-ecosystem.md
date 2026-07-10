@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "MCP servers, Python SDKs, an RPI calculator, and a match-tracking app — a stack of tools for pulling and reasoning about soccer, NFL, and other league data."
 tags = ["mcp", "sports-data", "python", "go"]
+
+[cover]
+image = "/images/og/projects/sports-data-ecosystem.png"
+hiddenInList = true
 +++
 
 A collection of independently useful pieces that all speak the same data:

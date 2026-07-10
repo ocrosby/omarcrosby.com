@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "Static code analysis for NASM x86 assembly — CLI, editor LSP, and a GitHub Action with SARIF output."
 tags = ["rust", "nasm", "assembly", "static-analysis", "lsp"]
+
+[cover]
+image = "/images/og/projects/nasm-lint.png"
+hiddenInList = true
 +++
 
 A static analyzer for NASM x86 assembly, written in Rust. Ships in three forms so it fits every place code is normally checked:
