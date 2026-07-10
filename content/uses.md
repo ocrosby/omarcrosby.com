@@ -9,7 +9,7 @@ image = "/images/og/meta/uses.jpg"
 hidden = true
 +++
 
-The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech). For what I'm actively focused on this month, see [/now/]({{< ref "now.md" >}}).
+The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech). For what I'm actively focused on right now, see [/now/]({{< ref "now.md" >}}).
 
 ## Machine
 
