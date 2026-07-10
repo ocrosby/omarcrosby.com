@@ -7,6 +7,8 @@ tags = ["neovim", "lua", "nvim-plugin", "yoda"]
 ShowToc = true
 +++
 
+*Companion to the [Yoda project page]({{< ref "projects/yoda-nvim.md" >}}).*
+
 There are a lot of Neovim distributions. Most of them ship as a single repo you clone into `~/.config/nvim`, and if you want a piece of what they do — the picker wiring, the notification shim, the diagnostics helpers — you get to copy the file, adjust the paths, and hope nothing else in it depends on the rest of the distro.
 
 [yoda.nvim](https://github.com/jedi-knights/yoda.nvim) is my attempt to not be that. It's a modular, beginner-friendly Neovim distribution with Claude Code integration, TokyoNight, lazy-loading, LSP and testing and debugging and Git — the usual distribution surface — but the pieces underneath are their own plugins, individually installable, individually tested. The design goal from the beginning was: *if you want just the logging piece, you should be able to take just the logging piece.*

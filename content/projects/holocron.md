@@ -8,6 +8,8 @@ tags = ["go", "streaming", "distributed-systems"]
 
 A learning-first take on Kafka-style event streaming: a single-binary broker plus an SDK, arranged as a Go workspace so the two evolve together. The goal is teaching myself (and anyone reading) what actually happens in a log-based broker, not shipping a Kafka replacement.
 
+**Deep dive:** [Holocron: a Go-native distributed log with NATS JetStream ergonomics and Kafka semantics →]({{< ref "posts/building-holocron-to-understand-kafka.md" >}}) — why per-partition ordering is the load-bearing Kafka guarantee, and how Holocron enforces it on the segment append path instead of assuming it from the outside.
+
 **Stack:** Go workspace (broker + SDK) · Python SDK
 
 - **Broker + Go SDK:** [github.com/jedi-knights/holocron](https://github.com/jedi-knights/holocron)

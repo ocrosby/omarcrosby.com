@@ -7,6 +7,8 @@ tags = ["go", "distributed-systems", "kafka", "nats", "streaming"]
 ShowToc = true
 +++
 
+*Companion to the [Holocron project page]({{< ref "projects/holocron.md" >}}).*
+
 If you want an event streaming platform today, the two obvious answers are **Kafka** and **NATS JetStream**. Kafka gives you the log model people build systems around — topics, partitions, offsets, consumer groups, strict per-partition ordering. It also gives you a JVM, a coordination layer (ZooKeeper, or KRaft now), an operator, and a small crew of humans to keep it healthy. NATS JetStream gives you a single Go binary you can drop on a host and forget. It also gives you a data model that isn't quite the same shape, and a [known ordering bug under truncation](https://jepsen.io/analyses/nats-2.12.1) that Jepsen documented in the 2.12.1 analysis.
 
 You often want the union: JetStream's operational simplicity with Kafka's semantics. [Holocron](https://github.com/jedi-knights/holocron) is my attempt at that.

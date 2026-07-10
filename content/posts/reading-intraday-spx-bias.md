@@ -7,6 +7,8 @@ tags = ["python", "trading", "options", "spx", "signals"]
 ShowToc = true
 +++
 
+*Companion to the [Strike Pilot project page]({{< ref "projects/strike-pilot.md" >}}).*
+
 Most retail options traders make credit-spread decisions the same way: a chart, a feeling about the direction, a strike picked because it "feels safe", and hope. Nothing about that loop is systematic, and nothing about it forces the honest question — **is the setup actually there?**
 
 [strike-pilot](https://github.com/ocrosby/strike-pilot) is the shape I wanted that loop to take. It ingests intraday market signals, decides on a directional bias with a calibrated confidence score, picks specific strikes, and validates the candidate spread against risk parameters. If any check fails, its output is `no-trade`. That last part matters more than any of the others.
