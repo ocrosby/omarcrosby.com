@@ -17,6 +17,25 @@
 <link rel="icon" type="image/png" sizes="512x512" href="{{ "favicon-512x512.png" | absURL }}">
 
 {{- /*
+    Turbo Drive — SPA-style navigation without a JS framework rewrite.
+    Intercepts internal link clicks, swaps <body> in place, and preserves
+    elements marked data-turbo-permanent across page loads. Enables the
+    music player iframe to keep playing during site-wide navigation
+    (once the persistent mini-player bar lands in a follow-up PR).
+
+    Loaded from jsDelivr (~40 KB gzipped, aggressively cached). If jsDelivr
+    is unreachable, links fall back to full page loads — no functional
+    regression, just no SPA nav until the CDN recovers.
+
+    data-turbo-track="reload" — if this src ever changes (version bump),
+    the next navigation triggers a full page reload rather than trying
+    to reuse the old Turbo instance.
+*/ -}}
+<script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8/dist/turbo.es2017-umd.min.js"
+        defer
+        data-turbo-track="reload"></script>
+
+{{- /*
     Analytics — GoatCounter (privacy-respecting, free for personal use,
     no cookies, no PII). Emits only when:
 
@@ -24,6 +43,12 @@
          params.env = "production" in hugo.toml qualifies).
       2. params.goatcounter.code is set to a non-empty string in
          hugo.toml. Empty / missing = no tracking script at all.
+
+    SPA-aware: data-goatcounter-settings='{"no_onload": true}' prevents
+    the default single count on script load; the sibling <script> block
+    fires count() manually on every turbo:load event (which Turbo also
+    emits on initial page load), so pageviews register correctly for
+    both the first hit and every subsequent Turbo navigation.
 
     Setup:
       1. Sign up at https://www.goatcounter.com — pick a subdomain
@@ -33,13 +58,24 @@
 
     To switch to Plausible or Fathom later: replace this block with the
     provider's own snippet, still gated on hugo.IsProduction. Keep the
-    "no cookies, no PII" property — the site has no legitimate need
-    to fingerprint visitors.
+    "no cookies, no PII" property.
 */ -}}
 {{- if and hugo.IsProduction (isset site.Params "goatcounter") -}}
 {{- with site.Params.goatcounter.code -}}
 <script
     data-goatcounter="https://{{ . }}.goatcounter.com/count"
+    data-goatcounter-settings='{"no_onload": true}'
     async src="//gc.zgo.at/count.js"></script>
+<script>
+    // Fire GoatCounter pageview on both the initial page load AND
+    // every Turbo navigation. window.goatcounter is populated once
+    // count.js finishes loading (async, so may not exist on first
+    // turbo:load — the guard makes that a no-op rather than an error).
+    document.addEventListener('turbo:load', function () {
+        if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+            window.goatcounter.count({ path: location.pathname + location.search });
+        }
+    });
+</script>
 {{- end -}}
 {{- end -}}
