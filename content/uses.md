@@ -39,10 +39,10 @@ The tools I actually reach for, on the machine I'm actually sitting in front of.
 ## Languages (day-to-day)
 
 - **Go** — most of my open-source infrastructure work. See the [Code Quality]({{< ref "categories/code-quality" >}}) and [Distributed Systems]({{< ref "categories/distributed-systems" >}}) pillars for what that looks like in practice.
-- **Python** — trading tools ([Market Bridge]({{< ref "projects/market-bridge.md" >}}), [Strike Pilot]({{< ref "projects/strike-pilot.md" >}})) and the sports-data pipelines.
+- **Python** — day job at The Weather Company (backend test automation), plus trading tools ([Market Bridge]({{< ref "projects/market-bridge.md" >}}), [Strike Pilot]({{< ref "projects/strike-pilot.md" >}})) and the sports-data pipelines.
 - **Rust** — reached for when the domain benefits from it. [NASM Lint]({{< ref "projects/nasm-lint.md" >}}) is the current example.
 - **Lua** — the Neovim plugin surface. Idiomatic Lua, not "JavaScript in Lua clothing."
-- **TypeScript + Next.js** — the day job at The Weather Company.
+- **TypeScript + Next.js** — reached for on the front-end and API layer.
 - **NASM x86 assembly** — because it stays fun, and because building [NASM Lint]({{< ref "projects/nasm-lint.md" >}}) required understanding a language deeply enough to lint it.
 
 ## This site

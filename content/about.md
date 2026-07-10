@@ -9,7 +9,7 @@ image = "/images/og/meta/about.jpg"
 hidden = true
 +++
 
-I'm a **software engineer at The Weather Company** who works across the stack. Day to day, that means **Next.js** and **TypeScript** on the front end and API layer, DevOps and CI work to keep the pipes moving, Linux administration to keep the servers honest, and — when the mood strikes — lower-level programming in **NASM assembly**.
+I'm a **software engineer at The Weather Company**, where the day-to-day is mostly **Python** backend test automation on the **SUN QA team**. Outside the day job, I work across the stack — **Next.js** and **TypeScript** on the front end and API layer, DevOps and CI work to keep the pipes moving, Linux administration to keep the servers honest, and — when the mood strikes — lower-level programming in **NASM assembly**.
 
 {{< collapse summary="Background & education" >}}
 Before The Weather Company I was **Director of Software Engineering at Fidelity Investments**. I studied **Applied Mathematics** at **North Carolina State University** (2000–2004), where I spent more time than was strictly reasonable on analysis, algebra, and PDEs. I'm a member of **ACM**, **SIAM**, **IEEE**, and **Mensa**.
@@ -24,15 +24,15 @@ Outside the day job, my open-source work splits across two umbrellas — **[gith
 - **Identity and API platform** — a production-style OAuth2/OIDC reference in Go (`identity-platform-go`) built as clean microservices, plus a configurable reverse-proxy gateway (`api-gateway`) with rate limiting, circuit breaking, and MCP routing.
 - **A Neovim distribution and plugin ecosystem** — `yoda.nvim` plus a family of modular plugins (`yoda-core.nvim`, `yoda-window.nvim`, `yoda-logging.nvim`, `yoda-diagnostics.nvim`, `yoda-terminal.nvim`, `pytest.nvim`, `yaml.nvim`, `go.nvim`, `python.nvim`, and `pytest-atlas.nvim` for pytest-bdd navigation).
 - **Release, code-quality, and testing tooling** — `go-semantic-release` (which powers this site's release workflow), `nasm-lint` (Rust-based NASM static analyzer with CLI, LSP, and GitHub Action), `kyber` (Go quality metrics), `py-cyclo` (Python cyclomatic-complexity checker), `neospec` (Neovim test/coverage runner in Go), and `ctestprobe` — a unit testing framework for C, distributed via a Homebrew tap.
-- **Distributed systems play** — `holocron`, a learning-first Kafka-style event streaming platform written as a Go workspace, with a Python SDK.
+- **Distributed systems play** — `holocron`, a single-binary Kafka-style event streaming broker in Go, with a Python SDK.
 - **Dev environment** — `claude-config` (my Claude Code setup, GNU Stow–managed), my Neovim config, my macOS `dotfiles`, and a `learn-neovim` walkthrough.
 
-Also a scattering of language labs across **Go**, **Python**, **Rust**, **C**, **C++**, **TypeScript**, **R**, and **NASM**, plus notes on **physics**, **math**, and **astronomy** calculations — because the best way to learn a language is to build something small in it.
+Also a scattering of language labs across **Go**, **Python**, **Rust**, **Lua**, **C**, **C++**, **TypeScript**, **R**, and **NASM**, plus notes on **physics**, **math**, and **astronomy** calculations — because the best way to learn a language is to build something small in it.
 {{< /collapse >}}
 
 The through-line is: **build the boring plumbing well, in the language that fits, and open-source it**.
 
-For the editor, shell, languages, and release stack I actually reach for day to day, see [/uses/]({{< ref "uses.md" >}}). For what I'm actively focused on right now (updated monthly), see [/now/]({{< ref "now.md" >}}). To get new posts as they land — RSS or email — see [/subscribe/]({{< ref "subscribe.md" >}}).
+For the editor, shell, languages, and release stack I actually reach for day to day, see [/uses/]({{< ref "uses.md" >}}). For what I'm actively focused on right now (updated every 4–6 weeks), see [/now/]({{< ref "now.md" >}}). To get new posts as they land — RSS or email — see [/subscribe/]({{< ref "subscribe.md" >}}).
 
 ## Experience
 
@@ -42,7 +42,7 @@ For the editor, shell, languages, and release stack I actually reach for day to 
 - **Paragon Application Systems** — 2010–2014. Senior Software Engineer on payments-testing simulators.
 - **IBM / Lenovo** — 2000–2010. Software Engineer → Staff → Senior → Architect across the ThinkPad manufacturing test and firmware stack.
 
-Away from a keyboard, I cook — from scratch, mostly, because measuring things is fun. I watch a lot of film and TV, and I follow soccer more closely than is probably healthy — especially the **NWSL**, and specifically **Gotham FC**.
+Away from a keyboard, I cook — from scratch, mostly, because measuring things is fun. I watch a lot of film and TV, keep a curated [/music/]({{< ref "music" >}}) playlist running most of the day, and follow soccer more closely than is probably healthy — especially the **NWSL**, and specifically **Gotham FC**.
 
 ## Contact
 
