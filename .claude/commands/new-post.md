@@ -35,15 +35,23 @@ Scaffolds a new post at `content/posts/<slug>.md` with the required front matter
    description = ""
    tags = []
    categories = []
+
+   [cover]
+   image = "/images/og/<slug>.png"
+   hiddenInList = true
    +++
 
    Write your post here.
    ```
 
-5. Report the path back to the caller so they can open it:
+   The `[cover]` block is required per `.claude/rules/per-post-og-image.md`. `image` points at the path `scripts/generate-og-images.py` will write to; the PNG doesn't exist yet — that's fine while `draft = true`. `hiddenInList = true` keeps the cover from rendering as a full-width banner on `/posts/` and every taxonomy list (established in PR #87).
+
+5. Report the path back to the caller so they can open it, with a reminder to run the generator before shipping:
 
    ```text
-   Created content/posts/<slug>.md — flip draft to false when ready to ship.
+   Created content/posts/<slug>.md — flip draft to false when ready to ship, then run
+   `python3 scripts/generate-og-images.py` before opening the PR so the [cover] image
+   at /images/og/<slug>.png exists on the filesystem.
    ```
 
 ## Notes
