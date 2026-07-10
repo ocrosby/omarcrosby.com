@@ -19,3 +19,7 @@ TODO.md
 
 # Claude Code session-runtime state
 .claude/scheduled_tasks.lock
+
+# YouTube thumbnail cache — populated by scripts/generate-music-og-images.py
+# on demand. Kept out of the repo because it's a re-fetchable local cache.
+scripts/.thumbnail-cache/

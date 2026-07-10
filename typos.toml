@@ -7,6 +7,7 @@ extend-exclude = [
   "data/music.yaml",           # YouTube video IDs look like typos to the checker
   "data/recipes.yaml",         # mirrors filenames + titles from ocrosby/recipes, not our copy to lint
   "scripts/backfill-genres.py", # YouTube video IDs as dict keys — same false-positive class as data/music.yaml
+  "static/images/og/music/",   # per-song OG image files are named <youtube_id>.jpg — same false-positive class
 ]
 
 [default]
