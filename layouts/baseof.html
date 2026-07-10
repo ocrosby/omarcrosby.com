@@ -1,0 +1,82 @@
+{{- /*
+    Site-level override of themes/PaperMod/layouts/baseof.html.
+
+    Two structural changes vs upstream:
+
+    1. Everything that swaps on navigation (header, main content,
+       footer) lives inside a <turbo-frame id="content"> element.
+       Turbo Drive navigations targeting this frame replace only the
+       frame's contents, not the whole <body> — which means the
+       persistent music player at the end of body is never touched by
+       the DOM swap. That's what preserves live iframe playback state
+       (position, volume, mute) across every link click. `data-turbo-
+       action="advance"` makes the frame navigation push a new history
+       entry so the URL updates and the browser back button works.
+
+       `<body data-turbo-frame="content">` cascades to every link
+       inside body, so any `<a href>` in header, main, or footer
+       targets the frame automatically without per-link attributes.
+       External links (containing `://`) opt out via `data-turbo-
+       frame="_top"` on the link itself, which upstream PaperMod
+       doesn't emit — non-issue because Turbo Drive already treats
+       cross-origin URLs as full navigations.
+
+    2. The persistent-music-player partial renders OUTSIDE the frame.
+       No frame-swap-driven reparenting means the iframe never
+       reloads, which is the only reliable way to preserve YouTube
+       playback across page transitions. The player itself is styled
+       via CSS to sit inline in the featured slot on /music/ (see
+       persistent-player.ts for the JS that positions it over
+       .music-featured-slot).
+
+    Bump the Hugo version guard to match upstream.
+*/ -}}
+{{- if lt hugo.Version "0.146.0" }}
+{{- errorf "=> hugo v0.146.0 or greater is required for hugo-PaperMod to build " }}
+{{- end -}}
+
+<!DOCTYPE html>
+{{- $theme := site.Params.defaultTheme | default "auto" }}
+{{- if eq $theme "dark" }}
+<html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}" data-theme="dark">
+{{- else if eq $theme "light" }}
+<html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}" data-theme="light">
+{{- else }}
+<html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}" data-theme="auto">
+{{- end }}
+
+<head>
+    {{- partial "head.html" . }}
+</head>
+
+{{- if (or (ne .Kind `page` ) (eq .Layout `archives`) (eq .Layout `search`)) }}
+<body class="list" id="top" data-turbo-frame="content">
+{{- else }}
+<body id="top" data-turbo-frame="content">
+{{- end }}
+    <turbo-frame id="content" data-turbo-action="advance">
+        {{ partialCached "header.html" . .Page -}}
+        <main class="main">
+            {{- block "main" . }}{{ end }}
+        </main>
+        {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") -}}
+    </turbo-frame>
+    {{- /* Persistent music player lives OUTSIDE the turbo-frame so
+        frame-swap navigations never reparent the iframe. This is what
+        preserves live playback state across every link click. */ -}}
+    {{- partial "persistent-music-player.html" . -}}
+    {{- /* persistent-player.ts controller — also outside the frame so
+        it runs exactly once per real page load. Its event listeners
+        (turbo:load, turbo:before-render, window.resize, mute-preference
+        polling) survive every frame-swap and coordinate the player's
+        position/state without ever being re-executed. */ -}}
+    {{- $opts := dict
+        "minify" hugo.IsProduction
+        "sourceMap" (cond hugo.IsProduction "" "external")
+        "targetPath" "js/persistent-player.js"
+    -}}
+    {{- $pp := resources.Get "js/persistent-player.ts" | js.Build $opts | fingerprint -}}
+    <script src="{{ $pp.RelPermalink }}" integrity="{{ $pp.Data.Integrity }}" defer></script>
+</body>
+
+</html>

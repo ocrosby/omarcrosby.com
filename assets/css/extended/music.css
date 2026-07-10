@@ -4,69 +4,38 @@
   margin-bottom: 2rem;
 }
 
-/* Featured / now-playing block */
+/* Featured / now-playing block.
+
+   The video iframe itself lives in the persistent-music-player partial
+   (see layouts/_partials/persistent-music-player.html), styled by
+   assets/css/extended/persistent-music-player.css. That single iframe
+   is preserved across navigation via data-turbo-permanent, so it keeps
+   playing while the visitor moves around the site. The block below is
+   just the metadata + transport controls that describe what's currently
+   playing on that persistent iframe. */
 
 .music-featured {
+  /* margin-top matches the grid `gap` below so the space above the
+     player-slot (between the article body and the first grid child)
+     equals the space below the player-slot (between the slot and the
+     "Now playing" metadata). */
   margin: 1.5rem 0 3rem;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
-.music-embed {
-  position: relative;
+/* Placeholder inside .music-featured that reserves layout space for
+   the persistent player. The player itself lives at the end of <body>
+   (see layouts/baseof.html) so its DOM position stays stable across
+   navigation — that's what preserves iframe playback. JS reads this
+   slot's bounding rect and positions the player absolutely to overlay
+   it. */
+.music-featured-slot {
+  width: 100%;
   aspect-ratio: 16 / 9;
-  width: 100%;
   border-radius: var(--radius);
-  overflow: hidden;
   background: var(--tertiary);
-}
-
-.music-embed iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* "Play with sound" overlay — sits over the iframe until the viewer clicks.
-   The click is the user gesture that lets browsers authorize playback with
-   sound. See the JS in music.html for the click handler + pendingPlay logic. */
-.music-play-with-sound {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: rgba(0, 0, 0, 0.55);
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  z-index: 2;
-  transition: background 0.2s ease, opacity 0.3s ease;
-  font-family: inherit;
-}
-
-.music-play-with-sound:hover,
-.music-play-with-sound:focus-visible {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-.music-play-icon {
-  font-size: 3.5rem;
-  line-height: 1;
-}
-
-.music-play-with-sound.is-hidden {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .music-featured-meta {

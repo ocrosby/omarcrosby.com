@@ -1,38 +1,63 @@
 {{- /*
-    Persistent music player — always present in the DOM on every page,
-    marked data-turbo-permanent so Turbo Drive preserves it across
-    navigation. This is what makes the song keep playing when you
-    click About while a song is playing on /music/.
+    Persistent music player — the single YouTube iframe on the site,
+    marked data-turbo-permanent so Turbo Drive preserves it (and its
+    playback state) across navigation.
+
+    This is the ONLY YouTube iframe. On /music/ it's styled large at the
+    top of the viewport as the featured player; elsewhere it's a small
+    corner mini-player. Single-iframe eliminates the sync/drift problem
+    that a featured + mini pair could not solve — same iframe, same
+    playback position, on every page.
 
     Contract:
       - The <div> has id="persistent-music-player" and data-turbo-permanent.
         Turbo matches by ID and keeps the current-page element in place
         rather than replacing with a fresh one from the response HTML.
       - The <iframe> inside has id="persistent-music-iframe". Its `src`
-        is set by JS in assets/js/persistent-player.ts whenever a song
-        plays on /music/, and updated on each song swap.
-      - `hidden` attribute starts true; JS removes it once a song is
-        loaded so the player appears with the first play.
-      - Video element is intentionally small (thumbnail-ish) at the
-        bottom-right of the viewport — the primary player on /music/
-        is still the big featured slot; this is the "keep it running
-        in the corner" affordance.
+        is set by JS in assets/js/persistent-player.ts, which also wraps
+        it in a YT.Player instance for gapless swaps via loadVideoById.
+      - `hidden` starts true; JS removes it once a song is loaded.
+      - The "Play with sound" overlay satisfies the browser autoplay
+        gesture requirement on touch-only devices (mobile Safari, mobile
+        Chrome). Desktop uses muted autoplay and does not show the
+        overlay.
+      - The close button dismisses the player. Reappears next time a
+        song is played.
 
-    Close button dismisses the player (stops playback + hides the
-    element). Reappears next time a song is played.
+    Layout treatment:
+      - Off /music/: fixed bottom-right, ~280px wide. Muted state is
+        clear (small mini-player, likely unmuted so the visitor keeps
+        hearing what they were listening to).
+      - On /music/: fixed at the top of the viewport, larger (up to
+        ~640px wide, 16:9 aspect). The featured metadata section on
+        /music/ sits below the fixed player and is populated by JS
+        with the currently-playing song's title/artist/etc.
+
+    CSS drives both treatments via body.on-music-page, set by
+    persistent-player.ts on every turbo:load.
 */ -}}
 <div id="persistent-music-player" data-turbo-permanent class="persistent-music-player" hidden>
     <button type="button"
             id="persistent-music-close"
             class="persistent-music-close"
-            aria-label="Close mini player"
-            title="Close mini player">×</button>
-    <iframe id="persistent-music-iframe"
-            src=""
-            title="Continuing playback"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-            allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            aria-label="Close player"
+            title="Close player">×</button>
+    <div class="persistent-music-embed">
+        <iframe id="persistent-music-iframe"
+                src=""
+                title="Music player"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowfullscreen
+                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        <button type="button"
+                id="persistent-music-play-with-sound"
+                class="persistent-music-play-with-sound"
+                aria-label="Play with sound"
+                hidden>
+            <span class="persistent-music-play-icon" aria-hidden="true">▶</span>
+            <span class="persistent-music-play-label">Play with sound</span>
+        </button>
+    </div>
     <div class="persistent-music-meta">
         <div class="persistent-music-title" id="persistent-music-title"></div>
         <div class="persistent-music-artist" id="persistent-music-artist"></div>

@@ -36,6 +36,17 @@
         data-turbo-track="reload"></script>
 
 {{- /*
+    Opt into Turbo 8's page-morphing renderer. Instead of a full <body>
+    swap on each visit — which reparents (and in Chromium reloads) the
+    persistent-music-player iframe, killing playback — the morph
+    renderer diffs the old and new DOM and only mutates what changed.
+    Elements that appear on both pages (including the persistent
+    player) stay in place with their live state (iframe playback,
+    scroll position, form values) intact.
+*/ -}}
+<meta name="turbo-refresh-method" content="morph">
+
+{{- /*
     Analytics — GoatCounter (privacy-respecting, free for personal use,
     no cookies, no PII). Emits only when:
 

@@ -1,23 +1,24 @@
-/* Persistent music player mini-bar — auto-loaded by PaperMod from
-   assets/css/extended/.
+/* Persistent music player — the single YouTube iframe on the site,
+   styled to live in the bottom-right corner as a compact card.
+   Auto-loaded by PaperMod from assets/css/extended/.
 
-   Fixed-position bottom-right card that hosts a small YouTube iframe.
-   Marked data-turbo-permanent in the markup so Turbo Drive preserves
-   it across page navigations — that's the mechanism that keeps the
-   song playing when the user clicks About while a song is going.
+   The persistent player is present on every page (rendered by
+   layouts/_partials/extend_footer.html) and marked data-turbo-permanent
+   so the iframe (and its playback state) survive navigation. This is
+   the ONLY YouTube iframe on the site — no featured-plus-mini pair,
+   no sync required.
 
-   Visual goals:
-   - Sits above regular page content (z-index 1000) but below modal
-     overlays if any get added later.
-   - Compact: ~280px wide, video at 16:9. Enough to keep the video
-     visible without dominating the page.
-   - Uses site tokens (--theme, --border, --primary) so it matches
-     dark/light theme automatically.
-   - Close button in the top-right corner is prominent enough to
-     find but doesn't crowd the video.
-   - On narrow viewports (<400px), the card sits flush to the sides
-     with a small bottom margin so it doesn't overlap important
-     content. */
+   Layout:
+   - Off /music/: 280px wide, bottom-right corner. Compact enough to
+     stay out of the way of blog reading; wide enough to see the video.
+   - On /music/: 640px wide, top-centered under the site header. This
+     is the "music context" — the player is the point of the page, so
+     it takes the featured slot at the top. Featured metadata (title,
+     artist, controls, etc.) sits below it via the padding-top hack
+     on `.music-featured` (see assets/css/extended/music.css).
+
+   Uses site tokens (--theme, --border, --primary, --code-bg) so it
+   matches dark/light theme automatically. */
 
 .persistent-music-player {
     position: fixed;
@@ -39,39 +40,102 @@
     display: none;
 }
 
-/* On /music/, the big featured player is the audible one; the persistent
-   iframe stays loaded and playing (muted, in background) so it's ready
-   to take over on navigate-away, but visually hidden so the user isn't
-   seeing two players. persistent-player.ts adds body.on-music-page on
-   every turbo:load when the URL matches the /music/ route.
+/* On /music/, the player's DOM position stays at end of body (so
+   the iframe never gets reparented / reloaded), but visually it
+   overlays the `.music-featured-slot` placeholder inside
+   `.music-featured`. persistent-player.ts reads the slot's bounding
+   rect and sets top/left/width via inline style on every page load,
+   turbo:load, and resize. Position:absolute (relative to the initial
+   containing block, anchored at the document origin) means the
+   player scrolls with the page just like an inline element would.
 
-   CRITICAL: uses visibility+opacity+pointer-events, NOT display:none.
-   Chromium pauses iframe media when the parent (or any ancestor) is
-   set to display:none — that would cause playback to stop while the
-   user is on /music/, and unmuting on navigate-away would find the
-   video at the beginning again. visibility:hidden keeps the iframe
-   composited and playing; the user just can't see it. */
+   Force the player container itself to 16:9 with border-box sizing so
+   pixel dimensions land exactly on the slot's rect — no border
+   overhang, no content-vs-total-width drift, no empty strip below the
+   video. */
 body.on-music-page .persistent-music-player {
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-    /* Keep the element laid out at its usual position (no display change)
-       so it still consumes a frame, keeping media playback alive. */
+    position: absolute !important;
+    box-sizing: border-box;
+    aspect-ratio: 16 / 9;
+    max-width: none;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    border-radius: var(--radius);
+}
+
+/* When the player container is aspect-ratio-sized, the embed wrapper
+   inside can simply fill it — the outer container already enforces
+   the correct height. */
+body.on-music-page .persistent-music-embed {
+    aspect-ratio: auto;
+    height: 100%;
+}
+
+/* Iframe container — 16:9 aspect ratio, holds both the iframe and the
+   "Play with sound" overlay button as siblings positioned via inset. */
+.persistent-music-embed {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    background: #000;
 }
 
 .persistent-music-player iframe {
-    display: block;
+    position: absolute;
+    inset: 0;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    height: 100%;
     border: 0;
     background: #000;
+}
+
+/* "Play with sound" overlay — sits over the iframe until the viewer
+   clicks. Muted autoplay is universally allowed by browsers; unmuted
+   requires a user gesture. This click satisfies that requirement so
+   playback continues with sound. Once clicked (or once the browser's
+   autoplay policy determines sound is allowed) persistent-player.ts
+   sets [hidden]. */
+.persistent-music-play-with-sound {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 0;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0;
+    transition: background 0.15s ease;
+}
+
+.persistent-music-play-with-sound[hidden] {
+    display: none;
+}
+
+.persistent-music-play-with-sound:hover,
+.persistent-music-play-with-sound:focus-visible {
+    background: rgba(0, 0, 0, 0.75);
+    outline: none;
+}
+
+.persistent-music-play-icon {
+    font-size: 2.25rem;
+    line-height: 1;
 }
 
 .persistent-music-close {
     position: absolute;
     top: 0.4rem;
     right: 0.5rem;
-    z-index: 2;
+    z-index: 3;
     width: 1.75rem;
     height: 1.75rem;
     padding: 0;
@@ -121,8 +185,18 @@ body.on-music-page .persistent-music-player {
     overflow: hidden;
 }
 
-/* Narrow-viewport treatment: full-width strip at the bottom. */
-@media (max-width: 420px) {
+/* On /music/, hide the small title/artist meta — the featured section
+   on the page already shows title, artist, album, year, note, added
+   timestamp, and genre at readable size. The small meta strip below
+   the corner iframe would just repeat that info. */
+body.on-music-page .persistent-music-meta {
+    display: none;
+}
+
+/* Narrow-viewport treatment: full-width corner strip on non-music
+   pages. On /music/ the player is inline in the flow so nothing
+   viewport-specific needs to change. */
+@media (max-width: 480px) {
     .persistent-music-player {
         left: 0.5rem;
         right: 0.5rem;

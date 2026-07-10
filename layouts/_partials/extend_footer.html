@@ -1,23 +1,18 @@
 {{- /*
-    Site-level extension to PaperMod's <body> footer. PaperMod's
-    layouts/_partials/footer.html calls partial "extend_footer.html" as
-    its last step. Anything included here lands at the very end of
-    <body> on every page.
+    Site-level extension to PaperMod's <body> footer.
 
-    We use this hook for the persistent music player: a data-turbo-permanent
-    <div> that survives Turbo navigation, keeping the YouTube iframe
-    (and the audio it's playing) alive across page loads.
+    PaperMod calls this partial via `partialCached "footer.html" . .Layout
+    .Kind ...` from baseof.html, which caches output across every section
+    list page. That collides /projects/, /posts/, and /music/ into one
+    shared render, so any per-page conditional inside this partial reads
+    the wrong page's context. Both the persistent-music-player markup
+    AND the loader script for persistent-player.ts live in the site-level
+    `layouts/baseof.html` override instead, which is evaluated per-request
+    against the real `.` — and outside the <turbo-frame> that swaps on
+    navigation, so the player and its controller aren't reset on each
+    link click.
 
-    Also loads assets/js/persistent-player.ts — a small controller that
-    listens for song-swap events from music.ts on /music/ and mirrors
-    them into the persistent iframe.
+    This partial is intentionally a no-op now. Kept as a hook so a
+    future concern can drop into the same footer-extension point
+    without needing to re-open baseof.html.
 */ -}}
-{{- partial "persistent-music-player.html" . -}}
-
-{{- $opts := dict
-    "minify" hugo.IsProduction
-    "sourceMap" (cond hugo.IsProduction "" "external")
-    "targetPath" "js/persistent-player.js"
--}}
-{{- $pp := resources.Get "js/persistent-player.ts" | js.Build $opts | fingerprint -}}
-<script src="{{ $pp.RelPermalink }}" integrity="{{ $pp.Data.Integrity }}" defer></script>
