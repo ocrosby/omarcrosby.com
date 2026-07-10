@@ -6,9 +6,11 @@ description = "About Omar Crosby — software engineer at The Weather Company, s
 
 [cover]
 image = "/images/og/meta/about.jpg"
+# Emit og:image for social sharing without rendering the wide branded
+# card at the top of the article body. PaperMod's opengraph.html reads
+# cover.image regardless of this flag.
+hiddenInSingle = true
 +++
-
-<img src="/images/omar.jpg" alt="Portrait of Omar Crosby" class="about-portrait" width="220" height="220" />
 
 I'm a **software engineer at The Weather Company** who works across the stack. Day to day, that means **Next.js** and **TypeScript** on the front end and API layer, DevOps and CI work to keep the pipes moving, Linux administration to keep the servers honest, and — when the mood strikes — lower-level programming in **NASM assembly**.
 
