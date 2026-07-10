@@ -1,0 +1,40 @@
+{{- /*
+    Persistent music player — always present in the DOM on every page,
+    marked data-turbo-permanent so Turbo Drive preserves it across
+    navigation. This is what makes the song keep playing when you
+    click About while a song is playing on /music/.
+
+    Contract:
+      - The <div> has id="persistent-music-player" and data-turbo-permanent.
+        Turbo matches by ID and keeps the current-page element in place
+        rather than replacing with a fresh one from the response HTML.
+      - The <iframe> inside has id="persistent-music-iframe". Its `src`
+        is set by JS in assets/js/persistent-player.ts whenever a song
+        plays on /music/, and updated on each song swap.
+      - `hidden` attribute starts true; JS removes it once a song is
+        loaded so the player appears with the first play.
+      - Video element is intentionally small (thumbnail-ish) at the
+        bottom-right of the viewport — the primary player on /music/
+        is still the big featured slot; this is the "keep it running
+        in the corner" affordance.
+
+    Close button dismisses the player (stops playback + hides the
+    element). Reappears next time a song is played.
+*/ -}}
+<div id="persistent-music-player" data-turbo-permanent class="persistent-music-player" hidden>
+    <button type="button"
+            id="persistent-music-close"
+            class="persistent-music-close"
+            aria-label="Close mini player"
+            title="Close mini player">×</button>
+    <iframe id="persistent-music-iframe"
+            src=""
+            title="Continuing playback"
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <div class="persistent-music-meta">
+        <div class="persistent-music-title" id="persistent-music-title"></div>
+        <div class="persistent-music-artist" id="persistent-music-artist"></div>
+    </div>
+</div>

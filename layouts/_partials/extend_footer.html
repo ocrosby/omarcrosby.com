@@ -1,0 +1,23 @@
+{{- /*
+    Site-level extension to PaperMod's <body> footer. PaperMod's
+    layouts/_partials/footer.html calls partial "extend_footer.html" as
+    its last step. Anything included here lands at the very end of
+    <body> on every page.
+
+    We use this hook for the persistent music player: a data-turbo-permanent
+    <div> that survives Turbo navigation, keeping the YouTube iframe
+    (and the audio it's playing) alive across page loads.
+
+    Also loads assets/js/persistent-player.ts — a small controller that
+    listens for song-swap events from music.ts on /music/ and mirrors
+    them into the persistent iframe.
+*/ -}}
+{{- partial "persistent-music-player.html" . -}}
+
+{{- $opts := dict
+    "minify" hugo.IsProduction
+    "sourceMap" (cond hugo.IsProduction "" "external")
+    "targetPath" "js/persistent-player.js"
+-}}
+{{- $pp := resources.Get "js/persistent-player.ts" | js.Build $opts | fingerprint -}}
+<script src="{{ $pp.RelPermalink }}" integrity="{{ $pp.Data.Integrity }}" defer></script>
