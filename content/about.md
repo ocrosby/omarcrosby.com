@@ -6,6 +6,7 @@ description = "About Omar Crosby — software engineer at The Weather Company, s
 
 [cover]
 image = "/images/og/meta/about.jpg"
+hidden = true
 +++
 
 I'm a **software engineer at The Weather Company** who works across the stack. Day to day, that means **Next.js** and **TypeScript** on the front end and API layer, DevOps and CI work to keep the pipes moving, Linux administration to keep the servers honest, and — when the mood strikes — lower-level programming in **NASM assembly**.
