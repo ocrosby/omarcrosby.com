@@ -17,38 +17,37 @@
 */ -}}
 {{- $featured := .featured -}}
 {{- $videos := .videos -}}
-{{- $initialQuery := "playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
-{{- $interactiveQuery := "autoplay=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1" -}}
 {{- $featuredExtras := slice -}}
 {{- with $featured.album }}{{ $featuredExtras = $featuredExtras | append . }}{{ end -}}
 {{- with $featured.year }}{{ $featuredExtras = $featuredExtras | append (printf "%v" .) }}{{ end -}}
 
+{{- /*
+  The video iframe lives in the persistent-music-player partial (see
+  layouts/_partials/persistent-music-player.html) — one iframe, shared
+  across every page, marked data-turbo-permanent so playback state
+  survives navigation. On /music/ the persistent player is styled
+  large and positioned at the top of the viewport as the featured
+  slot; off /music/ it collapses to the corner mini-player.
+
+  The featured metadata section below is populated by JS with the
+  currently-playing song. data-featured-youtube-id carries the
+  server-side default (items[0] on /music/, or the requested song on
+  /music/<id>/) so persistent-player.ts can seed the initial video
+  when the visitor's localStorage is empty.
+*/ -}}
 <section class="music-featured" aria-label="Now playing">
-  <div class="music-embed">
-    {{- /*
-      No autoplay in $initialQuery — the "Play with sound" button below
-      starts playback on click, satisfying the browser's autoplay gesture
-      requirement so sound plays from the first second.
-      cc_load_policy=0 disables auto-loading of captions/subtitles.
-      iv_load_policy=3 disables video annotations.
-    */ -}}
-    <iframe
-      id="music-featured-iframe"
-      src="https://www.youtube-nocookie.com/embed/{{ $featured.youtube_id }}?{{ $initialQuery }}"
-      title="{{ $featured.title }} — {{ $featured.artist }}"
-      loading="eager"
-      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-      allowfullscreen
-      referrerpolicy="strict-origin-when-cross-origin">
-    </iframe>
-    <button type="button" class="music-play-with-sound" aria-label="Play the video with sound">
-      <span class="music-play-icon" aria-hidden="true">▶</span>
-      <span class="music-play-label">Play with sound</span>
-    </button>
-  </div>
+  {{- /*
+    Empty 16:9 placeholder that reserves layout space for the persistent
+    music player. The actual player lives at the end of <body> (see
+    layouts/baseof.html) so its DOM position is stable across every
+    navigation — Turbo Drive can leave it alone, and Chromium doesn't
+    reload the iframe. persistent-player.ts observes this slot's
+    bounding rect on load / resize / turbo:load and positions the
+    player absolutely to overlay it, so visually the player sits above
+    "Now playing" and scrolls with the page as if it were inline.
+  */ -}}
+  <div class="music-featured-slot" aria-hidden="true"></div>
   <div class="music-featured-meta"
-       data-embed-query="{{ $interactiveQuery }}"
-       data-initial-query="{{ $initialQuery }}"
        data-featured-youtube-id="{{ $featured.youtube_id }}">
     <div class="music-nowplaying">Now playing</div>
     <h2 class="music-featured-title">{{ $featured.title }}</h2>
