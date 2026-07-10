@@ -8,6 +8,7 @@ tags = ["nasm", "assembly", "education"]
 [cover]
 image = "/images/og/projects/nasm-assembly-intro.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 An educational repo with my notes and small annotated examples for introductory **x86 assembly** in NASM — aimed at people who want to peek under the runtime.

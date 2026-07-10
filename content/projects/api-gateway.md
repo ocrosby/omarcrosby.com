@@ -8,6 +8,7 @@ tags = ["go", "gateway", "mcp"]
 [cover]
 image = "/images/og/projects/api-gateway.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A configurable Go reverse-proxy gateway that sits in front of the identity and sports-data services. Rate limiting, circuit breaking, MCP routing, and a pluggable middleware pipeline so protection and observability are added by config, not by handler edits.

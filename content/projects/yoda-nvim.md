@@ -8,6 +8,7 @@ tags = ["neovim", "lua", "nvim-plugin"]
 [cover]
 image = "/images/og/projects/yoda-nvim.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A Neovim distribution that boots with sensible defaults, plus a family of small modular plugins so pieces are usable outside of Yoda itself.

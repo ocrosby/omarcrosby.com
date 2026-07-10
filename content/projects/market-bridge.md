@@ -8,6 +8,7 @@ tags = ["mcp", "trading", "python", "futures"]
 [cover]
 image = "/images/og/projects/market-bridge.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 An MCP server that bridges the trading platforms I use — **Tradovate**, **Bookmap**, **Thinkorswim** — into Claude, so I can ask questions about real-time **/ES futures** data (order flow, tape, positioning, volatility) inside a Claude conversation instead of context-switching to each platform.

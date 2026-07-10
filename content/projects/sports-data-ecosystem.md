@@ -8,6 +8,7 @@ tags = ["mcp", "sports-data", "python", "go"]
 [cover]
 image = "/images/og/projects/sports-data-ecosystem.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A collection of independently useful pieces that all speak the same data:
