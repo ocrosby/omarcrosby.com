@@ -1,39 +1,29 @@
 // Persistent music player controller.
 //
 // Runs on every page (loaded via layouts/_partials/extend_footer.html).
-// Coordinates the persistent iframe with the /music/ featured iframe so
-// that:
+// The persistent iframe is a real always-loaded YouTube embed. It:
 //
-//   1. When a song plays on /music/, the persistent iframe mirrors it
-//      but stays muted (so we don't get double audio). Hidden via CSS
-//      on /music/ (body.on-music-page rule) — user only sees the big
-//      featured player, but the persistent iframe is loaded and
-//      playing (muted) in the background.
-//   2. When the user navigates away from /music/, Turbo's
-//      data-turbo-permanent keeps the persistent iframe alive. This
-//      script sends an `unMute` postMessage to the YouTube embed —
-//      no URL reload, so playback position is preserved. The player
-//      also becomes visible (fixed bottom-right card).
-//   3. When the user navigates back to /music/, this script sends
-//      `mute` via postMessage. Persistent hides visually; featured
-//      iframe carries audio again.
+//   1. Starts playing (muted) the moment a song is selected on /music/.
+//      Marked data-turbo-permanent so the element (and its
+//      contentWindow, and its playback position) survives every Turbo
+//      body swap.
+//   2. Is visually hidden on /music/ (via visibility+opacity, NOT
+//      display:none — Chromium pauses iframe media when the parent
+//      is display:none; visibility keeps playback alive so we can
+//      just unmute on navigate-away with no restart).
+//   3. Off /music/, is a small bottom-right card. Auto-unmuted via
+//      YouTube postMessage API (no user click needed — the tab has
+//      autoplay engagement from the initial song-play click on
+//      /music/, which propagates to iframe playback control).
+//   4. Only reloads iframe.src for a genuinely new video ID. Mute
+//      state changes go through postMessage against the already-
+//      playing iframe. This is what keeps playback smooth across
+//      navigation and prevents the "restarts from 0:00" behavior.
 //
-// Critical design decisions:
-//
-//   - iframe.src is only rewritten when the video ID changes (new
-//     song). Mute/unmute uses postMessage — reloading with different
-//     mute= query param would restart the video from 0:00 AND fail
-//     Chrome's autoplay-with-sound policy (fresh iframe = no gesture
-//     context propagates).
-//   - State is stored on iframe.dataset (survives Turbo body swap
-//     because the element itself is data-turbo-permanent) rather than
-//     module-scoped vars (which reset when the script re-executes on
-//     each turbo:load).
-//   - Close button gets its listener attached exactly once, guarded
-//     by a data-attribute flag.
-//
-// The controller stays small. The "real" music player logic remains
-// in assets/js/music.ts; this file just handles mirror/mute + close.
+// State-of-iframe checks read directly from iframe.src (via regex),
+// not from element.dataset. The browser is authoritative about iframe
+// src; dataset survival across Turbo's data-turbo-permanent handling
+// is undocumented (works in practice but not guaranteed).
 
 interface StoredSong {
     youtubeId: string;
@@ -96,10 +86,19 @@ function ensurePlayerElements(): PlayerEls | null {
     return { root, iframe, title, artist, close };
 }
 
+// Read the currently-loaded video ID directly from iframe.src. Browser
+// is authoritative here — after a Turbo permanent-element preservation,
+// iframe.src still reflects whatever URL was set on it. Regex tolerates
+// both youtube.com/embed/<id> and youtube-nocookie.com/embed/<id>.
+function getLoadedVideoId(iframe: HTMLIFrameElement): string {
+    const match = iframe.src.match(/\/embed\/([A-Za-z0-9_-]+)/);
+    return match ? match[1] : "";
+}
+
 // YouTube IFrame API command via postMessage. Requires enablejsapi=1
-// in the iframe URL (which buildEmbedUrl below sets). Works after the
-// iframe has finished loading; earlier sends are silently ignored,
-// which is fine — the state is idempotent and we resend on turbo:load.
+// in the iframe URL (buildEmbedUrl sets this). Works after the iframe
+// has finished loading; earlier sends are silently ignored — the
+// state is idempotent and we resend on every turbo:load.
 function sendYouTubeCommand(iframe: HTMLIFrameElement, func: string): void {
     if (!iframe.contentWindow) return;
     try {
@@ -110,6 +109,18 @@ function sendYouTubeCommand(iframe: HTMLIFrameElement, func: string): void {
     } catch {
         /* cross-origin restrictions can throw on some browsers — no-op */
     }
+}
+
+// Send a command a few times with escalating delays to catch the
+// iframe both while it's loading and after it's ready. Cheap — each
+// message is a postMessage, effectively free. Handles the race
+// between turbo:load firing (fast) and YouTube's iframe becoming
+// ready to receive commands (100-500 ms typically).
+function sendYouTubeCommandWithRetry(iframe: HTMLIFrameElement, func: string): void {
+    sendYouTubeCommand(iframe, func);
+    setTimeout(() => sendYouTubeCommand(iframe, func), 100);
+    setTimeout(() => sendYouTubeCommand(iframe, func), 500);
+    setTimeout(() => sendYouTubeCommand(iframe, func), 1200);
 }
 
 function buildEmbedUrl(youtubeId: string, muted: boolean): string {
@@ -126,19 +137,21 @@ function buildEmbedUrl(youtubeId: string, muted: boolean): string {
     return `${base}?${params.toString()}`;
 }
 
-// Set/remove a body class so CSS can hide the persistent player on
-// /music/. Runs on every boot() so Turbo body swaps end up with the
-// correct class immediately.
+// CSS hides/shows the player based on body.on-music-page. persistent-
+// music-player.css uses visibility+opacity for the hidden case (not
+// display:none) so the iframe keeps playing while invisible.
 function updateBodyMusicClass(): void {
     document.body.classList.toggle("on-music-page", isMusicPage());
 }
 
-// The core "sync state to page" operation. Called from notify() (when
-// a song plays on /music/) and from boot() (turbo:load, initial load).
+// Core "sync state to page" operation. Called from notify() (song
+// changes on /music/) and boot() (turbo:load, initial DOMContentLoaded).
 //
-// Never reloads the iframe unless the video ID actually changes. Uses
-// postMessage for mute state changes so playback position is preserved
-// and Chrome's autoplay-with-sound policy doesn't reject a fresh load.
+// Reloads iframe.src ONLY when the video ID actually changes. Every
+// other case flips mute state via postMessage against the already-
+// playing iframe — preserves playback position, satisfies Chrome's
+// autoplay-with-sound policy (the video is already playing muted, so
+// unmuting doesn't require a fresh gesture context).
 function syncPlayer(song: StoredSong): void {
     const els = ensurePlayerElements();
     if (!els) return;
@@ -148,28 +161,20 @@ function syncPlayer(song: StoredSong): void {
     artist.textContent = song.artist || "";
 
     const wantMuted = isMusicPage();
-    const loadedId = iframe.dataset.loadedId || "";
-    const loadedMuted = iframe.dataset.loadedMuted === "1";
+    const currentId = getLoadedVideoId(iframe);
 
-    if (loadedId !== song.youtubeId) {
-        // New video — must reload iframe.src (postMessage can't switch
-        // videos on an unofficial embed, only control the current one).
+    if (currentId !== song.youtubeId) {
+        // New video — reloading iframe.src is the only way to switch
+        // videos on a non-API-controlled embed. Muted autoplay is
+        // universally allowed by browsers.
         iframe.src = buildEmbedUrl(song.youtubeId, wantMuted);
-        iframe.dataset.loadedId = song.youtubeId;
-        iframe.dataset.loadedMuted = wantMuted ? "1" : "0";
-    } else if (loadedMuted !== wantMuted) {
-        // Same video, mute state differs — flip via postMessage. This
-        // preserves the current playback position AND (going from muted
-        // → unmuted) satisfies Chrome's autoplay-with-sound policy
-        // because the video is already playing.
-        sendYouTubeCommand(iframe, wantMuted ? "mute" : "unMute");
-        iframe.dataset.loadedMuted = wantMuted ? "1" : "0";
+    } else {
+        // Same video — flip mute state via postMessage. Retries handle
+        // the "iframe not yet ready to receive commands" race on
+        // fresh turbo:load events.
+        sendYouTubeCommandWithRetry(iframe, wantMuted ? "mute" : "unMute");
     }
 
-    iframe.dataset.hasSong = "1";
-    // Visibility: CSS drives the hide-on-music-page rule. The `hidden`
-    // attribute is only used for the "no song yet" case; once a song is
-    // loaded, hidden=false and CSS decides whether to show.
     root.hidden = false;
 }
 
@@ -177,9 +182,6 @@ function hidePlayer(clearState: boolean): void {
     const els = ensurePlayerElements();
     if (!els) return;
     els.iframe.src = "about:blank";
-    delete els.iframe.dataset.loadedId;
-    delete els.iframe.dataset.loadedMuted;
-    delete els.iframe.dataset.hasSong;
     els.root.hidden = true;
     if (clearState) clearStored();
 }
@@ -208,7 +210,7 @@ function boot(): void {
 
     // Attach the close-button listener exactly once. Guarded by a
     // data-attribute so subsequent turbo:load fires don't stack
-    // listeners (which would call the handler N times per click).
+    // listeners.
     if (els.close.dataset.wired !== "1") {
         els.close.addEventListener("click", () => hidePlayer(true));
         els.close.dataset.wired = "1";

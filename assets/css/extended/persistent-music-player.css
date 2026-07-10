@@ -43,9 +43,20 @@
    iframe stays loaded and playing (muted, in background) so it's ready
    to take over on navigate-away, but visually hidden so the user isn't
    seeing two players. persistent-player.ts adds body.on-music-page on
-   every turbo:load when the URL matches the /music/ route. */
+   every turbo:load when the URL matches the /music/ route.
+
+   CRITICAL: uses visibility+opacity+pointer-events, NOT display:none.
+   Chromium pauses iframe media when the parent (or any ancestor) is
+   set to display:none — that would cause playback to stop while the
+   user is on /music/, and unmuting on navigate-away would find the
+   video at the beginning again. visibility:hidden keeps the iframe
+   composited and playing; the user just can't see it. */
 body.on-music-page .persistent-music-player {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    /* Keep the element laid out at its usual position (no display change)
+       so it still consumes a frame, keeping media playback alive. */
 }
 
 .persistent-music-player iframe {
