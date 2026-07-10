@@ -8,6 +8,7 @@ tags = ["rust", "nasm", "assembly", "static-analysis", "lsp"]
 [cover]
 image = "/images/og/projects/nasm-lint.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A static analyzer for NASM x86 assembly, written in Rust. Ships in three forms so it fits every place code is normally checked:

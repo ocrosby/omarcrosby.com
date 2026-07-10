@@ -8,6 +8,7 @@ tags = ["python", "trading", "options", "signals"]
 [cover]
 image = "/images/og/projects/strike-pilot.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A Python engine that predicts intraday **SPX bias** with a confidence score and converts the resulting signals into structured **credit-spread ideas** — strike selection, width, or an explicit no-trade recommendation. Combines price action, volatility, and risk constraints so the output is always something concrete to act on or explicitly reject.

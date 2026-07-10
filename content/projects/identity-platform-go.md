@@ -8,6 +8,7 @@ tags = ["oauth2", "oidc", "go", "microservices"]
 [cover]
 image = "/images/og/projects/identity-platform-go.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A working reference for OAuth2 and OIDC in Go, shaped as a proper microservices deployment rather than a monolith with routes. Each service is independently deployable, owns its own database, and follows a ports-and-adapters interior.

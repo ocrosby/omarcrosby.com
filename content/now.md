@@ -1,8 +1,8 @@
 +++
 title = "Now"
-date = 2026-07-10T15:28:49-04:00
+date = 2026-07-10T15:57:40-04:00
 draft = false
-description = "What I'm focused on right now — updated monthly. Following the nownownow.com convention."
+description = "What I'm focused on right now — updated every 4–6 weeks. Following the nownownow.com convention."
 
 [cover]
 image = "/images/og/meta/now.jpg"
@@ -32,7 +32,7 @@ The site itself got a substantial personal-brand pass recently: [topic-pillar ca
 
 ## Day job
 
-Still at [The Weather Company](/about/), SUN QA team — Python backend test automation, QA architecture, and enough software-architecture work to keep it honest.
+Still at [The Weather Company](/about/), SUN QA team — Python backend test automation, QA architecture, and enough software architecture work to keep it honest.
 
 ## Off-keyboard
 

@@ -8,6 +8,7 @@ tags = ["claude-code", "stow", "developer-tools"]
 [cover]
 image = "/images/og/projects/claude-config.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 My **Claude Code** setup, kept in version control and installed via **GNU Stow**. Contains the global `CLAUDE.md`, a set of custom skills, subagents, rules, slash commands, and hooks that shape how Claude works with my repos — the same setup that produced this site.

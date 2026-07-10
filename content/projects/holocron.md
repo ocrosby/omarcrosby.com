@@ -8,6 +8,7 @@ tags = ["go", "streaming", "distributed-systems"]
 [cover]
 image = "/images/og/projects/holocron.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A learning-first take on Kafka-style event streaming: a single-binary broker plus an SDK, arranged as a Go workspace so the two evolve together. The goal is teaching myself (and anyone reading) what actually happens in a log-based broker, not shipping a Kafka replacement.

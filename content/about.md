@@ -2,7 +2,7 @@
 title = "About"
 date = 2026-07-04T11:15:00-04:00
 draft = false
-description = "About Omar Crosby — software engineer at The Weather Company, sports-data infrastructure builder, cook, soccer fan."
+description = "About Omar Crosby — software engineer at The Weather Company, sports-data infrastructure builder, cook, music curator, soccer fan."
 
 [cover]
 image = "/images/og/meta/about.jpg"

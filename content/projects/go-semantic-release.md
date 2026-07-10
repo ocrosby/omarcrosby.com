@@ -8,6 +8,7 @@ tags = ["go", "release-tooling", "ci-cd"]
 [cover]
 image = "/images/og/projects/go-semantic-release.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A pure-Go implementation of the semantic-release contract — parses Conventional Commits since the last tag, decides the next version, tags, and publishes a GitHub Release. It powers the release workflow behind this site: every merge that says `feat` or `fix` flows through `go-semantic-release` to a new tag and a Fly.io deploy.

@@ -8,6 +8,7 @@ tags = ["c", "testing", "homebrew"]
 [cover]
 image = "/images/og/projects/ctestprobe.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A unit testing framework for **C** — small, header-first, and installable via **Homebrew** from a personal tap. Written because the existing C testing frameworks all show their age and I wanted something ergonomic for my own C work.

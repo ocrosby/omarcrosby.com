@@ -8,6 +8,7 @@ tags = ["go", "sports-data"]
 [cover]
 image = "/images/og/projects/touchline.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A touch-centric, sport-agnostic match event–tracking app. Event types aren't hardcoded — they're stored as data rows with behavioral flags, so adding a new sport is a config change rather than a code change.
