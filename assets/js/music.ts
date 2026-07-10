@@ -757,7 +757,14 @@ declare global {
         (item.dataset.artist ? " — " + item.dataset.artist : "");
     }
 
-    featured.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Scroll to the top of the page (not just the top of the featured
+    // element) so the site header, breadcrumbs, and page title are all
+    // visible after a song swap. featured.scrollIntoView({block: "start"})
+    // would land the featured video's top edge at the viewport top and
+    // hide the site chrome above it — visually reads as "the player is
+    // the whole page." The window scroll makes the swap feel like a
+    // fresh page load without actually reloading.
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   for (const item of items) {
