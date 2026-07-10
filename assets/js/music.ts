@@ -450,8 +450,13 @@ declare global {
             currentIndex = j;
             setPlayingHighlight(j);
             try {
+              // Upgrade legacy ?v=<id> URLs to the path-based /music/<id>/
+              // form on arrival — see swap() for why. This keeps old
+              // bookmarks working while ensuring any subsequent copy-share
+              // from the address bar lands on the per-song OG URL.
               const shareUrl = new URL(window.location.href);
-              shareUrl.searchParams.set("v", requestedId);
+              shareUrl.pathname = "/music/" + requestedId.toLowerCase() + "/";
+              shareUrl.searchParams.delete("v");
               window.history.replaceState({}, "", shareUrl.toString());
             } catch (e) {
               /* noop */
@@ -682,12 +687,29 @@ declare global {
       }
     }
 
-    // Reflect the current song in the URL so the address bar is always a
-    // shareable "play this song" link. Use replaceState (not pushState) so
-    // clicking through the list doesn't stack back-button history entries.
+    // Reflect the current song in the URL as a path — /music/<id>/ — so
+    // the address bar is a shareable "play this song" link that carries
+    // per-song og:image, og:title, twitter:card tags in the rendered
+    // <head>. Query-string URLs (?v=<id>) don't get their own OG scrape:
+    // social crawlers (LinkedIn, iMessage, Slack, Facebook, X) strip the
+    // query string and hit /music/ bare, which falls back to the
+    // site-wide /images/og.png — same generic preview for every song.
+    //
+    // The path must match what content/music/_content.gotmpl generated
+    // for this song. Hugo's content adapter lowercases URL slugs even
+    // though youtube_id is case-sensitive, so lowercase here too. The
+    // og:image on the lowercased page URL still points at the case-
+    // preserved static/images/og/music/<youtube_id>.jpg file — Hugo
+    // renders Params.cover.image verbatim without touching case.
+    //
+    // replaceState (not pushState) keeps the back button clean while
+    // clicking through the history list.
     try {
       const shareUrl = new URL(window.location.href);
-      shareUrl.searchParams.set("v", id);
+      shareUrl.pathname = "/music/" + id.toLowerCase() + "/";
+      // Strip any legacy ?v= state carried over from older shared URLs
+      // or from the deep-link init below — the id now lives in the path.
+      shareUrl.searchParams.delete("v");
       window.history.replaceState({}, "", shareUrl.toString());
     } catch (e) {
       /* URL API unavailable — silent fallback */
@@ -726,7 +748,9 @@ declare global {
   for (const item of items) {
     item.addEventListener("click", (e) => {
       // Modifier / non-primary clicks fall through to the underlying
-      // <a href> so the browser can open YouTube in a new tab as usual.
+      // <a href> so cmd/ctrl-click opens the per-song page in a new tab
+      // and middle-click / shift-click behave as expected. Only plain
+      // primary-button clicks trigger the in-place featured-player swap.
       if (
         (e as MouseEvent).button !== 0 ||
         e.metaKey ||

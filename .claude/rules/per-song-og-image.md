@@ -1,11 +1,16 @@
 ---
 paths:
   - "data/music.yaml"
+  - "assets/js/music.ts"
+  - "layouts/section/music.html"
+  - "layouts/music/*.html"
 ---
 
 # Per-Song OG Image
 
 Every entry in `data/music.yaml` must have a matching `static/images/og/music/<youtube_id>.jpg` shipped in the same commit. The image is what social crawlers pull as `og:image` when someone shares `omarcrosby.com/music/<youtube_id>/` — without it, the shared URL falls back to the site-wide `og.png` and every song's share preview collapses to identical branding.
+
+The rule has two halves — the image, and the URL that carries it. Both must hold together; either alone fails the sharing experience.
 
 ## Why
 
@@ -63,9 +68,33 @@ The script:
 - **Should Fix** — title/artist changed but the JPG wasn't regenerated. Old title/artist stays visible in every future share until refreshed.
 - **Consider** — JPG file size is anomalously large (>150 KB after JPEG-90 compression) — indicates a very-detailed thumbnail; could re-encode at quality 85 to save space if it starts becoming a repo-size problem in aggregate.
 
+## URL model — the music player must write path-based URLs, not query strings
+
+The image is only half the invariant. The music player at `assets/js/music.ts` must reflect the current song in the URL bar as a **path** (`/music/<lowercased-youtube_id>/`), never as a query string (`?v=<youtube_id>`). Otherwise the URL a user copies out of their address bar doesn't carry the per-song OG tags, and every shared link falls back to the site-wide `og.png` — same failure class as a missing JPG, different mechanism.
+
+Why:
+
+- Social crawlers (LinkedIn Post Inspector, iMessage, Slack, Facebook, X) resolve OG metadata against the exact URL that was shared. Query strings are stripped for OG discovery — the crawler hits `omarcrosby.com/music/` and gets the section landing's OG.
+- The path `/music/<lowercased-youtube_id>/` matches what `content/music/_content.gotmpl` generates. That page has the per-song `og:image`, `og:title`, `twitter:image`, and JSON-LD image tags in its `<head>`.
+- Hugo's content adapter lowercases URL slugs. The static-file path `/images/og/music/<youtube_id>.jpg` is case-preserved on disk, but the *page* path is lowercase. The music player must lowercase the id before writing it to the URL bar so the URL resolves to a real page.
+
+### Signals (URL model)
+
+| Signal | Fix |
+|---|---|
+| `assets/js/music.ts` calls `shareUrl.searchParams.set("v", ...)` and writes it via `history.replaceState` / `pushState` | Replace with `shareUrl.pathname = "/music/" + id.toLowerCase() + "/"` and `shareUrl.searchParams.delete("v")` before the `replaceState` call |
+| A new song-selection code path is added that constructs a share URL without going through the swap()/deep-link init helpers | Route it through the same path-based URL builder — do not open-code `?v=` |
+| The music player's deep-link init only reads `?v=<id>` from `location.search` (not from `location.pathname`) after a URL-model migration | Keep the legacy `?v=<id>` reader as backward-compat for old bookmarks, but always *rewrite* the URL bar to the path form on arrival (see the swap() reference in `music.ts`) |
+| An old commit or PR reintroduces `searchParams.set("v", ...)` because "that's how the URL state used to work" | Reject in review — this specifically breaks per-song sharing |
+
+### Report as (URL model)
+
+- **Must Fix** — a change to `assets/js/music.ts` reintroduces `?v=<id>` writing. The bad-share state that results is invisible on-page (browser bar reads a valid URL) but silently breaks every LinkedIn/iMessage/Slack preview.
+- **Should Fix** — the JS reads `?v=` legacy URLs but doesn't rewrite them to `/music/<id>/` on arrival. Old bookmarks work but the URL bar stays in the query-string form, so any subsequent copy-share loops back to the broken state.
+
 ## Exceptions
 
-- None. Unlike posts, where the OG image is aesthetically valuable but not architecturally required, the music surface has real per-song URLs and social crawlers will actively fetch and cache the wrong preview if the JPG is missing.
+- None. Unlike posts, where the OG image is aesthetically valuable but not architecturally required, the music surface has real per-song URLs and social crawlers will actively fetch and cache the wrong preview if the JPG is missing or the URL model bypasses the per-song page.
 
 ## Not covered by this rule
 

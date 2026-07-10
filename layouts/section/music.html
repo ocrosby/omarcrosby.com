@@ -161,10 +161,28 @@
           data-note="{{ with .note }}{{ . }}{{ end }}"
           data-added-title="{{ dateFormat "Mon, Jan 2 2006 · 3:04 PM MST" .added }}"
           data-added-featured="Added {{ dateFormat "Jan 2, 2006 · 3:04 PM" .added }}">
+        {{- /*
+          Both the thumbnail anchor and the title anchor point at the
+          site-local per-song URL (/music/<lowercased-id>/) rather than
+          youtube.com. That makes right-click → Copy link yield a
+          shareable URL that carries the per-song og:image /
+          og:title tags — the same URL the JS writes to the address
+          bar via history.replaceState in swap(). See
+          .claude/rules/per-song-og-image.md ("URL model").
+
+          The JS still intercepts left-click via preventDefault() and
+          swaps the featured video in place, so left-click behavior
+          is unchanged. Middle-click / cmd-click / no-JS fall through
+          to opening the per-song page as a fresh navigation, which is
+          also fine — the recipient sees the same interface.
+
+          The id is lowercased inline because Hugo's content adapter
+          lowercases URL slugs — the case-preserved youtube_id is
+          used elsewhere (data-youtube-id, iframe embed src) but must
+          be lowercased for anything routing to /music/<id>/.
+        */ -}}
         <a class="music-item-thumb"
-           href="https://www.youtube.com/watch?v={{ .youtube_id }}"
-           target="_blank"
-           rel="noopener noreferrer"
+           href="/music/{{ lower .youtube_id }}/"
            aria-label="Play {{ .title }} in the featured player">
           <img
             src="https://i.ytimg.com/vi/{{ .youtube_id }}/mqdefault.jpg"
@@ -175,9 +193,7 @@
         </a>
         <div class="music-item-meta">
           <div class="music-item-title">
-            <a href="https://www.youtube.com/watch?v={{ .youtube_id }}"
-               target="_blank"
-               rel="noopener noreferrer">{{ .title }}</a>
+            <a href="/music/{{ lower .youtube_id }}/">{{ .title }}</a>
           </div>
           <div class="music-item-artist">{{ .artist }}</div>
           {{- with $itemExtras -}}

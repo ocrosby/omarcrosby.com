@@ -34,7 +34,9 @@ Every post under `content/posts/` must ship with its own OpenGraph image, not th
 
 ### Per-song OG image
 
-Every entry in `data/music.yaml` must have a matching `static/images/og/music/<youtube_id>.jpg` in the same commit. The site's content adapter (`content/music/_content.gotmpl`) generates `/music/<youtube_id>/` pages that reference these images as `og:image`. `/add-music` handles this automatically at step 7c; for direct yaml edits, run `python3 scripts/generate-music-og-images.py --only <youtube_id>` before committing. See `.claude/rules/per-song-og-image.md`.
+Every entry in `data/music.yaml` must have a matching `static/images/og/music/<youtube_id>.jpg` in the same commit. The site's content adapter (`content/music/_content.gotmpl`) generates `/music/<youtube_id>/` pages that reference these images as `og:image`. `/add-music` handles this automatically at step 7c; for direct yaml edits, run `python3 scripts/generate-music-og-images.py --only <youtube_id>` before committing.
+
+The music player at `assets/js/music.ts` must also write **path-based URLs** (`/music/<lowercased-youtube_id>/`) to the address bar as the featured song changes — never query strings (`?v=<id>`). Query strings don't get their own OG scrape, so a URL copied out of the address bar has to be path-form to render the branded preview in iMessage / Slack / LinkedIn. See `.claude/rules/per-song-og-image.md`.
 
 ## Commit Discipline
 
