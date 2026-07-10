@@ -79,6 +79,7 @@ flyctl deploy --remote-only
 - `.claude/rules/per-post-og-image.md` — every post gets its own `/images/og/<slug>.png`, generated via `scripts/generate-og-images.py`
 - `.claude/rules/per-song-og-image.md` — every entry in `data/music.yaml` gets `/images/og/music/<youtube_id>.jpg`, generated via `scripts/generate-music-og-images.py`
 - `.claude/rules/now-page-updated-timestamp.md` — any edit to `content/now.md` bumps both the front-matter `date` and the visible `*Updated ...*` line
+- `.claude/rules/markdown-emphasis-style.md` — italic emphasis in a markdown file must match the file's existing style (`*` or `_`); the codebase default is `*asterisk*`. Prevents MD049 CI failures that inherit into every open PR.
 - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
