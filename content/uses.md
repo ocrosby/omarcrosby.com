@@ -5,7 +5,7 @@ draft = false
 description = "The editor, shell, languages, and hosting stack I actually use — for anyone who wandered over from uses.tech."
 +++
 
-The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech).
+The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech). For what I'm actively focused on this month, see [/now/]({{< ref "now.md" >}}).
 
 ## Machine
 
