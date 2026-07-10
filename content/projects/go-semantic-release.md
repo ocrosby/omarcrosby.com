@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "A semantic-release implementation in Go. Powers the release workflow behind this site."
 tags = ["go", "release-tooling", "ci-cd"]
+
+[cover]
+image = "/images/og/projects/go-semantic-release.png"
+hiddenInList = true
 +++
 
 A pure-Go implementation of the semantic-release contract — parses Conventional Commits since the last tag, decides the next version, tags, and publishes a GitHub Release. It powers the release workflow behind this site: every merge that says `feat` or `fix` flows through `go-semantic-release` to a new tag and a Fly.io deploy.

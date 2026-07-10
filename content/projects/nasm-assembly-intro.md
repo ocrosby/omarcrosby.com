@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "Notes and small annotated examples for introductory x86 assembly with NASM."
 tags = ["nasm", "assembly", "education"]
+
+[cover]
+image = "/images/og/projects/nasm-assembly-intro.png"
+hiddenInList = true
 +++
 
 An educational repo with my notes and small annotated examples for introductory **x86 assembly** in NASM — aimed at people who want to peek under the runtime.

@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "Configurable Go reverse-proxy gateway with rate limiting, circuit breaking, MCP routing, and pluggable middleware."
 tags = ["go", "gateway", "mcp"]
+
+[cover]
+image = "/images/og/projects/api-gateway.png"
+hiddenInList = true
 +++
 
 A configurable Go reverse-proxy gateway that sits in front of the identity and sports-data services. Rate limiting, circuit breaking, MCP routing, and a pluggable middleware pipeline so protection and observability are added by config, not by handler edits.

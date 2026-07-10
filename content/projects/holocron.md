@@ -4,6 +4,10 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "Learning-first, Kafka-style event streaming platform — a single-binary broker and SDK, laid out as a Go workspace."
 tags = ["go", "streaming", "distributed-systems"]
+
+[cover]
+image = "/images/og/projects/holocron.png"
+hiddenInList = true
 +++
 
 A learning-first take on Kafka-style event streaming: a single-binary broker plus an SDK, arranged as a Go workspace so the two evolve together. The goal is teaching myself (and anyone reading) what actually happens in a log-based broker, not shipping a Kafka replacement.
