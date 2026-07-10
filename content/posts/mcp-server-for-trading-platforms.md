@@ -6,6 +6,9 @@ summary = "market-bridge is an MCP server that gives Claude direct access to rea
 tags = ["mcp", "trading", "python", "futures", "claude"]
 categories = ["Trading Systems"]
 ShowToc = true
+
+[cover]
+image = "/images/og/mcp-server-for-trading-platforms.png"
 +++
 
 *Companion to the [Market Bridge project page]({{< ref "projects/market-bridge.md" >}}).*

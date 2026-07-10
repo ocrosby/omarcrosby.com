@@ -6,6 +6,9 @@ summary = "Holocron is a single-binary Go distributed log broker. JetStream's op
 tags = ["go", "distributed-systems", "kafka", "nats", "streaming"]
 categories = ["Distributed Systems"]
 ShowToc = true
+
+[cover]
+image = "/images/og/building-holocron-to-understand-kafka.png"
 +++
 
 *Companion to the [Holocron project page]({{< ref "projects/holocron.md" >}}).*

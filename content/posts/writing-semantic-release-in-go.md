@@ -6,6 +6,9 @@ summary = "go-semantic-release is a Go-native re-implementation of the semantic-
 tags = ["go", "release-tooling", "ci-cd", "conventional-commits", "monorepo"]
 categories = ["Code Quality"]
 ShowToc = true
+
+[cover]
+image = "/images/og/writing-semantic-release-in-go.png"
 +++
 
 *Companion to the [Go Semantic Release project page]({{< ref "projects/go-semantic-release.md" >}}).*

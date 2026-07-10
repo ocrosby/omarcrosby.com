@@ -6,6 +6,9 @@ summary = "One Go binary that manages its own Neovim, runs Lua tests inside the 
 tags = ["neovim", "lua", "testing", "coverage", "go", "ci-cd", "github-actions"]
 categories = ["Neovim"]
 ShowToc = true
+
+[cover]
+image = "/images/og/neospec-neovim-test-runner-and-coverage.png"
 +++
 
 *Companion to the [Yoda project page]({{< ref "projects/yoda-nvim.md" >}}) — neospec is the test-runner half of that ecosystem.*

@@ -6,6 +6,9 @@ description = "Writing the test before the implementation forces you to design t
 tags = ["go", "testing", "tdd", "dependency-injection", "software-design"]
 categories = ["Code Quality"]
 ShowToc = true
+
+[cover]
+image = "/images/og/how-writing-tests-first-changes-the-shape-of-go-code.png"
 +++
 
 Most of the debate around test-first development gets stuck on process — red-green-refactor, coverage percentages, whether it slows you down on day one. That debate misses a simpler, more concrete effect, and you don't need to know Go, or even know how to code, to follow it:
