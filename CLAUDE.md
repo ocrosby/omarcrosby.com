@@ -28,6 +28,10 @@ It is a git submodule pointing at an upstream repo. **Never edit files inside `t
 
 Every file under `content/` must have title, date, and draft fields. See `.claude/rules/content-frontmatter.md`.
 
+### Per-post OG image
+
+Every post under `content/posts/` must ship with its own OpenGraph image, not the site-wide `og.png`. Before opening any post PR: run `python3 scripts/generate-og-images.py` and add a `[cover] image = "/images/og/<slug>.png"` block to the post's front matter. The generator is re-runnable; commit the resulting PNG. See `.claude/rules/per-post-og-image.md`.
+
 ## Commit Discipline
 
 - Follow global Conventional Commits (see `~/.claude/CLAUDE.md`).
@@ -62,6 +66,7 @@ flyctl deploy --remote-only
 
 - `.claude/rules/theme-immutable.md` — override at site level, never edit the submodule
 - `.claude/rules/content-frontmatter.md` — required Hugo front matter
+- `.claude/rules/per-post-og-image.md` — every post gets its own `/images/og/<slug>.png`, generated via `scripts/generate-og-images.py`
 - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
