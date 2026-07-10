@@ -9,6 +9,7 @@ ShowToc = true
 
 [cover]
 image = "/images/og/neospec-neovim-test-runner-and-coverage.png"
+hiddenInList = true
 +++
 
 *Companion to the [Yoda project page]({{< ref "projects/yoda-nvim.md" >}}) — neospec is the test-runner half of that ecosystem.*

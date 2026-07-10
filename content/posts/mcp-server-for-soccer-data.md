@@ -9,6 +9,7 @@ ShowToc = true
 
 [cover]
 image = "/images/og/mcp-server-for-soccer-data.png"
+hiddenInList = true
 +++
 
 Ask any LLM who's leading the NWSL right now and you'll get a polite disclaimer about a training cutoff. That's a genuine limitation — the model can't know today's standings, last night's scores, or whether Gotham FC is currently in a playoff spot. But it's also a *fixable* limitation, if you can give the model a way to ask.
