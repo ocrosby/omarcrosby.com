@@ -187,6 +187,18 @@ The script keeps the fresh add pinned at position 0 (the "now playing" slot) and
 
 **Diff churn.** A shuffle rewrites nearly every line of the file per commit, so `git blame data/music.yaml` becomes useless. That's an accepted trade — the file is data, not source, and its blame history was never especially informative. If a bisect ever needs to attribute a song, `git log --all -- data/music.yaml` still finds the introducing commit via the file content.
 
+**Step 7c — Generate the per-song OG image** (required per `.claude/rules/per-song-og-image.md`):
+
+```bash
+python3 scripts/generate-music-og-images.py --only <youtube_id>
+```
+
+The script downloads the YouTube thumbnail (cached under `scripts/.thumbnail-cache/`) and composites it onto a site-branded 1200×630 canvas at `static/images/og/music/<youtube_id>.jpg`. The content adapter at `content/music/_content.gotmpl` then generates `/music/<youtube_id>/` with the per-song OG meta tags on build. Without this step, the shared song URL falls back to the site-wide `og.png` — every LinkedIn/Slack/iMessage share of the song looks identical to every other song.
+
+**Batch behavior.** In queue-and-batch mode, generate each queued song's OG image individually with `--only <id>` (each PNG is independent, no per-song ordering matters). The shuffle from step 7b still runs once at the end.
+
+**Failure guardrail.** If the generator fails (network timeout on YouTube thumbnail, missing thumbnail for a new upload), `git restore data/music.yaml` and stop. Do not commit the yaml addition without the matching image — the rule flags that state as **Must Fix**.
+
 ### 8. Verify the site still builds
 
 Run `hugo --gc --minify --panicOnWarning` from the repo root. If it exits non-zero, `git restore data/music.yaml` and stop — do not commit.
@@ -196,10 +208,12 @@ Run `hugo --gc --minify --panicOnWarning` from the repo root. If it exits non-ze
 ### 9. Direct-commit to main and push
 
 ```bash
-git add data/music.yaml
+git add data/music.yaml static/images/og/music/<youtube_id>.jpg
 ALLOW_MAIN_COMMIT=1 git commit -m 'fix(music): now playing "<title>" by <artist>'
 git push origin main
 ```
+
+The OG image PNG must ship in the same commit as the yaml entry that references it — otherwise the intermediate state on `main` has a `/music/<id>/` page pointing at a 404-image, and any social preview scraped during that window caches the broken state for hours.
 
 The commit type is intentionally `fix(music)` — semantic-release maps this to a patch bump, avoiding minor-version churn on the several-per-day cadence.
 
@@ -220,8 +234,8 @@ Do **not** watch the release workflow — the user checks it themselves.
 - **Never `--force` push.** If push is rejected because someone else pushed, `git pull --rebase` first, then push.
 - **Never skip hooks** (`--no-verify`).
 - **Never guess metadata.** If oEmbed doesn't return JSON or the URL doesn't parse, stop and ask.
-- **Do not touch anything outside `data/music.yaml`.** Layouts, hugo.toml, and content pages are not this command's concern.
-- If any step from 5 onward fails after `data/music.yaml` is modified, `git restore data/music.yaml` before stopping.
+- **Do not touch anything outside `data/music.yaml` and `static/images/og/music/<youtube_id>.jpg`.** Layouts, `hugo.toml`, content pages, and other OG images are not this command's concern. The single per-song JPG generated in step 7c is the one exception to the yaml-only scope.
+- If any step from 5 onward fails after `data/music.yaml` is modified, `git restore data/music.yaml` and delete the just-written `static/images/og/music/<youtube_id>.jpg` (if step 7c completed) before stopping.
 
 ## Example
 
