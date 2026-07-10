@@ -1,9 +1,10 @@
 {{- /*
   Site-level override of themes/PaperMod/layouts/_partials/footer.html.
-  Only difference from upstream: the "Powered by Hugo & PaperMod" span
-  is removed and the trailing ` · ` separator on the copyright line is
-  dropped. Every other block is a verbatim copy — keep this in sync
-  when the theme submodule is bumped.
+  Differences from upstream: the "Powered by Hugo & PaperMod" span
+  is removed, the trailing ` · ` separator on the copyright line is
+  dropped, and the site.Title in the copyright is plain text (not a
+  self-link back to the home page). Every other block is a verbatim
+  copy — keep this in sync when the theme submodule is bumped.
 */ -}}
 {{- if not (.Param "hideFooter") }}
 <footer class="footer">
@@ -11,7 +12,7 @@
         {{- if site.Copyright }}
         <span>{{ site.Copyright | markdownify }}</span>
         {{- else }}
-        <span>&copy; {{ now.Year }} <a href="{{ "" | absLangURL }}">{{ site.Title }}</a></span>
+        <span>&copy; {{ now.Year }} {{ site.Title }}</span>
         {{- end }}
     {{- end }}
 
