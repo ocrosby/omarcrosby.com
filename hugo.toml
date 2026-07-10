@@ -139,17 +139,18 @@ buildExpired = false
   title = "Omar Crosby"
   subtitle = "Software engineer building sports-data infrastructure, distributed systems, Neovim developer tooling, and code-quality analyzers — with occasional detours into NASM and options-trading signals."
   imageTitle = "Portrait of Omar Crosby"
-  # Face-centered 320x320 crop (the raw source has substantial white
-  # empty space on the left of Omar; center-cropping the raw source
-  # to a circle would show mostly whitespace). imageWidth/imageHeight
+  # Tight face-centered 225x225 crop (from 461x463 source at offset
+  # +236+155). The face fills the frame; the only edge pixels are the
+  # ambient sky color (#E6E8ED) from behind the head — no pure-white
+  # padding from the source's empty left half. imageWidth/imageHeight
   # are HTML attributes only — the browser uses them as an aspect-
   # ratio hint for reflow-free rendering, not as a hard size.
   # assets/css/extended/profile-hero.css constrains actual displayed
   # size (max-width 260px, border-radius 50%). The constellation SVG
   # that previously lived here is still under static/images/ if you
   # want to switch back.
-  imageWidth = 320
-  imageHeight = 320
+  imageWidth = 225
+  imageHeight = 225
   imageUrl = "images/omar.jpg"
 
   # URLs are rendered verbatim as `href` by PaperMod's profile template.
