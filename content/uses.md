@@ -6,6 +6,10 @@ description = "The editor, shell, languages, and hosting stack I actually use â€
 
 [cover]
 image = "/images/og/meta/uses.jpg"
+# Emit og:image for social sharing without rendering the wide branded
+# card at the top of the article body. PaperMod's opengraph.html reads
+# cover.image regardless of this flag.
+hiddenInSingle = true
 +++
 
 The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech). For what I'm actively focused on this month, see [/now/]({{< ref "now.md" >}}).
