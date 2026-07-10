@@ -1,11 +1,12 @@
 +++
 title = "Now"
-date = 2026-07-10T05:38:48-04:00
+date = 2026-07-10T15:08:34-04:00
 draft = false
 description = "What I'm focused on right now — updated monthly. Following the nownownow.com convention."
 
 [cover]
 image = "/images/og/meta/now.jpg"
+hidden = true
 +++
 
 *Updated 2026-07-10.*

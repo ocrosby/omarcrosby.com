@@ -6,6 +6,7 @@ description = "The editor, shell, languages, and hosting stack I actually use â€
 
 [cover]
 image = "/images/og/meta/uses.jpg"
+hidden = true
 +++
 
 The tools I actually reach for, on the machine I'm actually sitting in front of. Updated when the setup changes, not sooner. Inspired by [uses.tech](https://uses.tech). For what I'm actively focused on this month, see [/now/]({{< ref "now.md" >}}).
