@@ -1,0 +1,22 @@
+/* Header avatar — auto-loaded by PaperMod from assets/css/extended/.
+
+   The persistent site-header shows a small logo next to the "Omar Crosby"
+   title on every page (via params.label.icon in hugo.toml). PaperMod
+   renders it as an <img> inside <div class="logo"><a>...</a></div>
+   with height=iconHeight (32px here). By default the image is square
+   and PaperMod does not round it. Clip to a circle and give it a
+   touch of breathing room from the site title.
+
+   The width is derived from the height via aspect-ratio: 1 so the CSS
+   doesn't depend on the source aspect matching 1:1 exactly (the source
+   is 461x463 — near-square, but object-fit handles the 2px difference). */
+
+.header .logo a img {
+    width: 32px;
+    height: 32px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}

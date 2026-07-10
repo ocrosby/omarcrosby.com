@@ -121,20 +121,31 @@ buildExpired = false
   disableHLJS = true
   favicon = "/favicon.ico"
 
+# Persistent site-header avatar — small circular headshot next to the
+# "Omar Crosby" title on every page. PaperMod's header.html reads
+# label.icon (via resources.Get first, then absURL fallback), and
+# renders it at label.iconHeight px. The `.logo a img` selector in
+# assets/css/extended/header-avatar.css clips it to a circle.
+[params.label]
+  icon = "images/omar.jpg"
+  iconHeight = 32
+
 # Profile mode — landing page shows a name, tagline, and buttons instead of a post list.
 [params.profileMode]
   enabled = true
   title = "Omar Crosby"
   subtitle = "Software engineer building sports-data infrastructure, distributed systems, Neovim developer tooling, and code-quality analyzers — with occasional detours into NASM and options-trading signals."
-  imageTitle = "Constellation of connected nodes"
-  # SVG viewBox is 1200x400 (3:1 aspect). The HTML width/height attributes
-  # give the browser an aspect-ratio hint for reflow-free rendering;
-  # assets/css/extended/profile-constellation.css overrides the actual
-  # displayed size with width: 100%; height: auto; max-width: 720px so
-  # the graphic spans the profile column responsively at every viewport.
-  imageWidth = 1200
-  imageHeight = 400
-  imageUrl = "images/constellation.svg"
+  imageTitle = "Portrait of Omar Crosby"
+  # Source is 461x463 (near-square). imageWidth/imageHeight are HTML
+  # attributes only — the browser uses them as an aspect-ratio hint for
+  # reflow-free rendering, not as a hard size. assets/css/extended/
+  # profile-hero.css constrains the actual displayed size to a
+  # reasonable circular headshot (max-width 260px, border-radius 50%).
+  # The constellation SVG that previously lived here is still under
+  # static/images/ if you want to switch back.
+  imageWidth = 461
+  imageHeight = 463
+  imageUrl = "images/omar.jpg"
 
   # URLs are rendered verbatim as `href` by PaperMod's profile template.
   # Always root-relative (leading slash) or absolute — never bare strings.

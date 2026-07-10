@@ -1,0 +1,28 @@
+/* About-page portrait — auto-loaded by PaperMod from assets/css/extended/.
+
+   The <img class="about-portrait"> in content/about.md displays Omar's
+   headshot near the top of the About page. Two viewport regimes:
+
+   - Wide (≥ 800px): float right, wrap the identity paragraph around it
+   - Narrow (< 800px): center above the paragraph, block-level
+
+   Circular clip via border-radius: 50%, same visual treatment as the
+   home hero and header avatar so the three placements read as the same
+   photographic identity. */
+
+.about-portrait {
+    display: block;
+    width: 220px;
+    height: 220px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+}
+
+@media (min-width: 800px) {
+    .about-portrait {
+        float: right;
+        margin: 0.25rem 0 1rem 1.5rem;
+    }
+}
