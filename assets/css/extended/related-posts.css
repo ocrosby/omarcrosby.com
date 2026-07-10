@@ -1,0 +1,90 @@
+/* Related-posts widget — auto-loaded by PaperMod from assets/css/extended/.
+
+   Rendered by layouts/_partials/extend_post_content.html at the end of
+   every single post body. Visually distinct from the article body above:
+   a top divider, a modest heading, and a compact list of three items —
+   title + one-line summary + category pillar tag.
+
+   Layout goals:
+   - Clearly delimit the widget from the article body it follows (top border).
+   - Read as a *list* of related pages, not a set of hero cards (which
+     would compete with the article title above and the post-tags/nav
+     below).
+   - Keep each item scannable in one line-height of visual space: title
+     bolder, summary muted-normal, category tag small caps.
+   - Full clickable area — the whole item is a link (an <a> wraps the
+     inner divs), so touch targets are large and pointer-cursor covers
+     the row. */
+
+.related-posts {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.related-posts-heading {
+    font-size: 1.2rem;
+    margin: 0 0 1rem;
+    color: var(--secondary);
+    font-weight: 700;
+}
+
+.related-posts-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.related-posts-item {
+    padding: 0;
+    margin: 0;
+}
+
+/* Whole-row link so the pointer-cursor + focus ring covers the full item.
+   Displayed as flex-column so the three inner divs stack cleanly. */
+.related-posts-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    background: var(--code-bg);
+    color: var(--primary);
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.related-posts-link:hover,
+.related-posts-link:focus-visible {
+    background: var(--tertiary);
+}
+
+.related-posts-title {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--primary);
+}
+
+.related-posts-summary {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--secondary);
+    /* Two-line clamp keeps the row height predictable when summaries vary in length. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.related-posts-category {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--secondary);
+    margin-top: 0.25rem;
+    font-weight: 600;
+}

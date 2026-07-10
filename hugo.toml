@@ -26,6 +26,28 @@ buildExpired = false
   category = "categories"
   series = "series"
 
+# Related content — surfaces "Related posts" widget at the end of each
+# single post via layouts/_partials/extend_post_content.html. Categories
+# weighted highest so posts in the same pillar cluster; tags fill in
+# when categories run out. See docs.gohugo.io/methods/pages/related.
+[related]
+  threshold = 80
+  includeNewer = true
+  toLower = false
+
+  [[related.indices]]
+    name = "categories"
+    weight = 100
+
+  [[related.indices]]
+    name = "tags"
+    weight = 60
+
+  [[related.indices]]
+    name = "date"
+    weight = 10
+    pattern = "2006"
+
 [markup.goldmark.renderer]
   unsafe = true
 
