@@ -1,6 +1,6 @@
 +++
 title = "Now"
-date = 2026-07-10T15:57:40-04:00
+date = 2026-07-10T18:38:00-04:00
 draft = false
 description = "What I'm focused on right now — updated every 4–6 weeks. Following the nownownow.com convention."
 
@@ -25,6 +25,7 @@ Active open-source work:
 - **[Yoda]({{< ref "projects/yoda-nvim.md" >}})** — a modular Neovim distribution and the family of `yoda-*` plugins that came out of it.
 - **[market-bridge]({{< ref "projects/market-bridge.md" >}})** and **[strike-pilot]({{< ref "projects/strike-pilot.md" >}})** — MCP bridges into the trading platforms I actually use, plus an SPX bias engine that treats "no trade" as a first-class output.
 - **[go-semantic-release]({{< ref "projects/go-semantic-release.md" >}})** — the Go-native re-implementation of semantic-release that publishes this site.
+- **[TCP library in NASM x86 assembly](https://github.com/ocrosby/assembly-fundamentals-nasm/tree/main/libs/tcp)** — part of my [`assembly-fundamentals-nasm`](https://github.com/ocrosby/assembly-fundamentals-nasm) learning repo. Targeting completion this weekend.
 
 ## Site
 
