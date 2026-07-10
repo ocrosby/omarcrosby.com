@@ -39,6 +39,15 @@
     display: none;
 }
 
+/* On /music/, the big featured player is the audible one; the persistent
+   iframe stays loaded and playing (muted, in background) so it's ready
+   to take over on navigate-away, but visually hidden so the user isn't
+   seeing two players. persistent-player.ts adds body.on-music-page on
+   every turbo:load when the URL matches the /music/ route. */
+body.on-music-page .persistent-music-player {
+    display: none;
+}
+
 .persistent-music-player iframe {
     display: block;
     width: 100%;
