@@ -7,7 +7,7 @@ paths:
 
 # Hugo Authoring
 
-This skill loads when writing or editing content under `content/` or `archetypes/`. The five project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md`, `project-title-naming.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
+This skill loads when writing or editing content under `content/` or `archetypes/`. The six project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md`, `project-title-naming.md`, `per-post-og-image.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
 
 ## Fast path
 
@@ -49,9 +49,24 @@ Field notes:
 2. Write. Iterate. Read your own prose out loud.
 3. Optional local draft preview: `hugo server -D` (requires local Hugo — the Homebrew 0.160 build works with the current PaperMod submodule).
 4. Flip `draft = false`.
-5. Verify in Docker preview: `/preview`, confirm the post appears in the archive at the expected URL.
-6. **Required if the diff added external URLs — `/verify`.** Its lychee step checks every rendered page against the full external-link set; skipping this is how fragile-URL failures reach `main`. See `.claude/rules/external-link-hygiene.md` for the URL classes that break `lychee`.
-7. Open PR with `feat(content): add "<slug>"` or similar. Merge triggers the release.
+5. **Generate the OG image and add the `[cover]` block** — required for every post per `.claude/rules/per-post-og-image.md`:
+
+   ```bash
+   python3 scripts/generate-og-images.py
+   ```
+
+   Then ensure the post's front matter ends with:
+
+   ```toml
+   [cover]
+   image = "/images/og/<slug>.png"
+   ```
+
+   Verify with: `hugo --gc --minify --panicOnWarning >/dev/null && grep -o 'og:image[^>]*' "public/posts/<slug>/index.html"` — the URL should be under `/images/og/<slug>.png`, not the site-wide `/images/og.png`.
+
+6. Verify in Docker preview: `/preview`, confirm the post appears in the archive at the expected URL.
+7. **Required if the diff added external URLs — `/verify`.** Its lychee step checks every rendered page against the full external-link set; skipping this is how fragile-URL failures reach `main`. See `.claude/rules/external-link-hygiene.md` for the URL classes that break `lychee`.
+8. Open PR with `feat(content): add "<slug>"` or similar. Merge triggers the release.
 
 ## URL structure
 
