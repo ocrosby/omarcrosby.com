@@ -94,6 +94,12 @@ buildExpired = false
   weight = 3
 
 [[menu.main]]
+  identifier = "subscribe"
+  name = "Subscribe"
+  url = "/subscribe/"
+  weight = 35
+
+[[menu.main]]
   identifier = "tags"
   name = "Tags"
   url = "/tags/"
@@ -214,6 +220,12 @@ buildExpired = false
   [[params.profileMode.buttons]]
     name = "About"
     url = "/about/"
+  [[params.profileMode.buttons]]
+    name = "Uses"
+    url = "/uses/"
+  [[params.profileMode.buttons]]
+    name = "Now"
+    url = "/now/"
 
 # Fallback for when profileMode is disabled — shows above the post list.
 [params.homeInfoParams]
