@@ -9,6 +9,7 @@ ShowToc = true
 
 [cover]
 image = "/images/og/testing-go-with-ginkgo-and-gomega.png"
+hiddenInList = true
 +++
 
 If you've never looked at [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/), there's a decent chance you're picturing something that replaces `go test` — a separate test runner, a separate CI step, another tool your team has to adopt wholesale before anyone sees a benefit. That picture is wrong, and it's worth correcting up front, because it's the single biggest reason Go developers who'd genuinely enjoy Ginkgo never try it.

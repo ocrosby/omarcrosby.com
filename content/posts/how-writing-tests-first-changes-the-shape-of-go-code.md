@@ -9,6 +9,7 @@ ShowToc = true
 
 [cover]
 image = "/images/og/how-writing-tests-first-changes-the-shape-of-go-code.png"
+hiddenInList = true
 +++
 
 Most of the debate around test-first development gets stuck on process — red-green-refactor, coverage percentages, whether it slows you down on day one. That debate misses a simpler, more concrete effect, and you don't need to know Go, or even know how to code, to follow it:

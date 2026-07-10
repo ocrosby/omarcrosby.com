@@ -9,6 +9,7 @@ ShowToc = true
 
 [cover]
 image = "/images/og/mcp-server-for-trading-platforms.png"
+hiddenInList = true
 +++
 
 *Companion to the [Market Bridge project page]({{< ref "projects/market-bridge.md" >}}).*
