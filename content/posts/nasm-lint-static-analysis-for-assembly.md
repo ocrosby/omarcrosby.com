@@ -4,6 +4,7 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "One Rust-written analyzer for NASM assembly, delivered as a CLI, an LSP for editor diagnostics, and a GitHub Action that emits SARIF for GitHub code scanning."
 tags = ["rust", "nasm", "assembly", "static-analysis", "lsp", "sarif"]
+categories = ["Code Quality"]
 ShowToc = true
 +++
 

@@ -4,6 +4,7 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "strike-pilot is a Python engine that reads intraday SPX signals, scores its own confidence, and produces a concrete credit-spread recommendation — or explicitly refuses to trade."
 tags = ["python", "trading", "options", "spx", "signals"]
+categories = ["Trading Systems"]
 ShowToc = true
 +++
 

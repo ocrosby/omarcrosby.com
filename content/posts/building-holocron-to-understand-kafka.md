@@ -4,6 +4,7 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "Holocron is a single-binary Go distributed log broker. JetStream's operational simplicity plus the per-partition ordering and Kafka-shaped log model JetStream lacks."
 tags = ["go", "distributed-systems", "kafka", "nats", "streaming"]
+categories = ["Distributed Systems"]
 ShowToc = true
 +++
 

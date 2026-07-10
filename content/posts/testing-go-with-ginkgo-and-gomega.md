@@ -4,7 +4,7 @@ date = "2026-07-09T10:41:32-04:00"
 draft = false
 description = "Ginkgo and Gomega bring BDD-style specs and suite-level setup to Go — and every one of them still runs under the plain go test command you already trust."
 tags = ["go", "testing", "ginkgo", "gomega", "bdd", "ci-cd"]
-categories = []
+categories = ["Code Quality"]
 ShowToc = true
 +++
 

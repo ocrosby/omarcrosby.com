@@ -4,6 +4,7 @@ date = 2026-07-04T11:15:00-04:00
 draft = false
 summary = "go-semantic-release is a Go-native re-implementation of the semantic-release contract, with four monorepo discovery modes and a CLI surface compatible with the JS original. It's what publishes this site."
 tags = ["go", "release-tooling", "ci-cd", "conventional-commits", "monorepo"]
+categories = ["Code Quality"]
 ShowToc = true
 +++
 

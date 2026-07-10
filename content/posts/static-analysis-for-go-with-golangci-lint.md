@@ -4,7 +4,7 @@ date = "2026-07-09T13:44:25-04:00"
 draft = false
 description = "A tour of golangci-lint's 100-plus linters, the categories of bugs static analysis catches, and how to adopt it on a Go codebase without drowning in findings."
 tags = ["go", "static-analysis", "code-quality", "ci-cd", "golangci-lint", "security"]
-categories = []
+categories = ["Code Quality"]
 ShowToc = true
 +++
 

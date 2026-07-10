@@ -4,6 +4,7 @@ date = 2026-07-05T07:45:00-04:00
 draft = false
 summary = "One Go binary that manages its own Neovim, runs Lua tests inside the real editor, and emits LCOV/Cobertura/JUnit — no system install, no vendored framework, no shell-script gymnastics."
 tags = ["neovim", "lua", "testing", "coverage", "go", "ci-cd", "github-actions"]
+categories = ["Neovim"]
 ShowToc = true
 +++
 
