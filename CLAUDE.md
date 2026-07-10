@@ -38,6 +38,10 @@ Every entry in `data/music.yaml` must have a matching `static/images/og/music/<y
 
 The music player at `assets/js/music.ts` must also write **path-based URLs** (`/music/<lowercased-youtube_id>/`) to the address bar as the featured song changes — never query strings (`?v=<id>`). Query strings don't get their own OG scrape, so a URL copied out of the address bar has to be path-form to render the branded preview in iMessage / Slack / LinkedIn. See `.claude/rules/per-song-og-image.md`.
 
+### `/now/` page updated timestamp
+
+Every edit to `content/now.md` must bump **both** the front-matter `date` field and the visible `*Updated YYYY-MM-DD.*` italic line at the top of the body to today's date (America/New_York), in the same commit as the content change. No exceptions — including typo fixes, single-word tweaks, or link updates. The `/now/` page's whole value proposition is that the timestamp reflects a genuinely recent re-consideration of what's on it; a stale timestamp with fresh content — or a fresh timestamp with unchanged content — both undermine the reader's trust in the signal. See `.claude/rules/now-page-updated-timestamp.md`.
+
 ## Commit Discipline
 
 - Follow global Conventional Commits (see `~/.claude/CLAUDE.md`).
@@ -74,6 +78,7 @@ flyctl deploy --remote-only
 - `.claude/rules/content-frontmatter.md` — required Hugo front matter
 - `.claude/rules/per-post-og-image.md` — every post gets its own `/images/og/<slug>.png`, generated via `scripts/generate-og-images.py`
 - `.claude/rules/per-song-og-image.md` — every entry in `data/music.yaml` gets `/images/og/music/<youtube_id>.jpg`, generated via `scripts/generate-music-og-images.py`
+- `.claude/rules/now-page-updated-timestamp.md` — any edit to `content/now.md` bumps both the front-matter `date` and the visible `*Updated ...*` line
 - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
