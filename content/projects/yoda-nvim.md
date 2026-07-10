@@ -8,6 +8,11 @@ tags = ["neovim", "lua", "nvim-plugin"]
 
 A Neovim distribution that boots with sensible defaults, plus a family of small modular plugins so pieces are usable outside of Yoda itself.
 
+**Deep dives:**
+
+- [Yoda: what I learned making a Neovim distribution modular →]({{< ref "posts/modular-neovim-distribution-yoda.md" >}}) — designing the ecosystem so each `yoda-*` plugin is independently useful, not just a slice of the distribution.
+- [neospec: a self-contained test runner and coverage tool for Neovim plugins →]({{< ref "posts/neospec-neovim-test-runner-and-coverage.md" >}}) — the Go binary that manages its own Neovim and runs Lua tests inside the real editor, built to test this ecosystem.
+
 - **Distribution:** [`yoda.nvim`](https://github.com/jedi-knights/yoda.nvim)
 - **Modular building blocks:**
   [`yoda-core.nvim`](https://github.com/jedi-knights/yoda-core.nvim),

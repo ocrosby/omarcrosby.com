@@ -7,6 +7,8 @@ tags = ["neovim", "lua", "testing", "coverage", "go", "ci-cd", "github-actions"]
 ShowToc = true
 +++
 
+*Companion to the [Yoda project page]({{< ref "projects/yoda-nvim.md" >}}) — neospec is the test-runner half of that ecosystem.*
+
 Testing a Neovim plugin in CI is one of those problems that looks like it should be solved and isn't. If you're writing a Vim plugin — or worse, a Neovim distribution — you have three choices today, and every one of them has a sharp edge:
 
 1. **Install Neovim system-wide on the runner** and shell out to `nvim --headless -c 'PlenaryBustedDirectory ...'`. Works, but you own the install/update dance, and the runner OS decides which Neovim you get.

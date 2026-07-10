@@ -7,6 +7,8 @@ tags = ["mcp", "trading", "python", "futures", "claude"]
 ShowToc = true
 +++
 
+*Companion to the [Market Bridge project page]({{< ref "projects/market-bridge.md" >}}).*
+
 I trade **/ES** (the S&P 500 E-mini futures) across three platforms — **Tradovate** for execution, **Bookmap** for order-flow visualization, and **Thinkorswim** for chart study. Each is good at its job. None of them talks to Claude.
 
 That's the problem [market-bridge](https://github.com/ocrosby/market-bridge) solves: it's a small [FastMCP](https://gofastmcp.com)-based server that runs on my machine and lets Claude ask the platforms for market data directly, mid-conversation, without me exporting anything.

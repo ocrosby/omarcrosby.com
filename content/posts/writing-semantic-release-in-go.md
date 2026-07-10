@@ -7,6 +7,8 @@ tags = ["go", "release-tooling", "ci-cd", "conventional-commits", "monorepo"]
 ShowToc = true
 +++
 
+*Companion to the [Go Semantic Release project page]({{< ref "projects/go-semantic-release.md" >}}).*
+
 The **semantic-release** contract is one of the best pieces of CI/CD glue in wide use. You write [Conventional Commits](https://www.conventionalcommits.org/), you push to a release branch, and a tool reads the commit history since the last tag, decides whether the next version is a major, minor, or patch, generates a changelog, tags the commit, and publishes a GitHub Release. No manual version bumps. No forgotten changelog entries. Every release is boring in the best sense.
 
 The original implementation is Node.js. That's fine if your project already has a Node toolchain. It's less fine if you're releasing a Go project, or a Rust project, or a Python project, or anything else — because now every CI pipeline that just wants to tag a release has to install Node and pull down a dependency tree it doesn't otherwise need. [go-semantic-release](https://github.com/jedi-knights/go-semantic-release) is the Go-native re-implementation. It's what publishes every release of this site.

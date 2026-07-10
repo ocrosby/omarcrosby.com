@@ -7,6 +7,8 @@ tags = ["rust", "nasm", "assembly", "static-analysis", "lsp", "sarif"]
 ShowToc = true
 +++
 
+*Companion to the [NASM Lint project page]({{< ref "projects/nasm-lint.md" >}}).*
+
 Every serious language has a linter that people actually run. Rust has clippy. Python has ruff. Go has staticcheck and golangci-lint. Assembly, somehow, has none. If you write **NASM** — the syntax the majority of x86 hobbyists, security researchers, and CTF folks reach for — the only thing checking your code is the assembler, and it complains about a specific set of things and nothing else.
 
 [nasm-lint](https://github.com/jedi-knights/nasm-lint) is the tool I wanted to exist. It's a static analyzer for NASM x86 / x86-64 assembly, written in Rust, that ships in three delivery shapes so it fits wherever code is already being checked.

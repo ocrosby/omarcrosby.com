@@ -12,6 +12,8 @@ A static analyzer for NASM x86 assembly, written in Rust. Ships in three forms s
 - An **editor LSP** for in-editor diagnostics.
 - A **GitHub Action** that emits SARIF, so results land in the standard code-scanning surface.
 
+**Deep dive:** [nasm-lint: static analysis for NASM x86 in three shapes →]({{< ref "posts/nasm-lint-static-analysis-for-assembly.md" >}}) — why one analyzer core is shipped in three surfaces (CLI, LSP, GitHub Action + SARIF), and how the delivery shape shapes the rule catalog.
+
 **Stack:** Rust · NASM · LSP · SARIF · GitHub Actions
 
 - **Repo:** [github.com/jedi-knights/nasm-lint](https://github.com/jedi-knights/nasm-lint)
