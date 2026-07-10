@@ -43,6 +43,11 @@
 # ieeexplore.ieee.org — IEEE Xplore requires authentication for article links,
 # returns 202/403 to unauthenticated bots.
 ^https?://ieeexplore\.ieee\.org
+# www.gnu.org — the GNU project's servers rate-limit requests from GitHub
+# runner IP ranges (shared address pool). Local lychee from a personal IP
+# passes; CI reliably times out. Same failure class as Instagram/Facebook
+# runner-IP rate limits — the fix is host-level ignore, not --accept.
+^https?://(www\.)?gnu\.org
 
 # Specific https://doi.org URLs whose redirect terminates on a fragile host.
 # lychee matches ignore patterns against the *starting* URL and does not
