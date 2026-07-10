@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/nasm-lint-static-analysis-for-assembly.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 *Companion to the [NASM Lint project page]({{< ref "projects/nasm-lint.md" >}}).*

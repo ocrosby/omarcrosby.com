@@ -30,7 +30,7 @@ Every file under `content/` must have title, date, and draft fields. See `.claud
 
 ### Per-post OG image
 
-Every post under `content/posts/` must ship with its own OpenGraph image, not the site-wide `og.png`. Before opening any post PR: run `python3 scripts/generate-og-images.py` and add a `[cover] image = "/images/og/<slug>.png"` block to the post's front matter. The `[cover]` block must also carry `hiddenInList = true` — otherwise PaperMod auto-renders the cover as a full-width branded banner in every list view (`/posts/`, `/categories/<slug>/`, tag pages), making the list ~60% banner and ~40% scannable text. The generator is re-runnable; commit the resulting PNG. See `.claude/rules/per-post-og-image.md`.
+Every post under `content/posts/` must ship with its own OpenGraph image, not the site-wide `og.png`. Before opening any post PR: run `python3 scripts/generate-og-images.py` and add a `[cover] image = "/images/og/<slug>.png"` block to the post's front matter. The `[cover]` block must carry **both** `hiddenInList = true` **and** `hiddenInSingle = true`. Without `hiddenInList`, PaperMod renders the cover as a full-width banner in every list view (`/posts/`, `/categories/<slug>/`, tag pages), turning the list into ~60% banner and ~40% scannable text. Without `hiddenInSingle`, the single post page shows the branded banner directly above the h1 title and description — the same duplication smell PR #106 removed from `/about/`/`/uses/`/`/now/` and PR #108 removed from every project page. Both flags leave `og:image` fully intact for social previews. The generator is re-runnable; commit the resulting PNG. See `.claude/rules/per-post-og-image.md`.
 
 ### Per-song OG image
 

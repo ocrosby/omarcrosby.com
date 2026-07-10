@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/building-holocron-to-understand-kafka.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 *Companion to the [Holocron project page]({{< ref "projects/holocron.md" >}}).*

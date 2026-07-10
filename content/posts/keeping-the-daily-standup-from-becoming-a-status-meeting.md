@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/keeping-the-daily-standup-from-becoming-a-status-meeting.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 A pattern I keep running into on teams that otherwise run a tight process: the daily standup slowly turns into a status meeting. Nobody decides to make it that way on purpose — the shape just drifts. Someone goes around the room instead of around the board. People who aren't touching a single story that sprint get asked for an update anyway, because they're "on the call" and it would be rude to skip them. And the three questions stop being a format and start being a suggestion, so a five-minute sync creeps toward twenty because someone's blocker turns into a design discussion in front of a dozen people who don't need to be in it.
