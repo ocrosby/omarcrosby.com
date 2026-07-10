@@ -6,6 +6,9 @@ description = "A tour of golangci-lint's 100-plus linters, the categories of bug
 tags = ["go", "static-analysis", "code-quality", "ci-cd", "golangci-lint", "security"]
 categories = ["Code Quality"]
 ShowToc = true
+
+[cover]
+image = "/images/og/static-analysis-for-go-with-golangci-lint.png"
 +++
 
 Code review catches the bugs a human happens to notice. Static analysis catches the bugs a specific, well-defined check is built to notice — every time, on every line, before anyone opens the diff. Those are different guarantees, and the difference matters most for the bug classes reviewers are worst at: an HTTP response body that never gets closed three call sites deep, an error return silently discarded in a one-line change, a security-sensitive value generated with the wrong random source. None of these look wrong at a glance. All of them are mechanically detectable.

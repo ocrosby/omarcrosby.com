@@ -6,6 +6,9 @@ summary = "strike-pilot is a Python engine that reads intraday SPX signals, scor
 tags = ["python", "trading", "options", "spx", "signals"]
 categories = ["Trading Systems"]
 ShowToc = true
+
+[cover]
+image = "/images/og/reading-intraday-spx-bias.png"
 +++
 
 *Companion to the [Strike Pilot project page]({{< ref "projects/strike-pilot.md" >}}).*

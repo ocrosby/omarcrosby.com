@@ -6,6 +6,9 @@ summary = "One Rust-written analyzer for NASM assembly, delivered as a CLI, an L
 tags = ["rust", "nasm", "assembly", "static-analysis", "lsp", "sarif"]
 categories = ["Code Quality"]
 ShowToc = true
+
+[cover]
+image = "/images/og/nasm-lint-static-analysis-for-assembly.png"
 +++
 
 *Companion to the [NASM Lint project page]({{< ref "projects/nasm-lint.md" >}}).*

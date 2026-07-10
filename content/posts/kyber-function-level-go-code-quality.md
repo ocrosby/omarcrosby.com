@@ -6,6 +6,9 @@ summary = "Existing Go linters tell you which lines break a rule. kyber tells yo
 tags = ["go", "static-analysis", "code-quality", "complexity-metrics", "sarif"]
 categories = ["Code Quality"]
 ShowToc = true
+
+[cover]
+image = "/images/og/kyber-function-level-go-code-quality.png"
 +++
 
 There's a whole category of code-quality question that Go's existing linters don't answer. `golangci-lint`, `gocyclo`, and `revive` are all rule-oriented — you configure a threshold, they flag every line that crosses it, and everything else is invisible. That's the right shape for enforcing style. It is not the right shape for asking *which functions in this package are healthy, which are mediocre, and which are risky*, because health is a distribution, not a rule.

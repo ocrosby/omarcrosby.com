@@ -6,6 +6,9 @@ summary = "yoda.nvim is a Neovim distribution built from a family of independent
 tags = ["neovim", "lua", "nvim-plugin", "yoda"]
 categories = ["Neovim"]
 ShowToc = true
+
+[cover]
+image = "/images/og/modular-neovim-distribution-yoda.png"
 +++
 
 *Companion to the [Yoda project page]({{< ref "projects/yoda-nvim.md" >}}).*
