@@ -111,6 +111,30 @@ declare global {
     meta.dataset.initialQuery ||
     "playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1";
 
+  // Desktop viewers get muted autoplay instead of the "Play with sound"
+  // overlay — browsers universally allow muted autoplay, and unmuting is
+  // one click on YouTube's own volume control. Touch-only devices keep the
+  // overlay because mobile browsers block even muted autoplay in many
+  // conditions and the explicit gesture is the reliable path.
+  //
+  // (hover: none) + (pointer: coarse) targets touch-primary devices; a
+  // touchscreen laptop with a mouse reports (hover: hover) and gets the
+  // desktop path, which is what we want.
+  const isTouchOnly =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const desktopBootQuery =
+    "autoplay=1&mute=1&playsinline=1&rel=0&cc_load_policy=0&iv_load_policy=3&enablejsapi=1";
+  const bootQuery = isTouchOnly ? initialQuery : desktopBootQuery;
+
+  if (!isTouchOnly) {
+    // Rewrite the server-rendered query wholesale rather than string-matching
+    // the existing one — Hugo's HTML/URL escaping percent-encodes the `&`
+    // and `=` characters in the src attribute, so a literal `.indexOf` of
+    // `initialQuery` misses.
+    iframe.src = iframe.src.replace(/\?[^#]*/, "?" + desktopBootQuery);
+  }
+
   // The full playlist, in DOM order (which matches data/music.yaml — newest first).
   const items = Array.from(
     document.querySelectorAll<MusicItemElement>(".music-item"),
@@ -418,7 +442,7 @@ declare global {
               "https://www.youtube-nocookie.com/embed/" +
               requestedId +
               "?" +
-              initialQuery;
+              bootQuery;
             iframe.title =
               (items[j].dataset.title || "") +
               (items[j].dataset.artist ? " — " + items[j].dataset.artist : "");
@@ -452,7 +476,11 @@ declare global {
   // the first second. Hide the button after the click so the video is
   // unobstructed.
   const playBtn = featured.querySelector<HTMLButtonElement>(".music-play-with-sound");
-  if (playBtn) {
+  if (playBtn && !isTouchOnly) {
+    // Desktop path: muted autoplay is already running via bootQuery, so the
+    // overlay is redundant. Hide it and skip wiring the click handler.
+    playBtn.classList.add("is-hidden");
+  } else if (playBtn) {
     playBtn.addEventListener("click", () => {
       playBtn.classList.add("is-hidden");
       if (player && typeof player.playVideo === "function") {
