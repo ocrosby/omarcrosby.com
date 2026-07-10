@@ -32,6 +32,10 @@ Every file under `content/` must have title, date, and draft fields. See `.claud
 
 Every post under `content/posts/` must ship with its own OpenGraph image, not the site-wide `og.png`. Before opening any post PR: run `python3 scripts/generate-og-images.py` and add a `[cover] image = "/images/og/<slug>.png"` block to the post's front matter. The generator is re-runnable; commit the resulting PNG. See `.claude/rules/per-post-og-image.md`.
 
+### Per-song OG image
+
+Every entry in `data/music.yaml` must have a matching `static/images/og/music/<youtube_id>.jpg` in the same commit. The site's content adapter (`content/music/_content.gotmpl`) generates `/music/<youtube_id>/` pages that reference these images as `og:image`. `/add-music` handles this automatically at step 7c; for direct yaml edits, run `python3 scripts/generate-music-og-images.py --only <youtube_id>` before committing. See `.claude/rules/per-song-og-image.md`.
+
 ## Commit Discipline
 
 - Follow global Conventional Commits (see `~/.claude/CLAUDE.md`).
@@ -67,6 +71,7 @@ flyctl deploy --remote-only
 - `.claude/rules/theme-immutable.md` — override at site level, never edit the submodule
 - `.claude/rules/content-frontmatter.md` — required Hugo front matter
 - `.claude/rules/per-post-og-image.md` — every post gets its own `/images/og/<slug>.png`, generated via `scripts/generate-og-images.py`
+- `.claude/rules/per-song-og-image.md` — every entry in `data/music.yaml` gets `/images/og/music/<youtube_id>.jpg`, generated via `scripts/generate-music-og-images.py`
 - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
