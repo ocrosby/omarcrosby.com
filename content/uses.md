@@ -20,6 +20,10 @@ The tools I actually reach for, on the machine I'm actually sitting in front of.
 - **Neovim** with [Yoda]({{< ref "projects/yoda-nvim.md" >}}) — my own modular distribution. Every piece under the hood (window management, logging, diagnostics, terminal, adapters) is its own installable plugin, so I use Yoda-as-a-whole here and Yoda-piece-by-piece in every other Neovim-adjacent project.
 - **`vim.pack`** for plugin management — the Neovim-native option. No `lazy.nvim`, no `packer`, no third-party loading wrapper.
 
+## Terminal
+
+- **[Ghostty](https://ghostty.org/)** — GPU-accelerated, native macOS, fast. Mitchell Hashimoto's terminal. Replaced whatever I was using before it shipped.
+
 ## Shell
 
 - **`zsh`** — default on macOS since Catalina, no reason to switch.
