@@ -1,0 +1,76 @@
+{{/*
+  Hugo content adapter — reads data/music.yaml at build time and emits
+  one page per song under /music/<youtube_id>/. Requires Hugo 0.126+
+  (see hugo.toml pin 0.160.1).
+
+  Each generated page carries the song's metadata as params, and a
+  cover.image path pointing at the pre-generated JPG at
+  static/images/og/music/<id>.jpg. PaperMod's opengraph.html partial
+  reads Params.cover.image and emits og:image / twitter:image / the
+  JSON-LD schema.org image — every song URL gets its own social preview.
+
+  The image is generated ahead of time by scripts/generate-music-og-images.py
+  (either --all for backfill or --only <id> from /add-music). This
+  adapter does NOT invoke the generator; it just references the path
+  the generator writes to.
+*/}}
+{{/* site.Data was deprecated in 0.156; use hugo.Data.
+     layouts/section/music.html handles this via os.ReadFile+Unmarshal
+     because it runs in a page template context. Content adapters can
+     use hugo.Data.music directly. */}}
+{{ $videos := hugo.Data.music }}
+{{ range $videos }}
+  {{ $id := .youtube_id }}
+  {{ $title := .title }}
+  {{ $artist := .artist }}
+
+  {{/*
+    Params carry the same fields as data/music.yaml so the single-song
+    layout can render them directly from .Params.<field>.
+    The `slug` param helps the layout link back to the /music/ index anchor.
+  */}}
+  {{/*
+    Duplicate title/artist into Params so the single-song layout can
+    render them individually (H1 = song title only, subtitle = artist).
+    The top-level `title:` on the page dict is the SEO combined form
+    ("Song — Artist") used by <title> and social og:title.
+  */}}
+  {{ $params := dict
+    "youtube_id" $id
+    "title" $title
+    "artist" $artist
+    "album" .album
+    "genre" .genre
+    "year" .year
+    "added" .added
+    "note" .note
+    "slug" $id
+  }}
+
+  {{/*
+    Description — used for meta description + JSON-LD. Kept short so
+    social previews don't truncate awkwardly on constrained surfaces.
+  */}}
+  {{ $desc := printf "%s by %s — from the music log at omarcrosby.com/music." $title $artist }}
+
+  {{/*
+    The path is relative to the section this adapter sits under
+    (content/music/), so "path: $id" produces /music/<id>/. Absolute
+    "music/$id" produces /music/music/<id>/ — do not use.
+
+    Date must be a time.Time on Params.date; the YAML unmarshaller
+    already parses `added:` as time.Time when it's ISO 8601.
+  */}}
+  {{ $page := dict
+    "content" (dict "mediaType" "text/markdown" "value" "")
+    "kind" "page"
+    "path" $id
+    "title" (printf "%s — %s" $title $artist)
+    "description" $desc
+    "params" (merge $params (dict
+      "date" .added
+      "cover" (dict "image" (printf "/images/og/music/%s.jpg" $id))
+    ))
+  }}
+  {{ $.AddPage $page }}
+{{ end }}
