@@ -31,7 +31,7 @@ Also a scattering of language labs across **Go**, **Python**, **Rust**, **C**, *
 
 The through-line is: **build the boring plumbing well, in the language that fits, and open-source it**.
 
-For the editor, shell, languages, and release stack I actually reach for day to day, see [/uses/]({{< ref "uses.md" >}}). For what I'm actively focused on right now (updated monthly), see [/now/]({{< ref "now.md" >}}).
+For the editor, shell, languages, and release stack I actually reach for day to day, see [/uses/]({{< ref "uses.md" >}}). For what I'm actively focused on right now (updated monthly), see [/now/]({{< ref "now.md" >}}). To get new posts as they land — RSS or email — see [/subscribe/]({{< ref "subscribe.md" >}}).
 
 ## Experience
 
