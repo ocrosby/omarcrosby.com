@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/kyber-function-level-go-code-quality.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 There's a whole category of code-quality question that Go's existing linters don't answer. `golangci-lint`, `gocyclo`, and `revive` are all rule-oriented — you configure a threshold, they flag every line that crosses it, and everything else is invisible. That's the right shape for enforcing style. It is not the right shape for asking *which functions in this package are healthy, which are mediocre, and which are risky*, because health is a distribution, not a rule.

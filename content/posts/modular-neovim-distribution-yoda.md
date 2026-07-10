@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/modular-neovim-distribution-yoda.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 *Companion to the [Yoda project page]({{< ref "projects/yoda-nvim.md" >}}).*

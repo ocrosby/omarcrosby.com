@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/reading-intraday-spx-bias.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 *Companion to the [Strike Pilot project page]({{< ref "projects/strike-pilot.md" >}}).*

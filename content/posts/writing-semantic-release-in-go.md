@@ -10,6 +10,7 @@ ShowToc = true
 [cover]
 image = "/images/og/writing-semantic-release-in-go.png"
 hiddenInList = true
+hiddenInSingle = true
 +++
 
 *Companion to the [Go Semantic Release project page]({{< ref "projects/go-semantic-release.md" >}}).*
