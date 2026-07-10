@@ -146,6 +146,19 @@ buildExpired = false
   disableHLJS = true
   favicon = "/favicon.ico"
 
+# Analytics — GoatCounter (free for personal use, no cookies, privacy-
+# respecting). Setup:
+#   1. Sign up at goatcounter.com. Pick a subdomain like `omarcrosby`.
+#   2. Set `code` below to that subdomain.
+#   3. Merge. layouts/_partials/extend_head.html emits the script tag
+#      only when hugo.IsProduction is true and code is non-empty.
+#
+# To switch to Plausible or Fathom later: edit the analytics block in
+# layouts/_partials/extend_head.html to their snippet, still gated on
+# hugo.IsProduction. Keep the "no cookies, no PII" property.
+[params.goatcounter]
+  code = ""
+
 # Persistent site-header avatar — small circular headshot next to the
 # "Omar Crosby" title on every page. PaperMod's header.html reads
 # label.icon (via resources.Get first, then absURL fallback), and
