@@ -680,6 +680,26 @@ declare global {
     if (!id) return;
     updateMeta(item);
 
+    // Notify the persistent mini-player of the new song. It writes to
+    // localStorage and mirrors the video in a small always-on iframe
+    // that survives Turbo navigation via data-turbo-permanent — that's
+    // what keeps the song audible after the user leaves /music/.
+    // On /music/ itself the mini-player mutes so we don't get double
+    // audio; the mute switch happens in assets/js/persistent-player.ts.
+    const w = window as unknown as {
+      persistentMusicPlayer?: {
+        notify: (song: { youtubeId: string; title: string; artist: string; ts: number }) => void;
+      };
+    };
+    if (w.persistentMusicPlayer) {
+      w.persistentMusicPlayer.notify({
+        youtubeId: id,
+        title: item.dataset.title || "",
+        artist: item.dataset.artist || "",
+        ts: Date.now(),
+      });
+    }
+
     // Track which item is now featured so onStateChange knows what comes next.
     const idx = items.indexOf(item);
     if (idx >= 0) {

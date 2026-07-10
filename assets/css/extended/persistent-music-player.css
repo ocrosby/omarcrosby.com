@@ -1,0 +1,111 @@
+/* Persistent music player mini-bar — auto-loaded by PaperMod from
+   assets/css/extended/.
+
+   Fixed-position bottom-right card that hosts a small YouTube iframe.
+   Marked data-turbo-permanent in the markup so Turbo Drive preserves
+   it across page navigations — that's the mechanism that keeps the
+   song playing when the user clicks About while a song is going.
+
+   Visual goals:
+   - Sits above regular page content (z-index 1000) but below modal
+     overlays if any get added later.
+   - Compact: ~280px wide, video at 16:9. Enough to keep the video
+     visible without dominating the page.
+   - Uses site tokens (--theme, --border, --primary) so it matches
+     dark/light theme automatically.
+   - Close button in the top-right corner is prominent enough to
+     find but doesn't crowd the video.
+   - On narrow viewports (<400px), the card sits flush to the sides
+     with a small bottom margin so it doesn't overlap important
+     content. */
+
+.persistent-music-player {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 280px;
+    max-width: calc(100vw - 2rem);
+    z-index: 1000;
+    background: var(--theme);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+}
+
+.persistent-music-player[hidden] {
+    display: none;
+}
+
+.persistent-music-player iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    background: #000;
+}
+
+.persistent-music-close {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    z-index: 2;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.persistent-music-close:hover,
+.persistent-music-close:focus-visible {
+    background: rgba(0, 0, 0, 0.85);
+    outline: none;
+}
+
+.persistent-music-meta {
+    padding: 0.4rem 0.6rem 0.5rem;
+    background: var(--code-bg);
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+.persistent-music-title {
+    color: var(--primary);
+    font-weight: 600;
+    /* Single-line clamp — song titles vary in length. */
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.persistent-music-artist {
+    color: var(--secondary);
+    font-size: 0.75rem;
+    margin-top: 0.15rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Narrow-viewport treatment: full-width strip at the bottom. */
+@media (max-width: 420px) {
+    .persistent-music-player {
+        left: 0.5rem;
+        right: 0.5rem;
+        width: auto;
+    }
+}
