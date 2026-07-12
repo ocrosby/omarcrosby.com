@@ -13,6 +13,7 @@ Usage: scripts/sync-recipes.py [--repo <owner/name>] [--out data/recipes.yaml]
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import re
 import shutil
@@ -259,6 +260,11 @@ def _git_first_added(md_path: Path, rel_path: str) -> str:
 
     Runs `git log` in the process's cwd — the caller chdirs into the clone
     before parsing, so relative paths resolve correctly.
+
+    Can return an empty string when git's `--follow --diff-filter=A
+    --reverse` combination cannot trace a file through its rename history
+    (a known git behavior, not a bug in this call). Callers must handle
+    an empty return via the fallback chain in ``main()``.
     """
     try:
         out = subprocess.check_output(
@@ -270,6 +276,52 @@ def _git_first_added(md_path: Path, rel_path: str) -> str:
     # First line is the earliest add commit's author-date.
     first_line = out.splitlines()[0] if out else ""
     return first_line[:10]  # ISO date portion only.
+
+
+def _load_existing_added_map(yaml_path: Path) -> dict[str, str]:
+    """Read path -> added from an existing data/recipes.yaml, ignoring empty values.
+
+    Used as a fallback source when ``_git_first_added`` returns empty.
+    Preserving the existing yaml value makes the sync self-healing: once a
+    date is populated by any means — a prior sync, a manual fix — it
+    survives every subsequent re-sync even if git history later becomes
+    unrecoverable.
+
+    The parse is stdlib-only line matching rather than a PyYAML dependency:
+    ``emit_yaml`` produces a deterministic shape (``path:`` always precedes
+    ``added:`` within a recipe, both are JSON-quoted strings), so the two
+    files stay in lockstep by construction.
+
+    Args:
+        yaml_path: The output yaml file to read. Returns ``{}`` if the
+            file does not exist (first-run case).
+
+    Returns:
+        Dict mapping recipe path (e.g. ``chicken/sesame.md``) to its
+        recorded ``added`` date. Entries with empty ``added`` are excluded
+        so the caller's ``if path in map`` check treats missing and empty
+        the same way.
+    """
+    if not yaml_path.exists():
+        return {}
+    result: dict[str, str] = {}
+    current_path: str | None = None
+    for line in yaml_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("path:"):
+            try:
+                current_path = json.loads(stripped[len("path:"):].strip())
+            except json.JSONDecodeError:
+                current_path = None
+        elif stripped.startswith("added:") and current_path:
+            try:
+                added = json.loads(stripped[len("added:"):].strip())
+                if added:
+                    result[current_path] = added
+            except json.JSONDecodeError:
+                pass
+            current_path = None
+    return result
 
 
 # --------------------------------------------------------------------------- #
@@ -504,6 +556,18 @@ def main(argv: Iterable[str] | None = None) -> int:
                          "exists so it's safe to re-run.")
     ARGS = ap.parse_args(list(argv) if argv is not None else None)
 
+    # Resolve output path up front so we can read the existing yaml before
+    # regenerating. Relative to the repo root, not the temp clone we chdir
+    # into next.
+    out = ARGS.out
+    if not out.is_absolute():
+        script_root = Path(__file__).resolve().parent.parent
+        out = script_root / out
+
+    # Preload the current yaml's added dates. Used as a fallback below when
+    # git can't determine a recipe's first-add commit.
+    existing_added = _load_existing_added_map(out)
+
     with tempfile.TemporaryDirectory(prefix="recipes-sync-") as tmp:
         repo_dir = Path(tmp) / "repo"
         _shallow_clone(ARGS.repo, ARGS.branch, repo_dir)
@@ -516,8 +580,27 @@ def main(argv: Iterable[str] | None = None) -> int:
         recipes: list[Recipe] = []
         for rel in rels:
             r = parse_recipe(repo_dir / rel, rel)
-            if r is not None:
-                recipes.append(r)
+            if r is None:
+                continue
+            if not r.added:
+                # git couldn't determine the first-add commit (typically a
+                # rename --follow couldn't trace). Fall back to any prior
+                # yaml value, then to today's date. Never emit an empty
+                # added — the recipes RSS template silently drops entries
+                # with added == "" (see layouts/recipes/list.rss.xml).
+                if r.path in existing_added:
+                    r.added = existing_added[r.path]
+                    sys.stderr.write(
+                        f"  {r.path}: no add date from git; "
+                        f"preserving prior yaml value '{r.added}'\n"
+                    )
+                else:
+                    r.added = datetime.date.today().isoformat()
+                    sys.stderr.write(
+                        f"  {r.path}: no add date from git or existing "
+                        f"yaml; using today ({r.added})\n"
+                    )
+            recipes.append(r)
 
     # Sort: category asc, then title asc within category.
     recipes.sort(key=lambda r: (r.category.lower(), r.title.lower()))
@@ -528,12 +611,6 @@ def main(argv: Iterable[str] | None = None) -> int:
         sys.stdout.write(yaml_text)
         return 0
 
-    out = ARGS.out
-    # Resolve --out relative to the repo root, not the temp clone we chdir'd into.
-    if not out.is_absolute():
-        # Best effort: assume this script lives in <repo>/scripts/.
-        script_root = Path(__file__).resolve().parent.parent
-        out = script_root / out
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(yaml_text, encoding="utf-8")
     sys.stderr.write(f"Wrote {len(recipes)} recipes to {out}\n")
