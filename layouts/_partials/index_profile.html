@@ -1,20 +1,23 @@
 {{- /*
     Site-level override of themes/PaperMod/layouts/_partials/index_profile.html.
 
-    Single diff vs upstream (line 40): the profile-mode button's `title`
-    attribute now emits `.description` (falling back to `.name` if
-    unset), so hovering shows a full sentence about the destination
-    page rather than repeating the visible button label. The upstream
-    default is `title="{{ .name }}"`, which produces a redundant "Blog"
-    hover for a button that already says "Blog".
+    Two diffs vs upstream:
 
-    Descriptions live in `[[params.profileMode.buttons]]` blocks in
-    `hugo.toml`. Every button carries a description — keep it that way
-    so hover UX stays consistent across the row. See the config comment
-    above the buttons block for the guideline.
+    1. Button `title` attribute emits `.description` (fallback `.name`).
+       Upstream default is `title="{{ .name }}"`, which produces a redundant
+       "Blog" hover for a button already labeled "Blog". Descriptions live in
+       `[[params.profileMode.buttons]]` blocks in `hugo.toml`; every button
+       must carry one so hover UX stays consistent across the row.
 
-    The rest of the template mirrors upstream verbatim; re-diff this
-    file if a PaperMod update changes the profile structure.
+    2. Trailing `<p class="profile-rss-hint">` block below the buttons.
+       Encourages RSS subscription with a link to /subscribe/#rss and a
+       Reeder recommendation. Styled by assets/css/extended/profile-rss-hint.css.
+       This is the *only* content mechanism that surfaces on the landing —
+       list.html short-circuits into this partial when profileMode is on and
+       .IsHome, so content/_index.md and .Content are never rendered.
+
+    The rest of the template mirrors upstream verbatim; re-diff this file
+    if a PaperMod update changes the profile structure.
 */ -}}
 <div class="profile">
     {{- with site.Params.profileMode }}
@@ -71,6 +74,9 @@
             {{- end }}
         </div>
         {{- end }}
+        <p class="profile-rss-hint">
+            Prefer RSS to algorithms? <a href="/subscribe/#rss">Follow the feed</a> — I recommend <a href="https://reederapp.com/" rel="noopener">Reeder</a> if you're picking a reader.
+        </p>
     </div>
     {{- end}}
 </div>

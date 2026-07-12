@@ -1,0 +1,31 @@
+/* Landing-page RSS-follow hint — auto-loaded by PaperMod from
+   assets/css/extended/.
+
+   The hint paragraph is emitted by layouts/_partials/index_profile.html
+   directly below the profile buttons row on the home page. It sits
+   quietly — muted color, smaller size — so it reads as a secondary
+   invitation rather than competing with the main nav buttons above.
+
+   The `text-wrap: balance` line prevents an orphaned last word on wider
+   viewports without hurting mobile layout (browsers that don't support
+   it ignore the rule). */
+
+.profile-rss-hint {
+    margin: 2rem auto 0;
+    max-width: 32rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--secondary, #666);
+    text-align: center;
+    text-wrap: balance;
+}
+
+.profile-rss-hint a {
+    color: var(--secondary, #666);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+.profile-rss-hint a:hover {
+    color: var(--primary, #333);
+}
