@@ -20,3 +20,5 @@ locale = "en-us"
 noice = "noice"    # Neovim plugin name (github.com/folke/noice.nvim)
 decorder = "decorder" # golangci-lint linter name (not "decoder")
 importas = "importas" # golangci-lint linter name (not "imports")
+womens = "womens"  # URL-safe slug form of "women's" (tags, filenames, image paths)
+OT = "OT"          # opponent-ties variable in NCAA RPI opponent-side formulas (Element 2 / OWP)
