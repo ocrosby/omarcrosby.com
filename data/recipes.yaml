@@ -42,7 +42,7 @@ recipes:
     category:    "Chicken"
     path:        "chicken/sesame.md"
     url:         "https://github.com/ocrosby/recipes/blob/main/chicken/sesame.md"
-    added:       ""
+    added:       "2025-01-16"
   - title:       "Chuck Roast Crockpot Recipie"
     description: ""
     category:    "Crockpot"
