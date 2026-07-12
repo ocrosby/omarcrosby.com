@@ -1,0 +1,60 @@
+/* List filter — auto-loaded by PaperMod from assets/css/extended/.
+
+   Styles the search-input mount emitted by layouts/list.html on
+   /posts/ and /projects/. The input itself is created by
+   assets/js/list-filter.ts and appended to `.list-filter` on
+   turbo:load / DOMContentLoaded.
+
+   Design intent: subtle, doesn't compete with the entry list below it.
+   Uses PaperMod's own theme CSS variables so it inherits dark-mode
+   colors automatically without a separate media query. */
+
+.list-filter {
+    margin: 1rem 0 1.5rem;
+}
+
+.list-filter-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.85rem;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--content, inherit);
+    background: var(--entry, transparent);
+    border: 1px solid var(--border, #d0d0d0);
+    border-radius: 6px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.list-filter-input::placeholder {
+    color: var(--secondary, #888);
+    opacity: 0.9;
+}
+
+.list-filter-input:focus {
+    outline: none;
+    border-color: var(--primary, #333);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, #333) 20%, transparent);
+}
+
+/* Native search-input clear button in WebKit — reveal on focus so
+   users can wipe the filter with one click. */
+.list-filter-input::-webkit-search-cancel-button {
+    cursor: pointer;
+}
+
+.list-filter-status {
+    margin: 0.6rem 0 0;
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--secondary, #888);
+}
+
+/* Hide entries the filter has excluded. Using [hidden] rather than a
+   custom class means an assistive-tech user sees the same list state
+   the sighted user sees, and there's nothing to unhide when the
+   filter is cleared. */
+article.post-entry[hidden],
+article.first-entry[hidden] {
+    display: none;
+}

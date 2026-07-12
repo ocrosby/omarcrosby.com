@@ -77,6 +77,20 @@
     -}}
     {{- $pp := resources.Get "js/persistent-player.ts" | js.Build $opts | fingerprint -}}
     <script src="{{ $pp.RelPermalink }}" integrity="{{ $pp.Data.Integrity }}" defer></script>
+
+    {{- /* List filter — client-side search on /posts/ and /projects/.
+        Self-gates on the presence of `.list-filter` (emitted by
+        layouts/list.html only on those two sections), so loading it
+        globally has zero effect elsewhere. Same asset-pipeline shape as
+        persistent-player above: TypeScript build, fingerprinted, defer
+        so it doesn't block first paint. */ -}}
+    {{- $lfOpts := dict
+        "minify" hugo.IsProduction
+        "sourceMap" (cond hugo.IsProduction "" "external")
+        "targetPath" "js/list-filter.js"
+    -}}
+    {{- $lf := resources.Get "js/list-filter.ts" | js.Build $lfOpts | fingerprint -}}
+    <script src="{{ $lf.RelPermalink }}" integrity="{{ $lf.Data.Integrity }}" defer></script>
 </body>
 
 </html>
