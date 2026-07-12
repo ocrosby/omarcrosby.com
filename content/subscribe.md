@@ -9,11 +9,14 @@ Two ways to get new posts:
 
 ## RSS
 
-The site publishes a full-content RSS 2.0 feed at [omarcrosby.com/index.xml](/index.xml). Any modern feed reader will pick it up.
+**What is RSS?** Really Simple Syndication is a decades-old open format for following a site without an account, email, or algorithm. You add a feed URL to a reader app; it checks the site for you and shows you what's new. This site publishes a feed for every corner — posts, recipes, music, and each topic pillar — so you can subscribe to only the parts you care about.
+
+The main full-content RSS 2.0 feed is at [omarcrosby.com/index.xml](/index.xml). Any modern feed reader will pick it up.
 
 Recommended readers:
 
-- **[NetNewsWire](https://netnewswire.com)** — free, open-source, macOS/iOS. What I use.
+- **[Reeder](https://reederapp.com/)** — polished, quick, macOS/iOS. My pick if you're choosing your first reader.
+- **[NetNewsWire](https://netnewswire.com)** — free, open-source, macOS/iOS. What I use day-to-day.
 - **[Feedly](https://feedly.com)** — web + mobile, free tier.
 - **[Inoreader](https://www.inoreader.com)** — web + mobile, generous free tier.
 - **[Miniflux](https://miniflux.app)** — self-hostable, minimalist.
