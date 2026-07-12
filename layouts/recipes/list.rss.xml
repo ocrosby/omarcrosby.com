@@ -1,0 +1,69 @@
+{{- /*
+  Custom RSS feed for the recipes section.
+
+  Hugo's built-in RSS output for a section lists the section's rendered
+  content pages — for this site that's the category landing pages
+  (Appetizers, Beef, Fish, …) under content/recipes/, not the recipes
+  themselves. The actual recipes live externally at
+  https://github.com/ocrosby/recipes; the site indexes them from
+  data/recipes.yaml but does not host per-recipe pages, so there are no
+  Hugo pages Hugo could pick up on its own.
+
+  This template overrides the default RSS output for the recipes section
+  and emits one <item> per row in data/recipes.yaml, linking each item
+  directly at the source markdown on GitHub. The <guid> is marked
+  isPermaLink="false" for the same reason — the recipe's canonical URL
+  lives off-site.
+
+  Lookup path: layouts/<section>/list.rss.xml — this file wins over the
+  theme's default rss.xml specifically for the recipes section. The music
+  section's RSS keeps using the theme default because its content adapter
+  emits real Hugo pages (one per song), so the built-in feed already lists
+  each song correctly.
+*/ -}}
+{{- $recipes := (index hugo.Data "recipes" "recipes") -}}
+{{- /* Defensive: skip rows missing an added date so they can't crash
+       time.AsTime or land at the bottom of the feed forever. */ -}}
+{{- $items := where $recipes "added" "ne" "" -}}
+{{- $sorted := sort $items "added" "desc" -}}
+{{- $limit := site.Config.Services.RSS.Limit -}}
+{{- if ge $limit 1 }}{{ $sorted = $sorted | first $limit }}{{ end -}}
+{{- $lastMod := "" -}}
+{{- if $sorted }}{{ $lastMod = (index $sorted 0).added }}{{ end -}}
+{{ printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>{{ with .Title }}{{ . }} on {{ end }}{{ site.Title }}</title>
+    <link>{{ .Permalink }}</link>
+    <description>Individual recipes indexed on {{ site.Title }} — each item links to the source markdown in github.com/ocrosby/recipes.</description>
+    {{- with site.Params.images }}
+    <image>
+      <title>{{ site.Title }}</title>
+      <url>{{ index . 0 | absURL }}</url>
+      <link>{{ index . 0 | absURL }}</link>
+    </image>
+    {{- end }}
+    <generator>Hugo</generator>
+    <language>{{ site.Language.LanguageCode }}</language>
+    {{- with $lastMod }}
+    <lastBuildDate>{{ (time.AsTime .).Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>
+    {{- end }}
+    {{- with .OutputFormats.Get "RSS" }}
+    {{ printf "<atom:link href=%q rel=\"self\" type=%q />" .Permalink .MediaType | safeHTML }}
+    {{- end }}
+    {{- range $sorted }}
+    <item>
+      <title>{{ .title }}</title>
+      <link>{{ .url }}</link>
+      <pubDate>{{ (time.AsTime .added).Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      <guid isPermaLink="false">{{ .url }}</guid>
+      {{- with .category }}
+      <category>{{ . }}</category>
+      {{- end }}
+      {{- with .description }}
+      <description>{{ printf "<![CDATA[%s]]>" (. | markdownify) | safeHTML }}</description>
+      {{- end }}
+    </item>
+    {{- end }}
+  </channel>
+</rss>
