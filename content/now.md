@@ -1,6 +1,6 @@
 +++
 title = "Now"
-date = 2026-07-10T18:38:53-04:00
+date = 2026-07-11T21:33:16-04:00
 draft = false
 description = "What I'm focused on right now — updated every 4–6 weeks. Following the nownownow.com convention."
 
@@ -9,7 +9,7 @@ image = "/images/og/meta/now.jpg"
 hidden = true
 +++
 
-*Updated 2026-07-10.*
+*Updated 2026-07-11.*
 
 Following the [nownownow.com](https://nownownow.com) convention — this page reflects **current** focus, not an exhaustive to-do list. If the date at the top is more than about 45 days old, I've fallen behind on updates; ping me on [LinkedIn](https://www.linkedin.com/in/omarcrosby/).
 
@@ -25,7 +25,7 @@ Active open-source work:
 - **[Yoda]({{< ref "projects/yoda-nvim.md" >}})** — a modular Neovim distribution and the family of `yoda-*` plugins that came out of it.
 - **[market-bridge]({{< ref "projects/market-bridge.md" >}})** and **[strike-pilot]({{< ref "projects/strike-pilot.md" >}})** — MCP bridges into the trading platforms I actually use, plus an SPX bias engine that treats "no trade" as a first-class output.
 - **[go-semantic-release]({{< ref "projects/go-semantic-release.md" >}})** — the Go-native re-implementation of semantic-release that publishes this site.
-- **[TCP library in NASM x86 assembly](https://github.com/ocrosby/assembly-fundamentals-nasm/tree/main/libs/tcp)** — a `libtcp.a` static archive that wraps kernel syscalls directly (no libc), targeting the full [Berkeley Sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) specification ([POSIX.1 reference](https://pubs.opengroup.org/onlinepubs/9699919799/functions/socket.html)). Client-side primitives (`tcp_connect` / `send` / `recv` / `close`) are in; server side and remaining specification surface targeted for this weekend. Portable across macOS and Linux.
+- **[TCP library in NASM x86 assembly](https://github.com/ocrosby/assembly-fundamentals-nasm/tree/main/libs/sock)** — a `libtcp.a` static archive that wraps kernel syscalls directly (no libc), targeting the full [Berkeley Sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) specification ([POSIX.1 reference](https://pubs.opengroup.org/onlinepubs/9699919799/functions/socket.html)). Client-side primitives (`tcp_connect` / `send` / `recv` / `close`) are in; server side and remaining specification surface targeted for this weekend. Portable across macOS and Linux.
 
 ## Site
 
