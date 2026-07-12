@@ -1,6 +1,6 @@
 +++
 title = "Now"
-date = 2026-07-11T21:33:16-04:00
+date = 2026-07-11T21:35:24-04:00
 draft = false
 description = "What I'm focused on right now — updated every 4–6 weeks. Following the nownownow.com convention."
 
@@ -25,7 +25,7 @@ Active open-source work:
 - **[Yoda]({{< ref "projects/yoda-nvim.md" >}})** — a modular Neovim distribution and the family of `yoda-*` plugins that came out of it.
 - **[market-bridge]({{< ref "projects/market-bridge.md" >}})** and **[strike-pilot]({{< ref "projects/strike-pilot.md" >}})** — MCP bridges into the trading platforms I actually use, plus an SPX bias engine that treats "no trade" as a first-class output.
 - **[go-semantic-release]({{< ref "projects/go-semantic-release.md" >}})** — the Go-native re-implementation of semantic-release that publishes this site.
-- **[TCP library in NASM x86 assembly](https://github.com/ocrosby/assembly-fundamentals-nasm/tree/main/libs/sock)** — a `libtcp.a` static archive that wraps kernel syscalls directly (no libc), targeting the full [Berkeley Sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) specification ([POSIX.1 reference](https://pubs.opengroup.org/onlinepubs/9699919799/functions/socket.html)). Client-side primitives (`tcp_connect` / `send` / `recv` / `close`) are in; server side and remaining specification surface targeted for this weekend. Portable across macOS and Linux.
+- **[assembly-fundamentals-nasm](https://github.com/ocrosby/assembly-fundamentals-nasm)** — a NASM x86 fundamentals repo built around six static archives that call kernel syscalls directly (no libc, System V AMD64 ABI, Linux `-errno` shape on both macOS and Linux): `libsock` for [Berkeley Sockets](https://en.wikipedia.org/wiki/Berkeley_sockets) — now backing a real TCP echo-server example — plus `libio` for file I/O and `mmap`, `libresolv` for DNS over UDP, `libtime` for clocks, `libproc` for process control, and `libasm` for print/panic primitives. Current focus is composed util helpers (`send_all`, `spawn_wait`, `monotonic_ms`, `server_bind_listen`) layered on top of the raw syscall wrappers, plus the accompanying constructive example sequence.
 
 ## Site
 
