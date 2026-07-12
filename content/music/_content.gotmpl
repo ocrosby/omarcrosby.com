@@ -61,12 +61,28 @@
     Date must be a time.Time on Params.date; the YAML unmarshaller
     already parses `added:` as time.Time when it's ISO 8601.
   */}}
+  {{/*
+    The `dates` sub-map on the page dict sets Hugo's canonical `.Date` on
+    the generated page (Hugo's content-adapter API uses `dates`, not a
+    top-level `date` key). `.Date` in turn drives RSS <pubDate>,
+    <lastBuildDate>, and any date-based sort. Without it, the generated
+    pages fall to Hugo's zero time (0001-01-01) and the /music/index.xml
+    feed presents every entry as year 1 A.D. — feed readers sort it wrong
+    and often silently drop the entries. `params.date` alone does not
+    populate `.Date`.
+
+    Each sub-value must be a time.Time; hugo.Data unmarshals `added:` from
+    yaml as a string, so pass through `time.AsTime` before handing to the
+    page dict. Passing the raw string yields
+    `'Dates.Date' expected a map, got 'string'` at build time.
+  */}}
   {{ $page := dict
     "content" (dict "mediaType" "text/markdown" "value" "")
     "kind" "page"
     "path" $id
     "title" (printf "%s — %s" $title $artist)
     "description" $desc
+    "dates" (dict "date" (time.AsTime .added) "publishDate" (time.AsTime .added) "lastmod" (time.AsTime .added))
     "params" (merge $params (dict
       "date" .added
       "cover" (dict "image" (printf "/images/og/music/%s.jpg" $id))
