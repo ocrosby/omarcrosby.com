@@ -29,6 +29,11 @@ Category-specific feeds are also generated per pillar:
 
 Point your reader at any of the above to narrow to just that pillar.
 
+Section-specific feeds — separate from posts, if you only want one of these running indices:
+
+- [Recipes](/recipes/index.xml) — recipes added or reorganized under [/recipes/](/recipes/)
+- [Music](/music/index.xml) — every song added to the [now-playing log](/music/)
+
 ## Email
 
 Coming soon. RSS is the durable option; email is nicer for people who don't want to run a feed reader. Once the newsletter is live, the subscribe form will appear here.
