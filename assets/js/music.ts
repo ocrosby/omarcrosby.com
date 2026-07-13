@@ -153,6 +153,7 @@ declare global {
   const nextBtn = document.querySelector<HTMLButtonElement>(".music-control-next");
   const replayBtn = document.querySelector<HTMLButtonElement>(".music-control-replay");
   const shuffleBtn = document.querySelector<HTMLButtonElement>(".music-control-shuffle");
+  const copyLinkBtn = document.querySelector<HTMLButtonElement>(".music-control-copy-link");
 
   // Shuffle is a persistent mode (like Spotify), not a one-off action.
   let shuffleOn = true;
@@ -458,6 +459,41 @@ declare global {
       shuffleBtn.title = label;
       shuffleBtn.setAttribute("aria-label", label);
       if (shuffleOn) regenerateShuffleOrder();
+    });
+  }
+
+  if (copyLinkBtn) {
+    // Copies the site's per-song URL — /music/<lowercased-id>/ on the
+    // current origin. That URL both plays the song in this player when
+    // opened and carries the per-song og:image / og:title (see
+    // .claude/rules/per-song-og-image.md), so the preview renders
+    // correctly when shared. `window.location.origin` keeps it working
+    // in local preview (http://localhost:8080) and production alike.
+    const copyIconEl = copyLinkBtn.querySelector<HTMLElement>("span");
+    copyLinkBtn.addEventListener("click", async () => {
+      const item = items[currentIndex];
+      const id = item?.dataset.youtubeId;
+      if (!id) return;
+      const url = window.location.origin + "/music/" + id.toLowerCase() + "/";
+      const originalIcon = copyIconEl?.textContent || "🔗";
+      const originalLabel = copyLinkBtn.getAttribute("aria-label") || "Copy YouTube link";
+      const originalTitle = copyLinkBtn.title;
+      let feedbackIcon = "✓";
+      let feedbackText = "Copied!";
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (e) {
+        feedbackIcon = "✗";
+        feedbackText = "Copy failed";
+      }
+      if (copyIconEl) copyIconEl.textContent = feedbackIcon;
+      copyLinkBtn.title = feedbackText;
+      copyLinkBtn.setAttribute("aria-label", feedbackText);
+      window.setTimeout(() => {
+        if (copyIconEl) copyIconEl.textContent = originalIcon;
+        copyLinkBtn.title = originalTitle;
+        copyLinkBtn.setAttribute("aria-label", originalLabel);
+      }, 1500);
     });
   }
 
