@@ -87,15 +87,20 @@
   font-size: 0.85rem;
 }
 
+/* Inherit the site-wide accent color + underline from `a` in
+   brand-warmth.css so the genre reads as a link. Earlier the color
+   was overridden to `--secondary` to keep it visually quiet, which
+   made it indistinguishable from body text — visitors weren't
+   discovering that clicking filters the history to that genre. */
 .music-genre-link {
-  color: var(--secondary);
-  border-bottom: 1px dotted var(--border);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-soft);
+  text-underline-offset: 0.15em;
 }
 
 .music-genre-link:hover,
 .music-genre-link:focus-visible {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  text-decoration-color: var(--accent-strong);
 }
 
 /* Transport controls — previous / replay / next / shuffle. 44px minimum
