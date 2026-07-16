@@ -540,17 +540,34 @@ declare global {
   // Auto-advance: when the current song ends, play the next item.
   // Same nextItem() the Next button uses, so this follows shuffle
   // order when shuffle is on and wraps around the filtered list.
-  // Only wire once — persistent-player.ts's onSongEnded is
-  // pushed into a callback array that lives for the tab's lifetime,
-  // so we guard by a window flag.
+  // Only wire once — persistent-player.ts's onSongEnded is pushed
+  // into a callback array that lives for the tab's lifetime, so
+  // we guard by a window flag.
+  //
+  // Cold-load timing: on a first hit to /music/, music.ts's <script>
+  // tag lives inside the <turbo-frame> emitted by music-page-body.html,
+  // while persistent-player.ts's <script> tag lives outside the frame
+  // in baseof.html — AFTER music.ts in DOM order. Deferred scripts
+  // execute in DOM order, so this IIFE runs BEFORE persistent-player.ts
+  // and window.persistentMusicPlayer is undefined here. On warm
+  // navigation (frame-swap arriving from another page) persistent-player
+  // is already on the window, so the immediate try succeeds. For the
+  // cold-load case we register a turbo:load fallback — turbo:load fires
+  // once per navigation AFTER all deferred scripts have executed, so
+  // it's the first safe moment to see the API.
   const w = window as unknown as { __musicAutoAdvanceWired?: boolean };
-  if (window.persistentMusicPlayer && !w.__musicAutoAdvanceWired) {
+  function wireAutoAdvance(): void {
+    if (!window.persistentMusicPlayer || w.__musicAutoAdvanceWired) return;
     window.persistentMusicPlayer.onSongEnded(() => {
       if (items.length === 0) return;
       const next = nextItem();
       if (next) swap(next);
     });
     w.__musicAutoAdvanceWired = true;
+  }
+  wireAutoAdvance();
+  if (!w.__musicAutoAdvanceWired) {
+    document.addEventListener("turbo:load", wireAutoAdvance, { once: true });
   }
 
   for (const item of items) {
