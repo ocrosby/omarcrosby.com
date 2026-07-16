@@ -29,6 +29,33 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&display=swap">
 
 {{- /*
+    Warm the DNS + TLS handshake to jsDelivr before the deferred Turbo
+    <script> below fetches from it. `defer` schedules the download after
+    HTML parsing; preconnect lets it start against an already-open
+    connection. No crossorigin attribute here — the Turbo <script> has
+    neither `crossorigin` nor `integrity`, so it fetches on the browser's
+    credentialed connection pool; a preconnect with `crossorigin` would
+    open the anonymous pool instead and the connection would go unused.
+*/ -}}
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+{{- /*
+    On /music/ specifically, warm the connection to YouTube's iframe API
+    host and its thumbnail CDN. The persistent player only lazy-loads
+    these origins when a song starts (or on entering /music/, since the
+    featured slot autoplays), so preconnecting site-wide would waste
+    handshake budget on visitors who never touch music. Section-guarded
+    so it only ships on music list + per-song pages.
+
+    No crossorigin — the YouTube iframe API script and the iframe
+    embed itself both fetch on the credentialed pool.
+*/ -}}
+{{- if eq .Section "music" }}
+<link rel="preconnect" href="https://www.youtube.com">
+<link rel="preconnect" href="https://i.ytimg.com">
+{{- end }}
+
+{{- /*
     Turbo Drive — SPA-style navigation without a JS framework rewrite.
     Intercepts internal link clicks, swaps <body> in place, and preserves
     elements marked data-turbo-permanent across page loads. Enables the
