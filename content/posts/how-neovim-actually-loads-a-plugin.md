@@ -23,7 +23,7 @@ The black box is smaller than it looks. Underneath every plugin manager is Neovi
 
 Neovim keeps an ordered list of directories called the *runtime path*, exposed as the option `&runtimepath` (or `runtimepath` in Lua). Every directory on this list is a place Neovim will look when it needs to find something — a plugin file, a filetype handler, a colorscheme, a help tag, a treesitter query. Nothing on disk is "installed"; the runtime path is just where Neovim looks, and anything sitting in one of those directories in the right shape is what Neovim finds.
 
-You can inspect the current value with `:set rtp?`, and the result on a moderately-configured system looks something like this:
+You can inspect the current value with `:set rtp?`, and the result on a moderately-configured system looks something like this (formatted here across multiple lines for readability; the actual output is a single comma-separated string):
 
 ```text
 runtimepath=~/.config/nvim,
@@ -55,7 +55,7 @@ Inside every entry on the runtime path, Neovim looks for a small set of subdirec
 | `colors/` | On `:colorscheme <name>` — the file `colors/<name>.vim` or `colors/<name>.lua` gets sourced | One file per colorscheme the plugin ships |
 | `queries/` | On demand, by treesitter, when a parser and query are both available | Tree-sitter queries — highlights, injections, textobjects, folds |
 
-A few older names still work — `syntax/`, `autoload/`, `indent/`, `ftdetect/` — but they're rarely load-bearing for a modern Lua-first plugin. `ftdetect/` is the one worth naming, because plugins that provide support for an unusual file format still use it: a `ftdetect/mytype.lua` registers an autocmd that assigns the filetype to filename patterns Neovim wouldn't otherwise recognize, which then lets the corresponding `ftplugin/mytype.lua` fire on those files. Most Lua-first configs use `vim.filetype.add()` instead for the same purpose. The seven directories in the table above are what you'll actually interact with, and every one of them corresponds to a specific answer to the question "when do you want this to run?"
+A few older names still work — `syntax/`, `autoload/`, `indent/`, `ftdetect/` — but they're rarely load-bearing for a modern Lua-first plugin. `ftdetect/` is the one worth naming, because plugins that provide support for an unusual file format still use it: a `ftdetect/mytype.lua` registers an autocmd that assigns the filetype to filename patterns Neovim wouldn't otherwise recognize, which then lets the corresponding `ftplugin/mytype.lua` fire on those files. Most Lua-first configs use `vim.filetype.add()` instead for the same purpose. The eight directories in the table above are what you'll actually interact with, and every one of them corresponds to a specific answer to the question "when do you want this to run?"
 
 ## The startup order
 
