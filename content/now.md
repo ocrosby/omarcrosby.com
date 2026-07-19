@@ -1,6 +1,6 @@
 +++
 title = "Now"
-date = 2026-07-18T21:09:09-04:00
+date = 2026-07-18T21:20:05-04:00
 draft = false
 description = "What I'm focused on right now — updated every 4–6 weeks. Following the nownownow.com convention."
 
@@ -31,7 +31,7 @@ Active open-source work:
 
 The site itself got a substantial personal-brand pass recently: [topic-pillar categories](/categories/), per-post OpenGraph images, cross-links between [projects](/projects/) and their [deep-dive posts](/posts/), a [/uses/](/uses/) page, and per-song shareable URLs on the music page with branded OG previews (paste any [/music/](/music/) song URL into a message and see what I mean).
 
-Also new: a small interactive tool — [Dev/QA team load, management view](/tools/dev-qa-load/) — that models what happens when dev-pointed work is quietly absorbed by QA. Sliders, scenario buttons, dollars labeled as Fermi estimates rather than audits. First of what I'd like to make a habit: self-contained thinking artifacts alongside the writing.
+Also new: a small interactive tool — <a href="/tools/dev-qa-load/" data-turbo-frame="_top">Dev/QA team load, management view</a> — that models what happens when dev-pointed work is quietly absorbed by QA. Sliders, scenario buttons, dollars labeled as Fermi estimates rather than audits. First of what I'd like to make a habit: self-contained thinking artifacts alongside the writing. <!-- The tool is a standalone static HTML page under static/tools/ — no <turbo-frame id="content"> wrapper — so a plain Markdown link would trigger Turbo's "Content missing" fallback inside the /now/ page's content frame. data-turbo-frame="_top" promotes the click to a full-document navigation. -->
 
 ## Day job
 
