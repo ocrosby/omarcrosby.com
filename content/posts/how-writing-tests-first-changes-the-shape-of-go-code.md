@@ -253,4 +253,6 @@ Next time you sit down to write a function that touches a database, an API, the 
 
 Now compare that against how you'd normally write the same function. Would you have noticed that dependency at all, or would it have gone in as a direct call because nothing was in the room to object? Most people, honestly answering that, find that the direct call would have gone in unnoticed — not from carelessness, but because nothing about writing the implementation first ever raises the question.
 
+For the origin story behind why I write everything this way — a first-day pair-programming session years ago that rewired how I approach a keyboard — see [The pair-programming session that made me write tests first]({{< ref "posts/the-pair-programming-session-that-made-me-write-tests-first.md" >}}). This post covers the mechanism; that one covers the moment.
+
 That gap is the whole argument of this post, and it's small enough to test on one function without adopting a methodology, a book, or a team-wide mandate. If the gap turns out to be real for you, the interesting question isn't "should I always write tests first." It's narrower and more useful: **which of the functions you're about to write this week are about to hide a dependency you won't notice until it's expensive to remove?** Those are the ones worth writing the call site for first. The rest can wait.
