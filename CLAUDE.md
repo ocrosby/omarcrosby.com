@@ -87,6 +87,7 @@ flyctl deploy --remote-only
 - `.claude/rules/recipes-rss-feed.md` — every entry in `data/recipes.yaml` must have a non-empty `added` for the `/recipes/index.xml` feed to include it; `/sync-recipes` self-heals via existing-yaml fallback
 - `.claude/rules/markdown-emphasis-style.md` — italic emphasis in a markdown file must match the file's existing style (`*` or `_`); the codebase default is `*asterisk*`. Prevents MD049 CI failures that inherit into every open PR.
 - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
+- `.claude/rules/turbo-frame-static-link.md` — Markdown links from `content/` to any static HTML page under `static/` (e.g. `/tools/*`) must be raw HTML with `data-turbo-frame="_top"`; a plain Markdown link triggers Turbo's "Content missing" fallback because the target has no `<turbo-frame id="content">` wrapper
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
 - `.claude/commands/verify.md` — `/verify` runs CI gates locally
