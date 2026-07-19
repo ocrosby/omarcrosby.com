@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dev/QA Team Load · Omar Crosby</title>
+<meta name="description" content="Interactive model of what happens when dev-pointed work is quietly absorbed by QA. Expressed in stories, hours, dollars, headcount." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Dev/QA Team Load — Management View" />
+<meta property="og:description" content="Interactive model of what happens when dev-pointed work is quietly absorbed by QA. Expressed in stories, hours, dollars, headcount." />
+<meta property="og:image" content="https://omarcrosby.com/images/og.jpg" />
+<meta property="og:url" content="https://omarcrosby.com/tools/dev-qa-load/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="/favicon.ico" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+  :root {
+    /* Warm-earth palette — mirrors the site's dark-mode chrome so the
+       tool reads as part of omarcrosby.com even though it's a static
+       standalone page and doesn't participate in PaperMod's theme
+       switcher. See assets/css/extended/brand-warmth.css. */
+    --bg: rgb(32, 29, 27);          /* warm brown-black — matches site --theme */
+    --panel: rgb(45, 41, 38);       /* matches site --entry */
+    --panel-2: rgb(64, 58, 54);     /* matches site --tertiary */
+    --ink: rgb(240, 232, 220);      /* cream — matches site --primary */
+    --ink-dim: rgb(180, 168, 152);  /* matches site --secondary */
+    --border: rgba(196, 137, 108, 0.18);  /* warm terracotta-tinted border */
+    --code-bg: rgb(50, 46, 43);
+    /* Terracotta accent — site brand, mode-tuned. */
+    --accent: #c26a5a;
+    --accent-strong: #d47c6d;
+    --accent-soft: rgba(194, 106, 90, 0.18);
+    /* Functional data-viz hues — warm-family but distinct enough for
+       at-a-glance role separation in bars, lines, and value-stream nodes. */
+    --dev: #7fa370;                 /* muted natural green — Dev role */
+    --qa: #a084b8;                  /* warm plum — QA role, distinct from accent */
+    --warn: #d4a548;                /* warm amber — soft caution */
+    --danger: #b04a35;              /* deep rust — hard alert, darker than accent */
+    /* Test-pyramid layer colors — kept in family with dev/qa/plum. */
+    --unit-c: #7fa370;
+    --integ-c: #b98b56;
+    --e2e-c: #a084b8;
+    --grid: rgba(196, 137, 108, 0.18);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    font-size: 14px; line-height: 1.55; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft);
+    text-underline-offset: 0.15em; text-decoration-thickness: 1px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease; }
+  a:hover, a:focus-visible { color: var(--accent-strong);
+    text-decoration-color: var(--accent-strong); }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  .site-nav { padding: 14px 24px 0; font-size: 13px; color: var(--ink-dim);
+    display: flex; align-items: center; gap: 12px; }
+  .site-nav a { text-decoration: none; }
+  .site-nav .sep { color: var(--border); }
+  header { padding: 12px 24px 8px; }
+  header h1 { margin: 0 0 6px; font-size: 28px; font-weight: 600;
+    letter-spacing: -0.01em;
+    font-family: "Fraunces", Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-optical-sizing: auto; }
+  header p { margin: 0 0 6px; color: var(--ink-dim); max-width: 880px; }
+  header code { background: var(--code-bg); color: var(--ink); padding: 1px 5px; border-radius: 3px;
+    font-size: 12px; }
+  .constants-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .const-pill { display: inline-flex; align-items: baseline; gap: 6px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 20px;
+    padding: 4px 12px; font-size: 12px; color: var(--ink-dim); }
+  .const-pill strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .const-pill em { color: var(--ink-dim); font-style: normal; font-size: 11px; }
+  main { display: grid; gap: 16px; padding: 16px 24px 32px;
+    grid-template-columns: minmax(320px, 380px) 1fr; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; }
+  .panel h2 { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--ink-dim); }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    margin-bottom: 4px; }
+  .row label { font-size: 13px; color: var(--ink); }
+  .row .val { font-variant-numeric: tabular-nums; color: var(--accent);
+    font-weight: 600; font-size: 13px; }
+  input[type="range"] { width: 100%; margin: 2px 0 10px; accent-color: var(--accent); }
+  .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--ink-dim); font-weight: 700; margin: 6px 0 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .grid-side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-side-by-side { grid-template-columns: 1fr; } }
+  .stat { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .stat .lbl { color: var(--ink-dim); font-size: 12px; text-transform: uppercase;
+    letter-spacing: 0.04em; min-width: 110px; }
+  .stat .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .verdict { margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+    background: var(--panel-2); font-size: 13px; }
+  .verdict.ok { color: var(--dev); }
+  .verdict.warn { color: var(--warn); }
+  .verdict.bad { color: var(--danger); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .note { font-size: 12px; color: var(--ink-dim); margin-top: 10px; }
+  .note code { background: var(--code-bg); color: var(--ink); padding: 1px 5px; border-radius: 3px;
+    font-size: 11px; }
+  .btn { background: var(--panel-2); color: var(--ink); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; cursor: pointer;
+    text-align: left; font-family: inherit; }
+  .btn:hover { border-color: var(--accent); }
+  .btn-reset { padding: 6px 10px; }
+  .chart-wrap { position: relative; }
+  .chart-wrap.h-260 { height: 260px; }
+  .chart-wrap.h-220 { height: 220px; }
+  .chart-wrap.h-300 { height: 300px; }
+  .chart-wrap.h-200 { height: 200px; }
+
+  /* Management Summary — the money shot. Warm terracotta-tinted
+     gradient signals "this is the panel to read first" without going
+     brand-loud. */
+  .summary { background: linear-gradient(135deg,
+      color-mix(in oklab, var(--panel) 92%, var(--accent) 8%) 0%,
+      var(--panel) 100%);
+    border: 1px solid var(--accent-soft); }
+  .summary h2 { color: var(--accent); }
+  .summary-headline { font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 14px;
+    color: var(--ink); }
+  .summary-headline .hi-bad { color: var(--danger); }
+  .summary-headline .hi-good { color: var(--dev); }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px; margin-top: 6px; }
+  .kpi { background: var(--panel-2); padding: 12px 14px; border-radius: 8px;
+    border-left: 3px solid var(--ink-dim); }
+  .kpi.bad { border-left-color: var(--danger); }
+  .kpi.warn { border-left-color: var(--warn); }
+  .kpi.ok { border-left-color: var(--dev); }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--ink-dim); font-weight: 600; margin-bottom: 4px; }
+  .kpi-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;
+    line-height: 1.1; color: var(--ink); }
+  .kpi-sub { font-size: 12px; color: var(--ink-dim); margin-top: 4px; }
+  .kpi-value.bad { color: var(--danger); }
+  .kpi-value.warn { color: var(--warn); }
+  .kpi-value.ok { color: var(--dev); }
+
+  /* Scenario buttons */
+  .scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px; margin-top: 4px; }
+  .scenario-btn { display: block; padding: 12px 14px; border-radius: 8px;
+    background: var(--panel-2); border: 1px solid var(--border); cursor: pointer;
+    text-align: left; font-family: inherit; color: var(--ink);
+    transition: border-color 0.15s, transform 0.05s; }
+  .scenario-btn:hover { border-color: var(--accent); }
+  .scenario-btn:active { transform: translateY(1px); }
+  .scenario-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .scenario-detail { font-size: 11px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+
+  /* Value Stream Map */
+  .vsm { display: flex; align-items: center; gap: 0; justify-content: space-between;
+    padding: 8px 4px 4px; flex-wrap: wrap; }
+  .vsm-node { flex: 0 0 auto; min-width: 120px; padding: 10px 14px; border-radius: 8px;
+    background: var(--panel-2); border: 1.5px solid var(--border); text-align: center;
+    font-variant-numeric: tabular-nums; }
+  .vsm-node.dev { border-color: var(--dev); }
+  .vsm-node.qa { border-color: var(--qa); }
+  .vsm-node.prod { background: transparent; border-style: dashed; opacity: 0.7; }
+  .vsm-role { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-dim); font-weight: 600; }
+  .vsm-count { font-size: 15px; color: var(--ink); font-weight: 700; margin-top: 2px; }
+  .vsm-load { font-size: 13px; font-weight: 700; margin-top: 2px; }
+  .vsm-load.ok { color: var(--dev); }
+  .vsm-load.warn { color: var(--warn); }
+  .vsm-load.bad { color: var(--danger); }
+  .vsm-conn { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center;
+    color: var(--ink-dim); font-size: 11px; min-width: 60px; }
+  .vsm-conn svg { display: block; }
+  .vsm-conn.queue { min-width: 100px; }
+  .vsm-caption { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-dim); margin-top: 2px; }
+  .vsm-queue-label { font-size: 11px; font-weight: 700; margin-top: 2px;
+    font-variant-numeric: tabular-nums; }
+  .vsm-queue-cost { font-size: 11px; margin-top: 1px; font-variant-numeric: tabular-nums;
+    color: var(--danger); font-weight: 700; }
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Site">
+  <a href="/">← omarcrosby.com</a>
+  <span class="sep">·</span>
+  <a href="/now/">/now/</a>
+</nav>
+<header>
+  <h1>Dev / QA Team Load — Management View</h1>
+  <p>How much work your team actually absorbs vs. how much it's being pointed for. Everything is expressed in units management can act on: <strong>stories, hours, dollars, headcount</strong>. The underlying math uses Weinberg's context-switching decay and a coverage-gap escape tax; you don't need to see it to read the summary.</p>
+  <div class="constants-strip">
+    <div class="const-pill">Sprint: <strong>2 weeks</strong> <em>(80h / person)</em></div>
+    <div class="const-pill">Context-switch penalty: <strong>c = 0.5</strong> <em>(Rubinstein/Meyer/Evans 2001; Weinberg 1992)</em></div>
+    <div class="const-pill">Escape-tax factor: <strong>0.4</strong> <em>(per point of coverage gap)</em></div>
+    <div class="const-pill" style="border-color:var(--warn); color:var(--warn);">Escape defect rate: <strong>0.30 / story × (1 − cov)</strong> <em>(author's estimate — see Sources)</em></div>
+  </div>
+</header>
+
+<main>
+  <!-- ===================== CONTROLS ===================== -->
+  <section class="panel">
+    <div class="section-title">Team &amp; Sprint</div>
+
+    <div class="row"><label for="devs">Developers</label><span class="val" id="devs-v">7</span></div>
+    <input type="range" id="devs" min="1" max="20" step="1" value="7" />
+
+    <div class="row"><label for="qa">QA engineers</label><span class="val" id="qa-v">4</span></div>
+    <input type="range" id="qa" min="1" max="20" step="1" value="4" />
+
+    <div class="row"><label for="stories">Stories per sprint</label><span class="val" id="stories-v">9</span></div>
+    <input type="range" id="stories" min="1" max="40" step="1" value="9" />
+
+    <div class="row"><label for="velocity">Velocity (points / person / sprint)</label><span class="val" id="velocity-v">10</span></div>
+    <input type="range" id="velocity" min="3" max="25" step="1" value="10" />
+
+    <hr />
+    <div class="section-title">Effort per Story</div>
+
+    <div class="row"><label for="dev-pts">Dev points per story</label><span class="val" id="dev-pts-v">5</span></div>
+    <input type="range" id="dev-pts" min="1" max="21" step="1" value="5" />
+
+    <div class="row"><label for="qa-pointed">QA points per story — as currently pointed</label><span class="val" id="qa-pointed-v">2</span></div>
+    <input type="range" id="qa-pointed" min="0" max="21" step="1" value="2" />
+
+    <div class="row"><label for="qa-actual">QA points per story — actual effort</label><span class="val" id="qa-actual-v">3</span></div>
+    <input type="range" id="qa-actual" min="0" max="30" step="1" value="3" />
+    <div class="note">The gap between these two is the hidden load QA absorbs invisibly. Includes E2E authoring, exploratory testing, regression re-runs, defect verification.</div>
+
+    <hr />
+    <div class="section-title">Quality &amp; Focus</div>
+
+    <div class="row"><label for="cov">Unit test coverage</label><span class="val" id="cov-v">25%</span></div>
+    <input type="range" id="cov" min="0" max="100" step="1" value="25" />
+
+    <div class="note" style="margin-top:8px;"><strong>Context-switch penalty:</strong> fixed at <code>c = 0.5</code>. This is a property of human cognition, not a team knob — Rubinstein/Meyer/Evans (2001) measured ~40% throughput loss when switching between two tasks, and Weinberg (1992, p. 284) documented harsher decay for more concurrent projects. Both fit <code>eff(n) = 1 / (1 + 0.5·(n−1))</code>.</div>
+
+    <hr />
+    <div class="section-title">Cost &amp; Risk</div>
+
+    <div class="row"><label for="dev-cost">Fully-loaded dev cost / year</label><span class="val" id="dev-cost-v">$180k</span></div>
+    <input type="range" id="dev-cost" min="80" max="400" step="10" value="180" />
+    <div class="note" style="margin-top:-6px;">Typical US range: <strong>$140k–$250k</strong> (salary × ~1.3 for benefits/overhead). Adjust to your market.</div>
+
+    <div class="row" style="margin-top:10px;"><label for="qa-cost">Fully-loaded QA cost / year</label><span class="val" id="qa-cost-v">$140k</span></div>
+    <input type="range" id="qa-cost" min="60" max="300" step="10" value="140" />
+    <div class="note" style="margin-top:-6px;">Typical US range: <strong>$110k–$180k</strong> (~75% of dev, industry ratio).</div>
+
+    <div class="row" style="margin-top:10px;"><label for="incident-cost">Cost per production incident</label><span class="val" id="incident-cost-v">$8k</span></div>
+    <input type="range" id="incident-cost" min="1" max="100" step="1" value="8" />
+    <div class="note" style="margin-top:-6px;">Wide range: <strong>$2k</strong> routine bug → <strong>$50k+</strong> major outage. Gartner (2014) cited $5,600/min downtime; Atlassian ITSM reports $300k+ for enterprise outages. Placeholder — set to what your incidents actually cost.</div>
+
+    <hr />
+    <button class="btn btn-reset" id="reset">Reset defaults</button>
+  </section>
+
+  <!-- ===================== VISUALS ===================== -->
+  <section class="grid-2">
+
+    <!-- Management Summary — the money shot -->
+    <div class="panel summary">
+      <h2>Management Summary</h2>
+      <div class="summary-headline" id="summary-headline"></div>
+      <div class="summary-grid" id="summary-grid"></div>
+    </div>
+
+    <!-- Scenario buttons -->
+    <div class="panel">
+      <h2>What would fix this?</h2>
+      <div class="scenarios" id="scenarios"></div>
+      <div class="note">Each button applies the intervention to the current model and shows the ROI. Click a button to see the numbers change everywhere; click <strong>Reset defaults</strong> to return.</div>
+    </div>
+
+    <!-- Value Stream Map -->
+    <div class="panel">
+      <h2>Value Stream — where the work flows</h2>
+      <div class="vsm" id="vsm"></div>
+      <div class="note">Left to right: work enters as stories, flows through Dev, queues waiting for QA, gets verified, deploys. Queue triangle grows when QA can't keep up — its dollar figure is real money sitting idle every sprint.</div>
+    </div>
+
+    <div class="grid-side-by-side">
+      <!-- Bars -->
+      <div class="panel">
+        <h2>Hours of work per person per sprint</h2>
+        <div class="chart-wrap h-260"><canvas id="bars"></canvas></div>
+        <div id="stats" style="margin-top: 10px;"></div>
+        <div id="verdict" class="verdict ok"></div>
+      </div>
+      <!-- Productivity curve -->
+      <div class="panel">
+        <h2>Productivity vs concurrent workstreams</h2>
+        <div class="chart-wrap h-260"><canvas id="effcurve"></canvas></div>
+        <div class="note">Effective output per person as they juggle more parallel work (Weinberg 1992). The role markers show where each of your team members currently sits.</div>
+      </div>
+    </div>
+
+    <!-- Scale chart -->
+    <div class="panel">
+      <h2>Load per person — as stories per sprint scale</h2>
+      <div class="chart-wrap h-300"><canvas id="scale"></canvas></div>
+      <div class="note">Vertical dashed markers show each role's <strong>knee</strong> (Reinertsen 2009): the story-count where they cross 100% and the non-linear penalty kicks in. Commit fewer than the earlier of the two knees per sprint or QA drowns.</div>
+    </div>
+
+    <!-- Sources & assumptions -->
+    <div class="panel">
+      <h2>Sources &amp; assumptions</h2>
+      <details open>
+        <summary style="cursor:pointer; color:var(--ink); font-size:13px; font-weight:600; margin-bottom:10px;">Where every number comes from — expand for full audit trail</summary>
+        <div style="font-size:12px; color:var(--ink-dim); line-height:1.6;">
+          <p style="margin-top:8px;"><strong style="color:var(--ink);">Cited (peer-reviewed or industry standard)</strong></p>
+          <ul style="padding-left:20px; margin:4px 0;">
+            <li><strong>Context-switch penalty</strong> <code>c = 0.5</code>, form <code>eff(n) = 1/(1 + c·(n−1))</code>. Rubinstein, Meyer &amp; Evans (2001), <em>J. Experimental Psychology: HPP</em> 27(4) — measured ~40% throughput loss on 2-way task switching. Weinberg (1992), <em>Quality Software Management, Vol. 1</em>, p. 284, table of simultaneous-project time loss.</li>
+            <li><strong>Knee concept</strong> — Donald Reinertsen (2009), <em>Principles of Product Development Flow</em>. The workload where the effective-load curve steepens sharply.</li>
+            <li><strong>Value Stream Map</strong> layout — Mike Rother &amp; John Shook (1998), <em>Learning to See</em>; adopted for DevOps in Jez Humble &amp; David Farley (2010), <em>Continuous Delivery</em>.</li>
+            <li><strong>Escape-tax factor</strong> <code>0.4</code> — informed by Capers Jones' defect-removal-efficiency data (multiple editions of <em>Applied Software Measurement</em>). The specific 0.4 is calibrated so 25% coverage produces a defensible ~30% workload inflation; not directly cited.</li>
+          </ul>
+
+          <p style="margin-top:12px;"><strong style="color:var(--warn);">Author's estimates (adjust if your data disagrees)</strong></p>
+          <ul style="padding-left:20px; margin:4px 0;">
+            <li><strong>Escape defect rate</strong> <code>0.30 × (1 − coverage)</code> defects per story per sprint. <em>No citation.</em> This is a Fermi estimate. If your team measures actual escape defects, plug in your real value by adjusting <code>BASE_DEFECT_RATE</code> in the source.</li>
+            <li><strong>"Raise coverage to 60%" scenario cost</strong> — 6 months of one dev's fully-loaded cost. Order-of-magnitude; real cost depends on codebase size, test infrastructure maturity, and how much refactoring is needed to make the code testable.</li>
+            <li><strong>Shift-left scenario</strong> — assumes +2 dev pts/story and −3 QA actual pts/story. Directionally correct if devs take over E2E authoring; magnitude depends on how much of QA's actual effort was E2E vs. exploratory.</li>
+          </ul>
+
+          <p style="margin-top:12px;"><strong style="color:var(--ink);">Cost defaults (you can and should adjust)</strong></p>
+          <ul style="padding-left:20px; margin:4px 0;">
+            <li><strong>Dev cost $180k/yr</strong> — US mid-market senior dev, salary $130–150k × ~1.3 for benefits/overhead. Ranges $140k–$250k in practice; higher in tech hubs, lower in secondary markets or offshore.</li>
+            <li><strong>QA cost $140k/yr</strong> — ~75% of dev, industry norm. Ranges $110k–$180k.</li>
+            <li><strong>Incident cost $8k</strong> — placeholder for "typical bug reaches production." Gartner (2014) cited $5,600/min average downtime cost; Atlassian ITSM reports enterprise averages of $300k+. Use your own postmortem data if available.</li>
+          </ul>
+
+          <p style="margin-top:12px;"><strong style="color:var(--ink);">Uncertainty bands on KPIs</strong></p>
+          <ul style="padding-left:20px; margin:4px 0;">
+            <li><strong>Hidden pointing gap: ±30%</strong> — driven by QA cost uncertainty alone (the pointing gap itself is directly from your sliders).</li>
+            <li><strong>Overload waste: ±50%</strong> — QA cost + context-switching model uncertainty compounded.</li>
+            <li><strong>Escape defect count: ±50%</strong> — driven by the <code>BASE_DEFECT_RATE</code> guess.</li>
+            <li><strong>Escape defect $: ±75%</strong> — defect count × incident cost, both wide.</li>
+          </ul>
+
+          <p style="margin-top:12px; font-style:italic;">The model's structural argument (context switching is non-linear; hidden QA pointing gaps compound; low coverage escapes downstream) is defensible against the cited sources. The specific dollar totals are Fermi estimates, not audits. Present to management with the ranges attached.</p>
+        </div>
+      </details>
+    </div>
+
+  </section>
+</main>
+
+<script>
+(() => {
+  // ---------- Defaults & constants ----------
+  const defaults = {
+    devs: 7, qa: 4, stories: 9, velocity: 10,
+    'dev-pts': 5, 'qa-pointed': 2, 'qa-actual': 3,
+    cov: 25,
+    'dev-cost': 180, 'qa-cost': 140, 'incident-cost': 8
+  };
+  const CAPACITY = 1.0;
+  const STRETCHED = 1.5;
+  // Standard 2-week sprint — not a per-team variable in this org.
+  const SPRINT_WEEKS = 2;
+  // Context-switching cost is a human-cognitive constant, not a tunable.
+  // Rubinstein/Meyer/Evans (2001) → ~40% throughput loss on 2-way switching;
+  // Weinberg (1992, p. 284) → harsher decay with more concurrent projects.
+  // The rational form eff(n) = 1/(1+c·(n−1)) with c = 0.5 fits both datasets.
+  const CONTEXT_SWITCH_C = 0.5;
+  // Escape tax: uncovered code creates rework caught downstream.
+  // 0.4 chosen so 25% coverage ≈ +30% workload — defensible against Capers Jones
+  // defect-removal-efficiency data and DORA change-failure-rate norms.
+  const LEAKAGE = 0.4;
+  // Escape defects per sprint: stories × BASE_DEFECT_RATE × coverage-gap.
+  const BASE_DEFECT_RATE = 0.30;
+  const WEEKS_PER_YEAR = 52;
+  const HOURS_PER_WEEK = 40;
+
+  const COLOR = {
+    // Kept in sync with the --dev/--qa/... CSS vars above so charts,
+    // annotations, and SVG glyphs read as one palette. If you tweak a
+    // hue, update both places.
+    dev: '#7fa370', qa: '#a084b8',
+    devFade: 'rgba(127,163,112,0.28)', qaFade: 'rgba(160,132,184,0.28)',
+    qaPointedFade: 'rgba(160,132,184,0.15)',
+    warn: '#d4a548', danger: '#b04a35',
+    grid: 'rgba(196,137,108,0.18)', ink: 'rgb(240,232,220)',
+    dim: 'rgb(180,168,152)', accent: '#c26a5a'
+  };
+
+  Chart.defaults.color = COLOR.ink;
+  Chart.defaults.borderColor = COLOR.grid;
+  Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif';
+  Chart.register(window['chartjs-plugin-annotation']);
+
+  // Bar-label plugin — writes the real hour value above each effective bar.
+  const barValueLabels = {
+    id: 'barValueLabels',
+    afterDatasetsDraw(chart, _args, options) {
+      if (!options?.enabled) return;
+      const { ctx, chartArea, scales } = chart;
+      ctx.save();
+      ctx.font = 'bold 11px -apple-system, "SF Pro Text", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      const yMax = scales.y.max;
+      const targets = options.datasetIndexes || [chart.data.datasets.length - 1];
+      chart.data.datasets.forEach((ds, i) => {
+        if (!targets.includes(i)) return;
+        const meta = chart.getDatasetMeta(i);
+        meta.data.forEach((bar, j) => {
+          const value = ds.data[j];
+          if (value == null) return;
+          const clipped = value > yMax;
+          const label = (clipped ? '↑ ' : '') + Math.round(value) + 'h';
+          ctx.fillStyle = clipped ? COLOR.danger : COLOR.ink;
+          const yPos = clipped ? chartArea.top + 12 : Math.max(bar.y - 6, chartArea.top + 12);
+          ctx.fillText(label, bar.x, yPos);
+        });
+      });
+      ctx.restore();
+    }
+  };
+  Chart.register(barValueLabels);
+
+  const ids = ['devs','qa','stories','velocity',
+               'dev-pts','qa-pointed','qa-actual',
+               'cov','dev-cost','qa-cost','incident-cost'];
+  const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  const val = Object.fromEntries(ids.map(id => [id, document.getElementById(id+'-v')]));
+
+  // ---------- Model ----------
+  function efficiency(n, c) {
+    const nn = Math.max(1, n);
+    return 1 / (1 + c * (nn - 1));
+  }
+
+  function state() {
+    const s = {
+      devs: +el.devs.value,
+      qa: +el.qa.value,
+      stories: +el.stories.value,
+      velocity: +el.velocity.value,
+      sprintWeeks: SPRINT_WEEKS,
+      devPts: +el['dev-pts'].value,
+      qaPointed: +el['qa-pointed'].value,
+      qaActual: +el['qa-actual'].value,
+      coverage: +el.cov.value / 100,
+      c: CONTEXT_SWITCH_C,
+      devCost: +el['dev-cost'].value * 1000,   // slider is in $k
+      qaCost: +el['qa-cost'].value * 1000,
+      incidentCost: +el['incident-cost'].value * 1000,
+    };
+    s.escapeTax = LEAKAGE * (1 - s.coverage);
+    s.hoursPerSprint = s.sprintWeeks * HOURS_PER_WEEK;
+    s.devHourly = s.devCost / (WEEKS_PER_YEAR * HOURS_PER_WEEK);
+    s.qaHourly = s.qaCost / (WEEKS_PER_YEAR * HOURS_PER_WEEK);
+    s.sprintsPerYear = WEEKS_PER_YEAR / s.sprintWeeks;
+    return s;
+  }
+
+  // Load computation with a scenario override: any subset of state can be replaced.
+  function loadAt(storiesOverride, s, override = {}) {
+    const stories = storiesOverride;
+    const devs = override.devs ?? s.devs;
+    const qa = override.qa ?? s.qa;
+    const velocity = override.velocity ?? s.velocity;
+    const devPts = override.devPts ?? s.devPts;
+    const qaPointed = override.qaPointed ?? s.qaPointed;
+    const qaActual = override.qaActual ?? s.qaActual;
+    const coverage = override.coverage ?? s.coverage;
+    const escapeTax = LEAKAGE * (1 - coverage);
+    const c = override.c ?? s.c;
+
+    // Demand in story-points, per sprint.
+    const devDemand = stories * devPts;                        // dev pts consumed
+    const qaDemandPointed = stories * qaPointed;
+    const qaDemandActual = stories * qaActual * (1 + escapeTax);
+
+    // Capacity in points per sprint.
+    const devCap = devs * velocity;
+    const qaCap = qa * velocity;
+
+    const devNominal = devCap > 0 ? devDemand / devCap : 0;
+    const qaPointedLoad = qaCap > 0 ? qaDemandPointed / qaCap : 0;
+    const qaActualNominal = qaCap > 0 ? qaDemandActual / qaCap : 0;
+
+    // Effective load with context-switching tax on the ACTUAL numbers.
+    const devEffective = devNominal / efficiency(devNominal, c);
+    const qaEffective = qaActualNominal / efficiency(qaActualNominal, c);
+
+    return {
+      devDemand, qaDemandPointed, qaDemandActual, devCap, qaCap,
+      devNominal, qaPointedLoad, qaActualNominal,
+      devEffective, qaEffective,
+      escapeTax
+    };
+  }
+
+  // Convert load fraction × sprint-hours → hours per person per sprint.
+  const toHours = (load, s) => load * s.hoursPerSprint;
+
+  // Hidden waste: hours of QA work beyond capacity, in dollars.
+  function hiddenWaste(l, s) {
+    const overloadHoursPerQA = Math.max(0, l.qaEffective - 1) * s.hoursPerSprint;
+    const totalOverloadHours = overloadHoursPerQA * s.qa;
+    return {
+      hoursPerSprint: totalOverloadHours,
+      dollarsPerSprint: totalOverloadHours * s.qaHourly,
+      dollarsPerYear: totalOverloadHours * s.qaHourly * s.sprintsPerYear,
+    };
+  }
+
+  // Escape defects: proportional to stories × coverage gap × base rate.
+  function escapeRisk(l, s) {
+    const defectsPerSprint = s.stories * BASE_DEFECT_RATE * (1 - s.coverage);
+    const defectsPerYear = defectsPerSprint * s.sprintsPerYear;
+    return {
+      perSprint: defectsPerSprint,
+      perYear: defectsPerYear,
+      dollarsPerYear: defectsPerYear * s.incidentCost,
+    };
+  }
+
+  // Sustainable throughput: max stories per sprint that keeps the bottleneck ≤ 100%.
+  function sustainableStories(s) {
+    // Iterate up from 0, find largest N where both loads ≤ 1.0.
+    let last = 0;
+    for (let n = 0.1; n <= s.stories * 3; n += 0.1) {
+      const l = loadAt(n, s);
+      if (l.devEffective > 1 || l.qaEffective > 1) break;
+      last = n;
+    }
+    return last;
+  }
+
+  // ---------- Chart infra ----------
+  const thresholdAnnotationsPct = () => ({
+    cap: {
+      type: 'line', yMin: 1, yMax: 1,
+      borderColor: COLOR.warn, borderWidth: 1.5, borderDash: [5, 4],
+      label: { display: true, content: 'Capacity', position: 'end',
+        backgroundColor: 'rgba(212,165,72,0.15)', color: COLOR.warn,
+        font: { size: 10, weight: 'bold' }, padding: 4 }
+    },
+    stretch: {
+      type: 'line', yMin: 1.5, yMax: 1.5,
+      borderColor: COLOR.danger, borderWidth: 1.5, borderDash: [5, 4],
+      label: { display: true, content: 'Stretched', position: 'end',
+        backgroundColor: 'rgba(176,74,53,0.15)', color: COLOR.danger,
+        font: { size: 10, weight: 'bold' }, padding: 4 }
+    }
+  });
+
+  // ---------- Bars: hours per person per sprint ----------
+  const barsChart = new Chart(document.getElementById('bars'), {
+    type: 'bar',
+    data: {
+      labels: ['Dev', 'QA (as pointed)', 'QA (actual)'],
+      datasets: [{
+        label: 'Hours per person per sprint',
+        data: [0, 0, 0],
+        backgroundColor: [COLOR.dev, COLOR.qaPointedFade, COLOR.qa],
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 200 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${Math.round(ctx.parsed.y)} hours (of ${Math.round(ctx.chart.hoursCap ?? 80)}h capacity)`
+          }
+        },
+        annotation: { annotations: {} },
+        barValueLabels: { enabled: true, datasetIndexes: [0] }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { min: 0, max: 240,
+          title: { display: true, text: 'Hours per person per sprint', color: COLOR.dim },
+          grid: { color: COLOR.grid } }
+      }
+    }
+  });
+
+  // ---------- Productivity curve ----------
+  const effCurveChart = new Chart(document.getElementById('effcurve'), {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Effective output',
+        data: [],
+        borderColor: COLOR.accent,
+        backgroundColor: 'rgba(194,106,90,0.12)',
+        borderWidth: 2.5, pointRadius: 0, tension: 0.15, fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 200 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => `${(+items[0].label).toFixed(1)} concurrent streams`,
+            label: (ctx) => `${Math.round(ctx.parsed.y * 100)}% effective`
+          }
+        },
+        annotation: { annotations: {} }
+      },
+      scales: {
+        x: { type: 'linear', min: 1, max: 5,
+          title: { display: true, text: 'Concurrent workstreams', color: COLOR.dim },
+          grid: { color: COLOR.grid } },
+        y: { min: 0, max: 1,
+          ticks: { callback: v => Math.round(v * 100) + '%' },
+          grid: { color: COLOR.grid } }
+      }
+    }
+  });
+
+  // ---------- Scale chart ----------
+  const scaleChart = new Chart(document.getElementById('scale'), {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Dev nominal', data: [],
+          borderColor: 'rgba(0,0,0,0)', borderWidth: 0,
+          pointRadius: 0, tension: 0.15, fill: false },
+        { label: 'Dev — load per person', data: [],
+          borderColor: COLOR.dev, borderWidth: 3,
+          backgroundColor: 'rgba(127,163,112,0.18)',
+          pointRadius: 0, tension: 0.15, fill: '-1' },
+        { label: 'QA nominal', data: [],
+          borderColor: 'rgba(0,0,0,0)', borderWidth: 0,
+          pointRadius: 0, tension: 0.15, fill: false },
+        { label: 'QA — load per person', data: [],
+          borderColor: COLOR.qa, borderWidth: 3,
+          backgroundColor: 'rgba(160,132,184,0.18)',
+          pointRadius: 0, tension: 0.15, fill: '-1' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 150 },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 12, boxHeight: 12, font: { size: 11 },
+            filter: (item) => !/nominal$/.test(item.text)
+          }
+        },
+        tooltip: { mode: 'index', intersect: false,
+          filter: (item) => !/nominal$/.test(item.dataset.label),
+          callbacks: {
+            title: (items) => 'Stories/sprint = ' + (+items[0].label).toFixed(0),
+            label: (ctx) => `${ctx.dataset.label}: ${Math.round(ctx.parsed.y * 100)}%`
+          } },
+        annotation: {
+          annotations: {
+            ...thresholdAnnotationsPct(),
+            current: {
+              type: 'line', xMin: 10, xMax: 10,
+              borderColor: COLOR.accent, borderWidth: 2, borderDash: [4, 3],
+              label: { display: true, content: 'now', position: 'start',
+                backgroundColor: 'rgba(194,106,90,0.2)', color: COLOR.accent,
+                font: { size: 10, weight: 'bold' }, padding: 4 }
+            }
+          }
+        }
+      },
+      scales: {
+        x: { type: 'linear', min: 0, max: 20,
+          title: { display: true, text: 'Stories committed per sprint', color: COLOR.dim },
+          grid: { color: COLOR.grid } },
+        y: { min: 0, max: 3,
+          title: { display: true, text: 'Load per person', color: COLOR.dim },
+          ticks: { callback: v => Math.round(v * 100) + '%' },
+          grid: { color: COLOR.grid } }
+      }
+    }
+  });
+
+  // ---------- Formatters ----------
+  const fmtMoney = (n) => {
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return '$' + Math.round(n/1e3) + 'k';
+    return '$' + Math.round(n);
+  };
+  const fmtHours = (h) => Math.round(h) + 'h';
+  const loadClass = (load) => load < 1 ? 'ok' : load < 1.5 ? 'warn' : 'bad';
+
+  // ---------- Management Summary ----------
+  function updateSummary(s) {
+    const l = loadAt(s.stories, s);
+    const waste = hiddenWaste(l, s);
+    const risk = escapeRisk(l, s);
+    const sustainable = sustainableStories(s);
+    const teamSize = s.devs + s.qa;
+
+    // Effective "equivalent team size" you'd need to actually deliver the committed load
+    // without overload. Ratio of what QA needs vs what QA has, applied to team size.
+    const bottleneckLoad = Math.max(l.devEffective, l.qaEffective);
+    const equivalentTeam = teamSize * bottleneckLoad;
+
+    let headline;
+    if (bottleneckLoad < 1) {
+      headline = `Team of ${teamSize} is <span class="hi-good">within capacity</span> at ${s.stories} stories/sprint. Room to add ~${Math.round(sustainable - s.stories)} stories before overload.`;
+    } else if (l.qaEffective > l.devEffective) {
+      headline = `Team of ${teamSize} is committing to work that would require an <span class="hi-bad">equivalent team of ~${Math.round(equivalentTeam)}</span>. <strong>QA is the bottleneck</strong>. Sustainable commit is ~${Math.max(1, Math.floor(sustainable))} stories/sprint, not ${s.stories}.`;
+    } else {
+      headline = `Team of ${teamSize} is committing to work that would require an <span class="hi-bad">equivalent team of ~${Math.round(equivalentTeam)}</span>. <strong>Dev is the bottleneck</strong>. Sustainable commit is ~${Math.max(1, Math.floor(sustainable))} stories/sprint, not ${s.stories}.`;
+    }
+    document.getElementById('summary-headline').innerHTML = headline;
+
+    const kpi = (cls, label, value, sub) => `
+      <div class="kpi ${cls}">
+        <div class="kpi-label">${label}</div>
+        <div class="kpi-value ${cls}">${value}</div>
+        <div class="kpi-sub">${sub}</div>
+      </div>`;
+
+    // Pointing gap: how many story points of hidden QA work per sprint.
+    const pointingGapPts = s.stories * (s.qaActual - s.qaPointed);
+    const pointingGapHrs = pointingGapPts * (s.hoursPerSprint / s.velocity);
+    const pointingGapCost = pointingGapHrs * s.qaHourly * s.sprintsPerYear;
+
+    // Break-even QA hire — smallest N such that adding N QA drops effective load ≤ 1.
+    let breakEvenQA = 0;
+    for (let n = 1; n <= 20; n++) {
+      const l2 = loadAt(s.stories, s, { qa: s.qa + n });
+      if (l2.qaEffective <= 1) { breakEvenQA = n; break; }
+    }
+    const hireCost = breakEvenQA * s.qaCost;
+    const paybackYears = hireCost > 0 && (waste.dollarsPerYear + risk.dollarsPerYear) > 0
+      ? hireCost / (waste.dollarsPerYear + risk.dollarsPerYear) : null;
+
+    // ± bands communicate that dollar totals are Fermi estimates, not audits.
+    // Uncertainty factors below come from the confidence in the underlying inputs:
+    //   pointing gap: linear in qa_cost → ±30% (cost uncertainty only)
+    //   overload waste: qa_cost × model → ±50% (cost + non-linear model uncertainty)
+    //   escape defects: BASE_DEFECT_RATE is a guess → ±50% on count
+    //   escape $: defect count × incident cost, both wide → ±75%
+    const bandLow = (v, pct) => fmtMoney(v * (1 - pct));
+    const bandHi  = (v, pct) => fmtMoney(v * (1 + pct));
+    const bandInt = (v, pct) => `${Math.round(v * (1 - pct))}–${Math.round(v * (1 + pct))}`;
+
+    document.getElementById('summary-grid').innerHTML = [
+      kpi(bottleneckLoad < 1 ? 'ok' : 'bad',
+        'Bottleneck load',
+        Math.round(bottleneckLoad * 100) + '%',
+        (l.qaEffective > l.devEffective ? 'QA' : 'Dev') + ' is at effective capacity'),
+      kpi('warn',
+        'Hidden pointing gap',
+        `≈ ${fmtMoney(pointingGapCost)}/yr`,
+        `${Math.round(pointingGapPts)} pts/sprint off the board · range ${bandLow(pointingGapCost, 0.3)}–${bandHi(pointingGapCost, 0.3)}`),
+      kpi(waste.dollarsPerSprint > 0 ? 'bad' : 'ok',
+        'Overload waste',
+        `≈ ${fmtMoney(waste.dollarsPerYear)}/yr`,
+        `${Math.round(waste.hoursPerSprint)}h/sprint backlogged · range ${bandLow(waste.dollarsPerYear, 0.5)}–${bandHi(waste.dollarsPerYear, 0.5)}`),
+      kpi(risk.perYear > 5 ? 'bad' : risk.perYear > 1 ? 'warn' : 'ok',
+        'Escape defect risk',
+        `≈ ${Math.round(risk.perYear)} incidents/yr`,
+        `${bandInt(risk.perYear, 0.5)} incidents · ${bandLow(risk.dollarsPerYear, 0.75)}–${bandHi(risk.dollarsPerYear, 0.75)}/yr at $${s.incidentCost/1000}k each`),
+      breakEvenQA > 0 ? kpi('warn',
+        'Break-even hire',
+        '+' + breakEvenQA + ' QA',
+        `${fmtMoney(hireCost)}/yr; payback ${paybackYears ? paybackYears.toFixed(1) + ' yr' : 'immediate'}`)
+        : kpi('ok', 'Break-even hire', 'not needed', 'current headcount can absorb the load'),
+    ].join('');
+  }
+
+  // ---------- Scenario buttons ----------
+  const scenarios = [
+    {
+      key: 'hire-qa',
+      title: 'Hire 2 more QA',
+      apply: (s) => ({ qa: s.qa + 2 }),
+      cost: (s) => 2 * s.qaCost,
+      detail: (s) => `+2 QA · ${fmtMoney(2 * s.qaCost)}/yr`
+    },
+    {
+      key: 'raise-coverage',
+      title: 'Get unit coverage to 60%',
+      apply: () => ({ coverage: 0.60 }),
+      // Rough one-time investment estimate: 6 months of one dev.
+      cost: (s) => 0.5 * s.devCost,
+      detail: (s) => `~6 mo of 1 dev · ${fmtMoney(0.5 * s.devCost)} one-time`
+    },
+    {
+      key: 'shift-left',
+      title: 'Shift-left: devs cover E2E',
+      apply: (s) => ({ devPts: s.devPts + 2, qaActual: Math.max(0, s.qaActual - 3) }),
+      cost: () => 0,
+      detail: () => `+2 dev pts / story, −3 QA actual · $0 headcount`
+    }
+  ];
+  function renderScenarios(s) {
+    const container = document.getElementById('scenarios');
+    container.innerHTML = scenarios.map(sc => {
+      const l0 = loadAt(s.stories, s);
+      const overrides = sc.apply(s);
+      const l1 = loadAt(s.stories, s, overrides);
+      const beforeCost = hiddenWaste(l0, s).dollarsPerYear + escapeRisk(l0, s).dollarsPerYear;
+      // For scenarios with coverage changes we need to recompute risk with the override.
+      const sOverride = { ...s, ...overrides };
+      if (overrides.coverage !== undefined) sOverride.coverage = overrides.coverage;
+      const l1WithS = loadAt(s.stories, sOverride);
+      const afterWaste = hiddenWaste(l1WithS, sOverride);
+      const afterRisk = escapeRisk(l1WithS, sOverride);
+      const afterCost = afterWaste.dollarsPerYear + afterRisk.dollarsPerYear;
+      const savings = Math.max(0, beforeCost - afterCost);
+      const oneTime = sc.cost(s);
+      const bottleneckBefore = Math.max(l0.devEffective, l0.qaEffective);
+      const bottleneckAfter = Math.max(l1WithS.devEffective, l1WithS.qaEffective);
+
+      return `<div class="scenario-btn" data-scenario="${sc.key}">
+        <div class="scenario-title">${sc.title}</div>
+        <div class="scenario-detail">${sc.detail(s)}</div>
+        <div class="scenario-detail" style="margin-top:4px;">
+          Bottleneck: <strong>${Math.round(bottleneckBefore*100)}% → ${Math.round(bottleneckAfter*100)}%</strong>
+        </div>
+        <div class="scenario-detail" style="color:var(--dev);">
+          Saves ~${fmtMoney(savings)}/yr${oneTime > 0 ? ` · payback ${(oneTime / Math.max(1, savings)).toFixed(1)} yr` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    container.querySelectorAll('.scenario-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sc = scenarios.find(x => x.key === btn.dataset.scenario);
+        const s = state();
+        const o = sc.apply(s);
+        if (o.qa !== undefined) el.qa.value = o.qa;
+        if (o.coverage !== undefined) el.cov.value = Math.round(o.coverage * 100);
+        if (o.devPts !== undefined) el['dev-pts'].value = o.devPts;
+        if (o.qaActual !== undefined) el['qa-actual'].value = o.qaActual;
+        render();
+      });
+    });
+  }
+
+  // ---------- Value Stream Map ----------
+  function updateVSM(s) {
+    const l = loadAt(s.stories, s);
+    const overload = Math.max(0, l.qaEffective - 1);
+    const triSize = Math.min(70, 12 + overload * 30);
+    const waste = hiddenWaste(l, s);
+    const queueLabel = overload < 0.01 ? 'flowing'
+      : `+${Math.round(overload * 100)}% backlog`;
+    const queueCost = overload > 0.01 ? fmtMoney(waste.dollarsPerSprint) + '/sprint idle' : '';
+
+    const arrow = `
+      <div class="vsm-conn">
+        <svg width="50" height="18" viewBox="0 0 50 18">
+          <line x1="0" y1="9" x2="42" y2="9" stroke="${COLOR.dim}" stroke-width="1.5"/>
+          <polygon points="42,3 50,9 42,15" fill="${COLOR.dim}"/>
+        </svg>
+        <div class="vsm-caption">${s.stories} stories</div>
+      </div>`;
+    const queue = `
+      <div class="vsm-conn queue">
+        <svg width="80" height="${triSize + 4}" viewBox="0 0 80 ${triSize + 4}">
+          <polygon points="40,2 ${40 - triSize/1.6},${triSize + 2} ${40 + triSize/1.6},${triSize + 2}"
+            fill="${overload > 0.5 ? COLOR.danger : overload > 0.05 ? COLOR.warn : COLOR.dim}"
+            fill-opacity="0.35"
+            stroke="${overload > 0.5 ? COLOR.danger : overload > 0.05 ? COLOR.warn : COLOR.dim}"
+            stroke-width="1.5"/>
+        </svg>
+        <div class="vsm-queue-label" style="color:${overload > 0.5 ? COLOR.danger : overload > 0.05 ? COLOR.warn : COLOR.dim}">${queueLabel}</div>
+        <div class="vsm-queue-cost">${queueCost}</div>
+      </div>`;
+
+    const node = (cls, role, count, load) => `
+      <div class="vsm-node ${cls}">
+        <div class="vsm-role">${role}</div>
+        <div class="vsm-count">×${count}</div>
+        <div class="vsm-load ${loadClass(load)}">${Math.round(load * 100)}%</div>
+      </div>`;
+    const prodNode = `
+      <div class="vsm-node prod">
+        <div class="vsm-role">Prod</div>
+        <div class="vsm-count">↓</div>
+        <div class="vsm-load" style="color:var(--ink-dim)">deploy</div>
+      </div>`;
+
+    document.getElementById('vsm').innerHTML =
+      node('dev', 'Dev', s.devs, l.devEffective) + arrow + queue + arrow +
+      node('qa', 'QA', s.qa, l.qaEffective) + arrow + prodNode;
+  }
+
+  // ---------- Bars in HOURS ----------
+  function updateBars(s) {
+    const l = loadAt(s.stories, s);
+    const devH = toHours(l.devEffective, s);
+    const qaPointedH = toHours(l.qaPointedLoad, s);
+    const qaActualH = toHours(l.qaEffective, s);
+    barsChart.data.datasets[0].data = [devH, qaPointedH, qaActualH];
+    // Fixed cap so bars remain comparable; over-cap gets an "↑ Nh" red label.
+    barsChart.options.scales.y.max = Math.max(s.hoursPerSprint * 3, 240);
+    barsChart.options.plugins.barValueLabels.datasetIndexes = [0];
+    // Capacity + stretched annotations in hours, not %.
+    barsChart.options.plugins.annotation.annotations = {
+      cap: {
+        type: 'line', yMin: s.hoursPerSprint, yMax: s.hoursPerSprint,
+        borderColor: COLOR.warn, borderWidth: 1.5, borderDash: [5, 4],
+        label: { display: true, content: `Capacity ${s.hoursPerSprint}h`, position: 'end',
+          backgroundColor: 'rgba(212,165,72,0.15)', color: COLOR.warn,
+          font: { size: 10, weight: 'bold' }, padding: 4 }
+      },
+      stretch: {
+        type: 'line', yMin: s.hoursPerSprint * 1.5, yMax: s.hoursPerSprint * 1.5,
+        borderColor: COLOR.danger, borderWidth: 1.5, borderDash: [5, 4],
+        label: { display: true, content: `Stretched ${Math.round(s.hoursPerSprint*1.5)}h`, position: 'end',
+          backgroundColor: 'rgba(176,74,53,0.15)', color: COLOR.danger,
+          font: { size: 10, weight: 'bold' }, padding: 4 }
+      }
+    };
+    barsChart.hoursCap = s.hoursPerSprint;
+    barsChart.update('none');
+
+    document.getElementById('stats').innerHTML = `
+      <div class="stat"><span class="lbl">Sprint</span><span class="num">${s.stories} stories × ${s.devPts + s.qaActual} total pts = ${s.stories * (s.devPts + s.qaActual)} pts</span></div>
+      <div class="stat"><span class="lbl">Dev capacity</span><span class="num">${s.devs} × ${s.velocity} = ${s.devs * s.velocity} pts (${Math.round(l.devEffective * 100)}% consumed)</span></div>
+      <div class="stat"><span class="lbl">QA capacity</span><span class="num">${s.qa} × ${s.velocity} = ${s.qa * s.velocity} pts (${Math.round(l.qaEffective * 100)}% consumed at actual effort)</span></div>
+    `;
+
+    const v = document.getElementById('verdict');
+    const who = l.qaEffective > l.devEffective ? 'QA' : 'Dev';
+    const worstEff = Math.max(l.devEffective, l.qaEffective);
+    let cls, msg;
+    if (worstEff < 1) {
+      cls = 'ok'; msg = `Team within capacity. ${who} is closest at ${Math.round(worstEff*100)}%.`;
+    } else if (worstEff < 1.5) {
+      cls = 'warn'; msg = `${who} over capacity at ${Math.round(worstEff*100)}%. Sustainable short-term; backlog will grow.`;
+    } else {
+      cls = 'bad'; msg = `${who} stretched thin at ${Math.round(worstEff*100)}%. Expect coverage cuts, escaped defects, burnout.`;
+    }
+    v.className = 'verdict ' + cls;
+    v.textContent = msg;
+  }
+
+  // ---------- Efficiency curve ----------
+  function updateEffCurve(s) {
+    const steps = 50, xMax = 5;
+    const pts = [];
+    for (let i = 0; i <= steps; i++) {
+      const n = 1 + (i / steps) * (xMax - 1);
+      pts.push({ x: n, y: efficiency(n, s.c) });
+    }
+    effCurveChart.data.datasets[0].data = pts;
+    const l = loadAt(s.stories, s);
+    const anns = {};
+    const marks = [
+      { key: 'devMark', x: Math.max(1, l.devNominal), color: COLOR.dev, label: 'Dev' },
+      { key: 'qaMark',  x: Math.max(1, l.qaActualNominal),  color: COLOR.qa,  label: 'QA' }
+    ];
+    marks.forEach(m => {
+      anns[m.key] = {
+        type: 'line', xMin: m.x, xMax: m.x,
+        borderColor: m.color, borderWidth: 1.5, borderDash: [3, 3],
+        label: { display: true, content: `${m.label} n=${m.x.toFixed(1)}`, position: 'start',
+          backgroundColor: 'rgba(0,0,0,0.4)', color: m.color,
+          font: { size: 10, weight: 'bold' }, padding: 3 }
+      };
+    });
+    effCurveChart.options.plugins.annotation.annotations = anns;
+    effCurveChart.update('none');
+  }
+
+  // ---------- Scale ----------
+  function findKnee(s, role) {
+    if (s.stories <= 0) return null;
+    const l = loadAt(s.stories, s);
+    const nom = role === 'dev' ? l.devNominal : l.qaActualNominal;
+    return nom > 0 ? s.stories / nom : null;
+  }
+
+  function updateScale(s) {
+    const xMax = Math.max(20, s.stories * 2);
+    const steps = 80;
+    const devNom = [], devEff = [], qaNom = [], qaEff = [];
+    for (let i = 0; i <= steps; i++) {
+      const n = (i / steps) * xMax;
+      const l = loadAt(n, s);
+      const clip = v => Math.min(v, 3);
+      devNom.push({ x: n, y: clip(l.devNominal) });
+      devEff.push({ x: n, y: clip(l.devEffective) });
+      qaNom.push({ x: n, y: clip(l.qaActualNominal) });
+      qaEff.push({ x: n, y: clip(l.qaEffective) });
+    }
+    scaleChart.data.datasets[0].data = devNom;
+    scaleChart.data.datasets[1].data = devEff;
+    scaleChart.data.datasets[2].data = qaNom;
+    scaleChart.data.datasets[3].data = qaEff;
+    scaleChart.options.scales.x.max = xMax;
+    const anns = scaleChart.options.plugins.annotation.annotations;
+    anns.current.xMin = s.stories;
+    anns.current.xMax = s.stories;
+    const devKnee = findKnee(s, 'dev');
+    const qaKnee = findKnee(s, 'qa');
+    ['devKnee', 'qaKnee'].forEach(k => { delete anns[k]; });
+    if (devKnee && devKnee > 0 && devKnee <= xMax) {
+      anns.devKnee = {
+        type: 'line', xMin: devKnee, xMax: devKnee,
+        borderColor: COLOR.dev, borderWidth: 1, borderDash: [2, 4],
+        label: { display: true, content: `dev knee ${devKnee.toFixed(0)} stories`,
+          position: 'end', backgroundColor: 'rgba(127,163,112,0.15)', color: COLOR.dev,
+          font: { size: 9, weight: 'bold' }, padding: 3 }
+      };
+    }
+    if (qaKnee && qaKnee > 0 && qaKnee <= xMax && Math.abs(qaKnee - (devKnee||0)) > 0.5) {
+      anns.qaKnee = {
+        type: 'line', xMin: qaKnee, xMax: qaKnee,
+        borderColor: COLOR.qa, borderWidth: 1, borderDash: [2, 4],
+        label: { display: true, content: `qa knee ${qaKnee.toFixed(0)} stories`,
+          position: 'end', backgroundColor: 'rgba(160,132,184,0.15)', color: COLOR.qa,
+          font: { size: 9, weight: 'bold' }, padding: 3 }
+      };
+    }
+    scaleChart.update('none');
+  }
+
+  // ---------- Render ----------
+  function render() {
+    const s = state();
+    val.devs.textContent = s.devs;
+    val.qa.textContent = s.qa;
+    val.stories.textContent = s.stories;
+    val.velocity.textContent = s.velocity;
+    val['dev-pts'].textContent = s.devPts;
+    val['qa-pointed'].textContent = s.qaPointed;
+    val['qa-actual'].textContent = s.qaActual;
+    val.cov.textContent = Math.round(s.coverage * 100) + '%';
+    val['dev-cost'].textContent = '$' + (+el['dev-cost'].value) + 'k';
+    val['qa-cost'].textContent = '$' + (+el['qa-cost'].value) + 'k';
+    val['incident-cost'].textContent = '$' + (+el['incident-cost'].value) + 'k';
+
+    updateSummary(s);
+    renderScenarios(s);
+    updateVSM(s);
+    updateBars(s);
+    updateEffCurve(s);
+    updateScale(s);
+  }
+
+  ids.forEach(id => el[id].addEventListener('input', render));
+  document.getElementById('reset').addEventListener('click', () => {
+    for (const [k, v] of Object.entries(defaults)) el[k].value = v;
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
