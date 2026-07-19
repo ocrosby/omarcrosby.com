@@ -1,6 +1,6 @@
 +++
 title = "Now"
-date = 2026-07-11T21:35:24-04:00
+date = 2026-07-18T21:09:09-04:00
 draft = false
 description = "What I'm focused on right now — updated every 4–6 weeks. Following the nownownow.com convention."
 
@@ -9,7 +9,7 @@ image = "/images/og/meta/now.jpg"
 hidden = true
 +++
 
-*Updated 2026-07-11.*
+*Updated 2026-07-18.*
 
 Following the [nownownow.com](https://nownownow.com) convention — this page reflects **current** focus, not an exhaustive to-do list. If the date at the top is more than about 45 days old, I've fallen behind on updates; ping me on [LinkedIn](https://www.linkedin.com/in/omarcrosby/).
 
@@ -30,6 +30,8 @@ Active open-source work:
 ## Site
 
 The site itself got a substantial personal-brand pass recently: [topic-pillar categories](/categories/), per-post OpenGraph images, cross-links between [projects](/projects/) and their [deep-dive posts](/posts/), a [/uses/](/uses/) page, and per-song shareable URLs on the music page with branded OG previews (paste any [/music/](/music/) song URL into a message and see what I mean).
+
+Also new: a small interactive tool — [Dev/QA team load, management view](/tools/dev-qa-load/) — that models what happens when dev-pointed work is quietly absorbed by QA. Sliders, scenario buttons, dollars labeled as Fermi estimates rather than audits. First of what I'd like to make a habit: self-contained thinking artifacts alongside the writing.
 
 ## Day job
 
