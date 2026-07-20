@@ -1,0 +1,444 @@
++++
+title = "Distributing CLI tools with a personal Homebrew tap"
+date = "2026-07-20T08:16:45-04:00"
+draft = false
+description = "How to publish Python, Go, and Rust command-line tools through your own Homebrew tap — including a personal GitHub account, GoReleaser and cargo-dist for platform builds, and go-semantic-release for automatic version bumps that flow all the way through to `brew upgrade`."
+summary = "How to publish Python, Go, and Rust command-line tools through your own Homebrew tap — including a personal GitHub account, GoReleaser and cargo-dist for platform builds, and go-semantic-release for automatic version bumps that flow all the way through to `brew upgrade`."
+tags = ["homebrew", "release-tooling", "ci-cd", "goreleaser", "cargo-dist", "go", "rust", "python", "conventional-commits"]
+categories = ["Release Tooling"]
+ShowToc = true
+
+[cover]
+image = "/images/og/distributing-cli-tools-with-a-personal-homebrew-tap.png"
+hiddenInList = true
+hiddenInSingle = true
++++
+
+There is a moment in every side-project's life where you want somebody who isn't you to install it. Maybe a coworker asks for the linter you wrote. Maybe a stranger stars the repo and opens an issue that starts with *"how do I run this?"*. The gap between *"I have a working binary"* and *"a person on another machine can `brew install` this and it just works"* is bigger than it looks, and the piece that closes it — on macOS and Linux, without a Mac App Store account, without an apt repo, without any of the platform-specific baggage — is a **Homebrew tap**.
+
+This post is the guide I wish I had the first time. I'll cover:
+
+- What a tap actually is, and how to make one under a *personal* GitHub account (no org required).
+- The anatomy of a formula.
+- Publishing **Go** tools with [GoReleaser](https://goreleaser.com) — including the auto-generated `brews:` block that pushes a formula to your tap on every release.
+- Publishing **Rust** tools with [cargo-dist](https://github.com/axodotdev/cargo-dist) — the same pattern, adapted for the Cargo ecosystem.
+- Publishing **Python** tools via Homebrew's `Language::Python::Virtualenv` mixin, with sensible defaults for the resource-block dance.
+- Wiring **GitHub Actions** so a `git push` triggers a release and the tap is updated *before* the release notification lands in your inbox.
+- Plugging **[go-semantic-release](https://github.com/jedi-knights/go-semantic-release)** on top of the whole flow so you never hand-type a version number again.
+
+The concrete tap I'll reference throughout is [`jedi-knights/homebrew-tap`](https://github.com/jedi-knights/homebrew-tap) — a small tap that currently ships two Go binaries and one Rust binary. The same shape works for a personal-account tap; the only difference is where the repository lives.
+
+## What a tap is, in one sentence
+
+A Homebrew tap is a Git repository whose name starts with `homebrew-` and whose top level contains a `Formula/` directory of Ruby files. Each file is a **formula** — a class extending `Formula` that tells `brew` what to download, how to verify it, and how to install it.
+
+That's the whole model. It's not a package registry, it's not a manifest server, it's not an index. It's a Git repo with some Ruby in it. When you run `brew tap yourname/tools`, Homebrew clones `https://github.com/yourname/homebrew-tools` into its `Library/Taps/` tree and treats the formulae inside as installable. When you run `brew install yourname/tools/mytool`, it reads `Formula/mytool.rb`, downloads whatever the formula points at, verifies the sha256, and installs it.
+
+The upshot: you can create a tap in under a minute, from any GitHub account, with no infrastructure and no gatekeepers.
+
+## Setting up the tap on a personal account
+
+You do not need a GitHub organization. Homebrew's tap-name convention is `<owner>/homebrew-<name>`, and `<owner>` can be a personal account exactly as well as an org. If your GitHub handle is `janesmith`, a tap named `homebrew-tools` gives users:
+
+```bash
+brew tap janesmith/tools
+brew install janesmith/tools/mytool
+```
+
+The `homebrew-` prefix is required in the repo name but omitted from every user-facing command. That's the whole naming rule.
+
+### Step-by-step
+
+1. **Create the repo** with the exact name `homebrew-<something-short>`. Common choices: `homebrew-tap`, `homebrew-tools`, `homebrew-<your-project-name>`. The repo must be public (Homebrew clones over HTTPS).
+
+2. **Add a `Formula/` directory.** That's the only structural requirement. A README is nice; a LICENSE is nice; neither is required for `brew` to find the formulae.
+
+3. **Add a `README.md`** telling humans how to use it. The jedi-knights tap README is a fine reference — a two-line install snippet, a table of available formulae, and a note about how formulae get updated.
+
+4. **Test the tap locally, before any formula exists:**
+
+   ```bash
+   brew tap janesmith/tools
+   brew untap janesmith/tools
+   ```
+
+   `tap` should succeed with no output (nothing to install yet — that's fine). `untap` removes it cleanly. If either fails, the repo naming is wrong.
+
+You now have a tap. The rest of the work is putting formulae into it.
+
+## The anatomy of a formula
+
+Here's the shape of a real formula from the jedi-knights tap — this is `kyber.rb`, generated by GoReleaser on release:
+
+```ruby
+# This file was generated by GoReleaser. DO NOT EDIT.
+class Kyber < Formula
+  desc "A function-level Go code-quality analyzer"
+  homepage "https://github.com/jedi-knights/kyber"
+  version "0.1.0"
+  license "MIT"
+
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/jedi-knights/kyber/releases/download/v0.1.0/kyber_0.1.0_darwin_arm64.tar.gz"
+      sha256 "3d41e9251e9dd44a91ee42725a2fc3cfdc2e54a365b22e7059b13f9eafe72c7e"
+      def install
+        bin.install "kyber"
+      end
+    end
+    # ... amd64 block ...
+  end
+
+  on_linux do
+    # ... linux amd64 and arm64 blocks ...
+  end
+
+  test do
+    system "#{bin}/kyber", "version"
+  end
+end
+```
+
+A formula is a Ruby class with five load-bearing pieces:
+
+- **Metadata** — `desc`, `homepage`, `version`, `license`. `desc` shows up in `brew search`; the rest is for `brew info`.
+- **Platform blocks** — `on_macos` / `on_linux`, further split by `Hardware::CPU.arm?` and `Hardware::CPU.intel?`. Each block gives Homebrew a specific `url` + `sha256` for that platform + architecture.
+- **`url`** — where the pre-built tarball lives. For a personal tap this will almost always be a GitHub Releases asset — free, HTTPS, CDN-fronted.
+- **`sha256`** — a cryptographic pinning against the tarball. If the download's checksum doesn't match, `brew` aborts. This is what makes formulas reproducible.
+- **`install`** — a Ruby block that runs after download. `bin.install "kyber"` copies the `kyber` binary into Homebrew's `bin/` directory, which is on the user's `PATH`.
+- **`test do ... end`** — a smoke test. `brew test kyber` runs it. If your CLI has a `--version` or `version` subcommand, wire that up here; it catches broken tarballs faster than any downstream user will.
+
+Everything else in a formula is variation on these five. You can hand-write formulas, and for the first version of anything you probably should — but the moment you're on your third release, hand-editing every SHA is a mistake waiting to happen. That's what tooling below the language line automates.
+
+## Publishing Go tools with GoReleaser
+
+[GoReleaser](https://goreleaser.com) is the canonical release tool for Go CLIs, and it has native Homebrew tap support. You add a `.goreleaser.yml` to your project, cut a Git tag, and GoReleaser:
+
+1. Cross-compiles your binary for macOS (amd64 + arm64) and Linux (amd64 + arm64).
+2. Packages each as a `.tar.gz` with a checksums file.
+3. Creates a GitHub Release and uploads the tarballs.
+4. **Generates the Homebrew formula, computes all four SHAs, and pushes the file to your tap.**
+
+The `brews:` block is the piece that closes the loop. Here's the minimum viable config for a project called `mytool` targeting the tap at `janesmith/homebrew-tools`:
+
+```yaml
+# .goreleaser.yml
+builds:
+  - id: mytool
+    main: ./cmd/mytool
+    binary: mytool
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+
+brews:
+  - name: mytool
+    repository:
+      owner: janesmith
+      name: homebrew-tools
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/janesmith/mytool"
+    description: "One-line description that ends up in `brew search`"
+    license: MIT
+    test: |
+      system "#{bin}/mytool", "version"
+    install: |
+      bin.install "mytool"
+```
+
+The `repository.token` value is a GitHub Personal Access Token with `repo` scope on the tap repo. **The token has to have push access to the tap repo, not to the source project** — that's the direction the automation is pushing. Store it as a repository secret in the *source* project (`HOMEBREW_TAP_TOKEN`), and the GitHub Actions workflow (below) will pass it into GoReleaser's environment.
+
+### The GitHub Actions workflow
+
+```yaml
+# .github/workflows/release.yml
+name: release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+```
+
+The `GITHUB_TOKEN` scope is the workflow's own repo — that's what creates the release. The `HOMEBREW_TAP_TOKEN` scope is *another* repo — that's what pushes the formula. Two different tokens because they're two different repos.
+
+`fetch-depth: 0` is important. GoReleaser reads the Git history to build changelogs and figure out what changed since the last tag; a shallow clone will make it either silent or wrong.
+
+The first tag you push (`git tag v0.1.0 && git push --tags`) triggers the whole chain. Sixty seconds later, `Formula/mytool.rb` exists in the tap. Ninety seconds later, `brew install janesmith/tools/mytool` works from a fresh machine.
+
+## Publishing Rust tools with cargo-dist
+
+The Rust equivalent is [cargo-dist](https://github.com/axodotdev/cargo-dist) (now maintained under the name `dist`). Same idea: describe your release targets in a config file, and the tool cross-compiles, packages, uploads to GitHub Releases, and can generate a Homebrew formula.
+
+Bootstrap it with:
+
+```bash
+cargo install cargo-dist
+cd path/to/your/rust/project
+dist init
+```
+
+The interactive init writes a `[workspace.metadata.dist]` block into your `Cargo.toml` (or `dist-workspace.toml` in newer versions). The key fields:
+
+```toml
+[workspace.metadata.dist]
+cargo-dist-version = "0.28.0"
+ci = ["github"]
+installers = ["homebrew"]
+tap = "janesmith/homebrew-tools"
+publish-jobs = ["homebrew"]
+targets = [
+  "x86_64-apple-darwin",
+  "aarch64-apple-darwin",
+  "x86_64-unknown-linux-gnu",
+  "aarch64-unknown-linux-gnu",
+]
+```
+
+Then generate the CI file:
+
+```bash
+dist generate ci
+```
+
+That writes `.github/workflows/release.yml` for you — a multi-job workflow that builds every target in parallel on the appropriate runner (Rust cross-compilation to Apple Silicon requires an Apple Silicon runner; GitHub provides `macos-14`/`macos-15`), assembles the tarballs, creates the release, and — if you set `publish-jobs = ["homebrew"]` — pushes an updated formula to your tap.
+
+You'll need one secret on the source project, the same as with GoReleaser. cargo-dist looks for it under the name `HOMEBREW_TAP_TOKEN` by default; scope it to `repo` on the tap.
+
+The first version of a Rust formula I ship is usually **hand-written**, then swapped over to cargo-dist's auto-generation on the second release. The hand-written form gives you a clean read of the URL structure and archive names, which makes it easier to diagnose the first cargo-dist run when it doesn't quite match your expectations. Here's the `plug-audit` formula from the jedi-knights tap, in that hand-written state — cargo-dist ships `.tar.xz`, not `.tar.gz`, which is one of the small differences to notice:
+
+```ruby
+class PlugAudit < Formula
+  desc "Static analyzer for Neovim plugin repos"
+  homepage "https://github.com/jedi-knights/plug-audit"
+  version "0.1.0"
+  license "MIT"
+
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/jedi-knights/plug-audit/releases/download/v0.1.0/plug-audit-aarch64-apple-darwin.tar.xz"
+      sha256 "f8564905a36c231d3ce2f0bd82d9c552d61366a613d5fdce7ab1888747be97d2"
+      def install
+        bin.install "plug-audit"
+      end
+    end
+    # ... intel + linux blocks ...
+  end
+
+  test do
+    system "#{bin}/plug-audit", "--version"
+  end
+end
+```
+
+The Rust-target triples (`aarch64-apple-darwin`, `x86_64-unknown-linux-gnu`) are the canonical Cargo names. GoReleaser uses Go's `GOOS_GOARCH` convention (`darwin_arm64`, `linux_amd64`). Both work; they're just different vocabularies.
+
+## Publishing Python tools
+
+Python is the awkward one. Go and Rust produce a single static binary — Homebrew loves that. Python produces an interpreter + a wheel + a dependency tree. Homebrew handles this with the **`Language::Python::Virtualenv`** mixin: your formula declares `depends_on "python@3.12"` and a set of `resource` blocks (one per PyPI dependency), and Homebrew builds a dedicated virtualenv at install time and drops a wrapper script into `bin/`.
+
+The shape looks like this:
+
+```ruby
+class Mytool < Formula
+  include Language::Python::Virtualenv
+
+  desc "Something useful, written in Python"
+  homepage "https://github.com/janesmith/mytool"
+  url "https://files.pythonhosted.org/packages/source/m/mytool/mytool-0.3.0.tar.gz"
+  sha256 "..."
+  license "MIT"
+
+  depends_on "python@3.12"
+
+  resource "click" do
+    url "https://files.pythonhosted.org/packages/source/c/click/click-8.1.7.tar.gz"
+    sha256 "..."
+  end
+
+  resource "rich" do
+    url "https://files.pythonhosted.org/packages/source/r/rich/rich-13.7.0.tar.gz"
+    sha256 "..."
+  end
+
+  # ... one resource block per transitive dependency ...
+
+  def install
+    virtualenv_install_with_resources
+  end
+
+  test do
+    system bin/"mytool", "--version"
+  end
+end
+```
+
+The pain point is obvious: you can have twenty transitive dependencies, and each one needs its own `resource` block with a URL and a SHA. Nobody hand-maintains that. The tool of choice is [`homebrew-pypi-poet`](https://pypi.org/project/homebrew-pypi-poet/):
+
+```bash
+python -m venv .poet-env
+source .poet-env/bin/activate
+pip install mytool==0.3.0 homebrew-pypi-poet
+poet -f mytool > /tmp/mytool.rb
+```
+
+`poet` walks the installed environment and emits a formula skeleton with every `resource` block filled in and SHA'd. You copy the body into your tap's `Formula/mytool.rb`, adjust the metadata, and commit.
+
+**On every release**, re-run `poet` to regenerate the resource blocks — a new version of the tool may pull in new transitive dependencies, and any bumped dependency needs a fresh SHA. You can drive this from a GitHub Action in the source repo:
+
+```yaml
+# .github/workflows/update-brew.yml (in the source repo)
+name: update-brew
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-tap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate formula
+        run: |
+          pip install mytool==${{ github.event.release.tag_name }} homebrew-pypi-poet
+          poet -f mytool > mytool.rb
+
+      - name: Push to tap
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          git clone https://x-access-token:$GH_TOKEN@github.com/janesmith/homebrew-tools.git tap
+          mv mytool.rb tap/Formula/mytool.rb
+          cd tap
+          git config user.email "bot@janesmith.dev"
+          git config user.name "release-bot"
+          git add Formula/mytool.rb
+          git commit -m "chore(mytool): update to ${{ github.event.release.tag_name }}"
+          git push
+```
+
+This is closer to how it works under the hood for Go/Rust, too — the auto-generators are doing the same *fetch tarball / compute sha / write file / push* dance, just with the SHA sources built into the tool instead of a helper script.
+
+If your Python CLI is small and dependency-light — say, `click` and nothing else — you can also skip Homebrew entirely and tell your users to `pipx install mytool`. Homebrew is the right choice when you want *"install this the same way you install `jq`"* to work; `pipx` is the right choice when you want the tool to feel like a Python tool.
+
+## Wiring the tokens correctly
+
+The single most common failure mode when setting up cross-repo automation is token confusion. Get this part right and everything else follows:
+
+- **`GITHUB_TOKEN`** is the workflow's built-in token. It has permission over *the repo the workflow runs in*, and nothing else. It can create releases, push commits, comment on issues — but only in its own repo.
+- **`HOMEBREW_TAP_TOKEN`** (naming is a convention, not a requirement) is a **Personal Access Token** you create manually with `repo` scope, whose *purpose* is to push to a different repo — the tap.
+
+Create the PAT under **Settings → Developer settings → Personal access tokens → Fine-grained tokens**. Scope it to the *tap* repository only, with `Contents: Read and write` permission. Nothing else. That's the least-privilege posture that still lets GoReleaser/cargo-dist commit a formula.
+
+Then, in each source project that ships to the tap, add the PAT as a **repository secret** named `HOMEBREW_TAP_TOKEN`. GoReleaser and cargo-dist both look for it there by convention.
+
+**Rotate the token annually.** Fine-grained PATs on GitHub have a maximum expiration of one year; the workflow will silently start failing on the day the token expires, and the first sign you'll see is a release that publishes the tarball but doesn't update the tap. Set a calendar reminder for eleven months out.
+
+## Automatic version bumps with go-semantic-release
+
+Everything above assumes *someone* decides what the next version is and pushes a tag. That "someone" doesn't need to be you.
+
+[go-semantic-release](https://github.com/jedi-knights/go-semantic-release) — a Go-native implementation of the semantic-release contract — reads your Git history since the last tag, looks at the [Conventional Commit](https://www.conventionalcommits.org/) types (`feat:`, `fix:`, `BREAKING CHANGE:`), and decides whether the next version is a major, minor, or patch bump. It then tags the commit, generates a changelog, and creates the GitHub Release — which is the event that GoReleaser, cargo-dist, or your Python workflow is already listening for.
+
+That gets you an end-to-end flow with no manual version numbers anywhere:
+
+1. You merge a PR into `main` with a `feat: add new subcommand` title.
+2. A GitHub Actions job runs `semantic-release` on `main`.
+3. `semantic-release` reads the commit history, sees a `feat:` since the last tag, decides the next version is `v0.4.0`, and creates the tag + release.
+4. The tag push triggers the release workflow (GoReleaser / cargo-dist / poet), which builds the binaries, uploads them, and updates the tap formula.
+5. Existing users run `brew upgrade` the next morning and pick up the new version.
+
+The minimum workflow for step 2 is:
+
+```yaml
+# .github/workflows/release.yml (source project)
+name: release
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: jedi-knights/go-semantic-release@v0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+If the commit range since the last tag contains no release-triggering commits (only `chore:`, `docs:`, `test:`, etc.), the action **exits cleanly with no tag** — nothing is released, nothing gets pushed to the tap, `brew upgrade` sees no change. That's the desired behavior for a `README.md` typo fix.
+
+If the range contains a `feat:` or a `fix:`, a new tag appears and the *existing* release workflow you already have takes over. That's the important part — semantic-release doesn't need to know anything about Homebrew, GoReleaser, cargo-dist, or Python. It only knows about tags and releases. Everything downstream is triggered by the tag push the same way it would be if you'd typed `git tag v0.4.0` yourself.
+
+The two workflows compose cleanly: one file decides the version, another builds the release. They can live in the same `.github/workflows/` directory and never call each other directly.
+
+*I've written more about how go-semantic-release works — including its monorepo modes and CLI compatibility with the JS original — in [Writing semantic-release in Go, with real monorepo support]({{< ref "posts/writing-semantic-release-in-go.md" >}}).*
+
+## What users see on the other end
+
+Once the pipeline is in place, the user experience compresses down to two commands:
+
+```bash
+brew install janesmith/tools/mytool
+# ... later ...
+brew upgrade
+```
+
+Homebrew re-runs `git pull` inside `Library/Taps/janesmith/homebrew-tools` before every `brew upgrade`, so a new formula version becomes available on the user's machine within one command of you cutting the release. No `brew reinstall`, no cache flush, no `brew tap` again. That's the promise of the whole system — the user does nothing different when they upgrade `mytool` than they do when they upgrade `jq` or `git`.
+
+## Where to start
+
+If you have a Go binary you want to publish today:
+
+1. Create the tap: `homebrew-tap` under your personal GitHub account.
+2. Add a `Formula/` directory and a README.
+3. In the source project, run `goreleaser init` and edit the `brews:` block to point at your tap.
+4. Create a fine-grained PAT scoped to the tap, add it as `HOMEBREW_TAP_TOKEN` in the source project's secrets.
+5. `git tag v0.1.0 && git push --tags`.
+
+If it's a Rust binary, swap steps 3 for `dist init` and pick `installers = ["homebrew"]`.
+
+If it's a Python tool, hand-write the first formula with `homebrew-pypi-poet` and wire up the release-triggered Action to regenerate it.
+
+In every case, layer go-semantic-release on top once the manual flow is working — the automation on top of automation is fine, but the automation *underneath* has to be correct first, or you'll be debugging two things simultaneously.
+
+Then send the `brew install` command to the coworker who asked, and get on with the actual work.
