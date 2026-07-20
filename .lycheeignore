@@ -48,6 +48,11 @@
 # passes; CI reliably times out. Same failure class as Instagram/Facebook
 # runner-IP rate limits — the fix is host-level ignore, not --accept.
 ^https?://(www\.)?gnu\.org
+# astronvim.com — Cloudflare/anti-bot rejection of GitHub runner IPs
+# (connection failed from CI, 200 OK from a personal IP). Same
+# runner-IP failure class as gnu.org / instagram.com — host-level ignore
+# is the fix. Referenced from content/posts/getting-started-with-neovim.md.
+^https?://(www\.)?astronvim\.com
 
 # Specific https://doi.org URLs whose redirect terminates on a fragile host.
 # lychee matches ignore patterns against the *starting* URL and does not
