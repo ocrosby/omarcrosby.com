@@ -106,6 +106,33 @@ CLAUDE.md is the simplest and most powerful lever in the whole system. Most peop
 
 ---
 
+## Scripts and data files — augmenting a skill
+
+**What they are.** A skill is a *folder*, not just a Markdown file. Inside that folder you can drop shell scripts, Python programs, small CLIs, and reference data files (YAML, JSON, plain text) that the skill's `SKILL.md` calls into when the workflow runs. The Markdown handles judgment; the scripts handle deterministic work.
+
+**Where they live.** Anywhere inside `~/.claude/skills/<skill-name>/` — commonly a `scripts/` subfolder for executable helpers and peer files like `catalog.yaml` or `reference.md` for data the skill occasionally consults.
+
+**Why this saves you tokens.** A **token** is a unit of text Claude reads or writes — roughly a short word or a piece of one. Everything sitting in Claude's context window is measured in tokens, and everything Claude generates costs tokens too. When a skill asks Claude to do deterministic work in prose — "read this file, extract the version number, compare it against the tag, decide if a release is needed" — Claude spends tokens thinking through the algorithm every time you run the skill. When the same work lives in a script, the skill just says "run `check-release.sh`, then decide based on its one-line output." Claude reads the answer, not the process. The saving compounds: a 200-line log summarized into three lines by a script means 197 lines Claude never reads.
+
+**When to reach for a script.** Look at each step of your skill and ask two questions:
+
+1. *Would this step give the same answer every time, given the same input?* If yes, it is deterministic and belongs in a script.
+2. *Does this step have to look through more content than the answer itself needs?* If yes, a script that returns just the answer will spare Claude the noise.
+
+If both answers are yes, write the script. Reserve the prompt for the parts of the workflow that require judgment — deciding what to do with the answer, phrasing it for a human, or picking between options.
+
+**Examples.**
+
+- **Classifying something against a fixed table.** A skill that behaves differently depending on the project's language used to have a paragraph telling Claude "check for `go.mod` first, then `pyproject.toml`, then `Cargo.toml`, then…" A ten-line shell script called `detect-language.sh` does the same job and returns `go`, `py`, `rust`, or `unknown`. Claude reads the one word.
+- **Extracting one field from structured data.** A skill that acts on a specific issue-tracker ticket does not need Claude to read the full JSON blob. A one-line script — `jq -r '.title' ticket.json` — returns the title, and Claude never sees the other forty fields.
+- **Summarizing a big log.** A skill that reviews CI failures used to run `gh run view --log-failed` and ask Claude to find the error. That's tens of thousands of tokens of build noise entering the context window. A `find-failing-step.sh` that greps for `FAIL` and prints the surrounding five lines returns six lines total, and Claude gets straight to the diagnosis.
+
+**Data and reference files.** Not everything the skill leans on has to be executable. A skill can ship a `catalog.yaml` that maps names to descriptions, a `checklist.md` that lists exactly what to verify before shipping, or a longer reference document the skill only loads when a specific branch of the workflow calls for it. The `SKILL.md` stays short; the reference material sits beside it and is read only when needed.
+
+**Rule of thumb.** If a step of your skill reads like an algorithm — "do X, then Y, then Z, in that order, every time" — it wants to be a script. If it reads like advice — "consider the trade-offs, then decide" — it wants to stay in the prompt.
+
+---
+
 ## Slash commands — the shortest possible skill
 
 **What it is.** A slash command is a named prompt you can invoke by typing `/name` in the chat. As of Anthropic's recent unification, a "slash command" is really just a skill written in the simplest possible form: one Markdown file with no supporting directory.
@@ -209,12 +236,13 @@ When you spot an opportunity to configure something, use this map to pick the ri
 
 ## Where to look for real-world examples
 
-The best way to learn a Claude configuration is to read one. Two starting points beyond your own experiments:
+The best way to learn a Claude configuration is to read one, and the best way to sharpen your instincts about *how* to work with Claude is to watch someone who is good at it. Three starting points beyond your own experiments:
 
 - [`obra/superpowers`](https://github.com/obra/superpowers) — a widely-used, opinionated collection of skills, agents, and hooks centered on test-driven development, structured brainstorming, and subagent-driven work.
 - [`worldflowai/everything-claude-code`](https://github.com/worldflowai/everything-claude-code) — a broader catalog of configurations refined through months of production use, with strong material on hooks, memory, and context management.
+- [Austin Marchese's YouTube channel](https://www.youtube.com/@austin.marchese) — some of the clearest explanations of how to get the most out of Claude that I have come across. Watch a couple of his walkthroughs before you start building custom skills; the intuition transfers.
 
-Both are permissively licensed. Read them the way you would read a well-organized dotfiles repo: do not install everything, adopt one idea at a time, and let your own configuration grow around your own habits.
+The two repositories are permissively licensed — read them the way you would read a well-organized dotfiles repo: do not install everything, adopt one idea at a time, and let your own configuration grow around your own habits.
 
 ## Start small
 
