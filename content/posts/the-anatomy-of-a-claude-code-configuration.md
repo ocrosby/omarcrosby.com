@@ -12,11 +12,36 @@ hiddenInList = true
 hiddenInSingle = true
 +++
 
-Claude Code is the terminal-and-editor version of Claude — the one that reads files, runs commands, edits code, and can drive a full development workflow. Out of the box it behaves the same for everyone. But almost every serious user ends up with a **personal configuration**: a folder called `~/.claude/` on their machine that quietly shapes how Claude behaves for *them*.
+**Claude Code** is Anthropic's AI-powered coding assistant — the one that reads files, runs commands, edits code, and drives a full development workflow from your terminal, editor, or a desktop app. It is a distinct product from the browser-based Claude chat at [claude.ai](https://claude.ai/); the two share the same underlying model but almost nothing about how you interact with them. **Everything in this post is about Claude Code specifically.**
 
-This post is a plain-language tour of what actually lives in that folder. If you've peeked at someone else's Claude setup on GitHub and felt lost — files called `SKILL.md`, folders named `agents/`, `hooks/`, `output-styles/` — this is the map.
+Out of the box, Claude Code behaves the same for everyone. But almost every serious user ends up with a **personal configuration**: a folder called `~/.claude/` on their machine that quietly shapes how Claude Code behaves for *them*.
 
-I'll define every term before I use it. The only assumed background is that you've opened Claude Code at least once.
+This post is a plain-language tour of what actually lives in that folder. If you've peeked at someone else's Claude Code setup on GitHub and felt lost — files called `SKILL.md`, folders named `agents/`, `hooks/`, `output-styles/` — this is the map.
+
+I'll define every term before I use it. The only assumed background is that Claude Code is installed on your machine — if it isn't yet, the next section walks through the shortest path.
+
+## Before you start — installing Claude Code
+
+If you have not used Claude Code before, here is the fastest way to get running:
+
+1. **Sign up for a Claude account** at [claude.ai](https://claude.ai/). A free account is enough to try Claude Code; heavier daily use benefits from a paid plan (see [Anthropic's pricing page](https://claude.com/pricing)).
+2. **Install the CLI.** On macOS, Linux, or WSL:
+
+    ```bash
+    curl -fsSL https://claude.ai/install.sh | bash
+    ```
+
+    On Windows PowerShell:
+
+    ```powershell
+    irm https://claude.ai/install.ps1 | iex
+    ```
+
+    Homebrew users can run `brew install --cask claude-code`. VS Code and JetBrains extensions and a standalone desktop app are also available.
+
+3. **Start a session.** `cd` into a project directory and run `claude` — you'll be prompted to log in on first use.
+
+For alternative install methods, IDE integrations, and troubleshooting, see Anthropic's [Claude Code overview](https://code.claude.com/docs/en/overview) and [quickstart guide](https://code.claude.com/docs/en/quickstart). Everything below assumes you're set up.
 
 ## The one-sentence version
 
@@ -236,7 +261,7 @@ When you spot an opportunity to configure something, use this map to pick the ri
 
 ## Where to look for real-world examples
 
-The best way to learn a Claude configuration is to read one, and the best way to sharpen your instincts about *how* to work with Claude is to watch someone who is good at it. Three starting points beyond your own experiments:
+The best way to learn a Claude Code configuration is to read one, and the best way to sharpen your instincts about *how* to work with Claude Code is to watch someone who is good at it. Three starting points beyond your own experiments:
 
 - [`obra/superpowers`](https://github.com/obra/superpowers) — a widely-used, opinionated collection of skills, agents, and hooks centered on test-driven development, structured brainstorming, and subagent-driven work.
 - [`worldflowai/everything-claude-code`](https://github.com/worldflowai/everything-claude-code) — a broader catalog of configurations refined through months of production use, with strong material on hooks, memory, and context management.
@@ -252,4 +277,4 @@ The trap with all of this is thinking you need a large configuration to get valu
 2. One skill for the workflow they were tired of retyping.
 3. One hook that blocked a command they were tired of Claude proposing.
 
-Everything else grew from those. A personal Claude configuration is, at its best, a record of what you have noticed about how you actually work — nothing more, nothing less.
+Everything else grew from those. A personal Claude Code configuration is, at its best, a record of what you have noticed about how you actually work — nothing more, nothing less.
