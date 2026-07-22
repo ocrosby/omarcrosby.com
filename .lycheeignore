@@ -53,6 +53,13 @@
 # runner-IP failure class as gnu.org / instagram.com — host-level ignore
 # is the fix. Referenced from content/posts/getting-started-with-neovim.md.
 ^https?://(www\.)?astronvim\.com
+# youtube.com/@handle — YouTube's anti-bot layer 429s channel-page requests
+# from GitHub runner IP ranges (shared address pool). Same failure class as
+# Instagram/Facebook per .claude/rules/external-link-hygiene.md. Scope is
+# narrowed to /@ (channel handle URLs); /watch and /embed paths use a
+# different code path and are not affected — do not blanket-ignore all of
+# youtube.com. Referenced from content/posts/the-anatomy-of-a-claude-code-configuration.md.
+^https?://(www\.)?youtube\.com/@
 
 # Specific https://doi.org URLs whose redirect terminates on a fragile host.
 # lychee matches ignore patterns against the *starting* URL and does not
