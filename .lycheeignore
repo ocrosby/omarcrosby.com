@@ -80,3 +80,18 @@
 ^https?://doi\.org/10\.1145/42372\.42379$
 # 10.1109/TSE.2009.70 — Buse & Weimer (2010), readability. Redirects to IEEE.
 ^https?://doi\.org/10\.1109/TSE\.2009\.70$
+# 10.1145/2568225.2568271 — Inozemtseva & Holmes (2014), coverage vs test suite
+# effectiveness. Redirects to ACM.
+^https?://doi\.org/10\.1145/2568225\.2568271$
+# 10.1145/3338906.3340459 — Ivanković et al. (2019), code coverage at Google.
+# Redirects to ACM.
+^https?://doi\.org/10\.1145/3338906\.3340459$
+# 10.1109/MS.2008.34 — Janzen & Saiedian (2008), TDD and design quality.
+# Redirects to IEEE Xplore.
+^https?://doi\.org/10\.1109/MS\.2008\.34$
+# 10.1109/ESEM.2009.5315981 — Mockus, Nagappan & Dinh-Trong (2009), test coverage
+# and post-verification defects. Redirects to IEEE Xplore.
+^https?://doi\.org/10\.1109/ESEM\.2009\.5315981$
+# 10.1109/TSE.2013.11 — Rafique & Mišić (2013), TDD meta-analysis. Redirects
+# to IEEE Xplore.
+^https?://doi\.org/10\.1109/TSE\.2013\.11$
