@@ -98,10 +98,16 @@ I'll walk through the smallest possible loop against a toy module, then talk abo
 
 ### Install
 
+Add mutmut as a development dependency. I use <a href="https://docs.astral.sh/uv/" target="_blank" rel="noopener">uv</a> for everything Python these days, so the primary form is:
+
+```bash
+uv add --dev mutmut
+```
+
+That writes the pin into `pyproject.toml` under `[dependency-groups] dev` and updates `uv.lock` in the same shot. If you're starting from scratch, `uv init` first, then `uv add --dev mutmut`. If you're using pip, the equivalent is:
+
 ```bash
 pip install mutmut
-# or, with uv:
-uv add --dev mutmut
 ```
 
 On macOS you may see a build error about `libcst` needing a Rust compiler. That's a wheel-availability thing for some architectures; installing the Rust toolchain via <a href="https://www.rust-lang.org/tools/install" target="_blank" rel="noopener">rustup</a> and retrying the install fixes it. On Linux and Apple Silicon it usually just works.
@@ -128,18 +134,26 @@ pytest_add_cli_args_test_selection=tests/
 
 ### Run it
 
+With uv, run mutmut through the project environment so you always get the pinned version — no activated venv required:
+
+```bash
+uv run mutmut run
+```
+
+If you're using pip inside an activated virtualenv, drop the `uv run` prefix:
+
 ```bash
 mutmut run
 ```
 
 Go get a coffee. The first run is the slow one — mutmut has to try every generated mutant against your test suite. On a small module the whole thing finishes in seconds. On a real service with a few thousand mutants and a slow test suite, the first full pass can take minutes to hours.
 
-You can stop it at any point with `Ctrl-C`. Mutmut records progress as it goes; the next `mutmut run` picks up where you left off.
+You can stop it at any point with `Ctrl-C`. Mutmut records progress as it goes; the next `uv run mutmut run` picks up where you left off.
 
 ### Browse the survivors
 
 ```bash
-mutmut browse
+uv run mutmut browse
 ```
 
 This opens an interactive terminal UI listing every mutation, grouped by module and function. Surviving mutants are the interesting ones — those are the specific edits your tests failed to catch. You can see the diff of each survivor and view the source it modified.
@@ -151,11 +165,11 @@ Key shortcuts in the browse UI:
 - `m` — retest every mutant in the current module
 - `a` — apply the mutant to disk (writes the mutated code into your source tree)
 
-That last one is worth pausing on. `mutmut apply` (or the `a` key in the browse UI) writes a surviving mutant to your source tree so you can run your tests against it directly, poke at it in the debugger, or use it as a template for writing a new test. **Do this only on a clean git working tree** — the applied mutant is a real edit to your source file, and if you forget to revert it you will commit broken code. The README says this in bold, and it earns the emphasis.
+That last one is worth pausing on. `uv run mutmut apply <mutant>` (or the `a` key in the browse UI) writes a surviving mutant to your source tree so you can run your tests against it directly, poke at it in the debugger, or use it as a template for writing a new test. **Do this only on a clean git working tree** — the applied mutant is a real edit to your source file, and if you forget to revert it you will commit broken code. The README says this in bold, and it earns the emphasis.
 
 ### Kill a mutant
 
-Pick a survivor. Read the diff. Ask yourself: *what test would catch this?* Write that test. Run `mutmut browse`, select the mutant, press `r`. If it's dead, move on. If it still lives, your new test isn't tight enough — usually because it asserts on something too weak.
+Pick a survivor. Read the diff. Ask yourself: *what test would catch this?* Write that test. Run `uv run mutmut browse`, select the mutant, press `r`. If it's dead, move on. If it still lives, your new test isn't tight enough — usually because it asserts on something too weak.
 
 Repeat until the survivor list either goes to zero or narrows down to mutations you consciously decide are not worth killing (more on that below). That loop — surface a specific weakness, write the specific test, verify — is the core value of the tool.
 
@@ -251,7 +265,7 @@ The trade-off: some real weaknesses hide behind type errors (a mutation that tur
 
 The workflow that has worked for me on non-trivial Python codebases:
 
-1. **First run against a single well-scoped module.** Pick a pure-logic module — a validator, a pricing rule, a permission check. Run mutmut against just that module (`mutmut run "pricing*"`). Fix the top few survivors. Feel the loop.
+1. **First run against a single well-scoped module.** Pick a pure-logic module — a validator, a pricing rule, a permission check. Run mutmut against just that module (`uv run mutmut run "pricing*"`). Fix the top few survivors. Feel the loop.
 2. **Grow the scope one module at a time.** Do not enable it against the whole codebase on day one — you will get a survivor list too long to act on and the whole exercise will feel like a chore. Add modules as you strengthen them.
 3. **Run it on the branch, not on `main`.** Because mutmut is incremental, running it after your change on a feature branch tells you specifically whether the functions you touched are well tested. That's a much narrower and more actionable question than *"what's the mutation score of the whole codebase."*
 4. **Treat survivors like a code review.** Every surviving mutant is a specific claim: *"this test would not have caught this specific change."* Some of those claims are correct and actionable — write the test. Some are noise — suppress them with a pragma and a comment. Both are legitimate outcomes.
