@@ -25,3 +25,4 @@ OT = "OT"          # opponent-ties variable in NCAA RPI opponent-side formulas (
 BRE = "BRE"        # POSIX Basic Regular Expressions acronym (regex post)
 Nd = "Nd"          # Unicode general category "Number, Decimal digit" (regex post: \p{Nd})
 alog = "alog"      # substring in the "cat|catalog leaves alog unmatched" example (regex post)
+Beizer = "Beizer"  # Boris Beizer, author of "Software Testing Techniques" (not "Bezier")
