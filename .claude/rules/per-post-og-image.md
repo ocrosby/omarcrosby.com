@@ -20,13 +20,17 @@ If step 2 fires, LinkedIn / X / Slack all render the same 1200×630 site logo fo
 
 Before opening any PR that adds a post under `content/posts/`:
 
-1. Run the generator (re-runnable — safe to run on any post state):
+1. Run the generator with `--only <slug>` — never bare, never `--all`:
 
    ```bash
-   python3 scripts/generate-og-images.py
+   python3 scripts/generate-og-images.py --only <slug>          # new post or edited title/category
+   python3 scripts/generate-og-images.py --only <slug-a> <slug-b>  # multiple posts in one run
+   python3 scripts/generate-og-images.py --all                   # site-wide refresh only (design-token change, font swap, layout constant change)
    ```
 
-   It walks `content/posts/*.md`, parses title + primary category from front matter, and writes `static/images/og/<slug>.png`. Adding a new post → the script generates its image on the next run. Editing an existing post's title or category → rerun the script to refresh that post's image.
+   The script is mutually-exclusive-required between `--all` and `--only` (argparse rejects bare invocation). This is deliberate: `--all` rewrites every existing PNG, and ImageMagick output is not bit-for-bit stable — running `--all` for a new post pollutes the diff with dozens of unrelated PNG changes and buries the real edit under image churn. Default to `--only <slug>` for every post-touching PR. Reach for `--all` only when a design token, font, or layout constant genuinely changed and every image needs to re-render to stay visually consistent — say so explicitly in the commit message.
+
+   It walks `content/posts/*.md`, parses title + primary category from front matter, and writes `static/images/og/<slug>.png`. Adding a new post → `--only <new-slug>`. Editing an existing post's title or category → `--only <edited-slug>` to refresh just that one.
 
 2. Ensure the post's front matter carries a `[cover]` block pointing at its image, with **both** `hiddenInList = true` **and** `hiddenInSingle = true`:
 
@@ -57,7 +61,8 @@ Before opening any PR that adds a post under `content/posts/`:
 
 | Signal | Fix |
 |---|---|
-| New file under `content/posts/` in the diff, no matching `static/images/og/<slug>.png` | Run `python3 scripts/generate-og-images.py`, stage the new PNG |
+| New file under `content/posts/` in the diff, no matching `static/images/og/<slug>.png` | Run `python3 scripts/generate-og-images.py --only <slug>`, stage the new PNG |
+| Diff regenerates PNGs for posts that weren't touched (dozens of `static/images/og/*.png` modified with no corresponding `content/posts/*.md` edit) | The generator was invoked with `--all` when a single-post `--only <slug>` was appropriate. Revert the unrelated PNGs (`git restore static/images/og/*.png` excluding the changed one) and re-run with `--only <slug>` |
 | Post's front matter lacks a `[cover]` block | Add `[cover]\nimage = "/images/og/<slug>.png"\nhiddenInList = true\nhiddenInSingle = true` before the closing `+++` |
 | Post's `[cover].image` points at `images/og.png` or another shared file | Replace with `/images/og/<slug>.png` and generate the per-post image |
 | Post's `[cover]` block has `image = ...` but no `hiddenInList = true` | Add the line — list views (`/posts/`, `/categories/<slug>/`, tag pages) render each card with a full-width branded banner otherwise |

@@ -50,9 +50,15 @@ Scaffolds a new post at `content/posts/<slug>.md` with the required front matter
 
    ```text
    Created content/posts/<slug>.md — flip draft to false when ready to ship, then run
-   `python3 scripts/generate-og-images.py` before opening the PR so the [cover] image
-   at /images/og/<slug>.png exists on the filesystem.
+   `python3 scripts/generate-og-images.py --only <slug>` before opening the PR so the
+   [cover] image at /images/og/<slug>.png exists on the filesystem.
    ```
+
+   **Use `--only <slug>` — never bare `python3 scripts/generate-og-images.py` and never `--all`.**
+   The generator is mutually-exclusive-required between `--all` and `--only <slug>`; running
+   with `--all` for a new post rewrites every existing PNG (ImageMagick output is not bit-for-bit
+   stable) and pollutes the diff with dozens of unrelated PNG changes. `--all` is reserved for
+   deliberate site-wide refreshes (design-token change, font swap) — not for adding a post.
 
 ## Notes
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Generate per-post OpenGraph preview images.
 
-Reads every content/posts/*.md, extracts the title and primary category
-from TOML front matter, and shells out to ImageMagick to render a
-1200x630 PNG per post into static/images/og/<slug>.png.
+Reads content/posts/*.md, extracts the title and primary category from
+TOML front matter, and shells out to ImageMagick to render a 1200x630
+PNG per post into static/images/og/<slug>.png.
 
 Each post's front matter should carry:
 
@@ -12,13 +12,19 @@ Each post's front matter should carry:
 
 so PaperMod's opengraph.html template emits it as og:image.
 
-Re-runnable: overwrites existing images. Non-destructive to any other
-files. Skips _index.md.
+Modes:
+    --all              Regenerate images for every post under content/posts/
+    --only <slug> ...  Regenerate only the specified slug(s) — use this for
+                       a new post or a title/category edit, so unrelated
+                       posts' PNGs are not rewritten (and don't churn git).
+
+Re-runnable: overwrites existing images for the selected slugs. Skips
+_index.md.
 
 Requires: `magick` (ImageMagick 7) on PATH.
 """
 
-import os
+import argparse
 import re
 import subprocess
 import sys
@@ -31,10 +37,10 @@ OUT_DIR = REPO_ROOT / "static" / "images" / "og"
 # Design tokens — echo the site's dark theme (--theme rgb(29, 30, 32)).
 WIDTH = 1200
 HEIGHT = 630
-BG = "#201d1b"          # warm brown-black — matches site --theme dark
-FG = "#f0e8dc"          # cream — matches site --primary dark
-MUTED = "#b4a898"       # warm secondary — matches site --secondary dark
-ACCENT = "#c26a5a"      # terracotta — matches site --accent dark
+BG = "#201d1b"  # warm brown-black — matches site --theme dark
+FG = "#f0e8dc"  # cream — matches site --primary dark
+MUTED = "#b4a898"  # warm secondary — matches site --secondary dark
+ACCENT = "#c26a5a"  # terracotta — matches site --accent dark
 FONT_BOLD = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-700.ttf")
 FONT_REGULAR = str(REPO_ROOT / "scripts" / "fonts" / "fraunces-v38-latin-regular.ttf")
 TITLE_PT = 60
@@ -57,7 +63,7 @@ def parse_front_matter(text: str) -> dict:
     out = {}
     for key in ("title", "categories"):
         # title = "..."  or  categories = ["..."]
-        km = re.search(rf'^{key}\s*=\s*(.+)$', fm, re.MULTILINE)
+        km = re.search(rf"^{key}\s*=\s*(.+)$", fm, re.MULTILINE)
         if not km:
             continue
         raw = km.group(1).strip()
@@ -82,32 +88,52 @@ def render(slug: str, title: str, category: str) -> Path:
     #    label (top) and site mark (bottom).
     cmd = [
         "magick",
-        "-size", f"{WIDTH}x{HEIGHT}",
+        "-size",
+        f"{WIDTH}x{HEIGHT}",
         f"xc:{BG}",
         # Category label (uppercase, muted, top-left).
-        "-fill", ACCENT,
-        "-font", FONT_BOLD,
-        "-pointsize", str(LABEL_PT),
-        "-gravity", "NorthWest",
-        "-annotate", f"+{PAD_X}+{LABEL_Y}", category.upper(),
+        "-fill",
+        ACCENT,
+        "-font",
+        FONT_BOLD,
+        "-pointsize",
+        str(LABEL_PT),
+        "-gravity",
+        "NorthWest",
+        "-annotate",
+        f"+{PAD_X}+{LABEL_Y}",
+        category.upper(),
         # Title (auto-wrapped via caption:).
         "(",
-        "-background", BG,
-        "-fill", FG,
-        "-font", FONT_BOLD,
-        "-pointsize", str(TITLE_PT),
-        "-size", f"{TITLE_MAX_W}x{TITLE_MAX_H}",
+        "-background",
+        BG,
+        "-fill",
+        FG,
+        "-font",
+        FONT_BOLD,
+        "-pointsize",
+        str(TITLE_PT),
+        "-size",
+        f"{TITLE_MAX_W}x{TITLE_MAX_H}",
         f"caption:{title}",
         ")",
-        "-gravity", "NorthWest",
-        "-geometry", f"+{PAD_X}+{TITLE_Y}",
+        "-gravity",
+        "NorthWest",
+        "-geometry",
+        f"+{PAD_X}+{TITLE_Y}",
         "-composite",
         # Site mark (bottom-left).
-        "-fill", MUTED,
-        "-font", FONT_REGULAR,
-        "-pointsize", str(MARK_PT),
-        "-gravity", "NorthWest",
-        "-annotate", f"+{PAD_X}+{MARK_Y}", "omarcrosby.com",
+        "-fill",
+        MUTED,
+        "-font",
+        FONT_REGULAR,
+        "-pointsize",
+        str(MARK_PT),
+        "-gravity",
+        "NorthWest",
+        "-annotate",
+        f"+{PAD_X}+{MARK_Y}",
+        "omarcrosby.com",
         str(out),
     ]
     subprocess.run(cmd, check=True)
@@ -115,8 +141,33 @@ def render(slug: str, title: str, category: str) -> Path:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "--all", action="store_true", help="regenerate every post's OG image"
+    )
+    group.add_argument(
+        "--only",
+        nargs="+",
+        metavar="SLUG",
+        help="regenerate only these post slugs (filename stem, without .md)",
+    )
+    args = parser.parse_args()
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    posts = sorted(p for p in POSTS_DIR.glob("*.md") if p.name != "_index.md")
+    all_posts = sorted(p for p in POSTS_DIR.glob("*.md") if p.name != "_index.md")
+
+    if args.all:
+        posts = all_posts
+    else:
+        by_slug = {p.stem: p for p in all_posts}
+        posts = []
+        for wanted in args.only:
+            if wanted not in by_slug:
+                print(f"FAIL {wanted}: no content/posts/{wanted}.md", file=sys.stderr)
+                return 1
+            posts.append(by_slug[wanted])
+
     fail = 0
     for post in posts:
         fm = parse_front_matter(post.read_text())

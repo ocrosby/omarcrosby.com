@@ -52,8 +52,10 @@ Field notes:
 5. **Generate the OG image and add the `[cover]` block** — required for every post per `.claude/rules/per-post-og-image.md`:
 
    ```bash
-   python3 scripts/generate-og-images.py
+   python3 scripts/generate-og-images.py --only <slug>
    ```
+
+   Use `--only <slug>` (not `--all`) so unrelated posts' PNGs aren't rewritten and don't churn the diff. `--all` is reserved for deliberate site-wide refreshes (design-token / font / layout constant changes).
 
    Then ensure the post's front matter ends with:
 
