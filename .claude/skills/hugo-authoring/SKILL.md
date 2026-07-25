@@ -55,7 +55,7 @@ Field notes:
    python3 scripts/generate-og-images.py --only <slug>
    ```
 
-   Use `--only <slug>` (not `--all`) so unrelated posts' PNGs aren't rewritten and don't churn the diff. `--all` is reserved for deliberate site-wide refreshes (design-token / font / layout constant changes).
+   Use `--only <slug>` (not `--all`) so unrelated posts' PNG files aren't rewritten and don't churn the diff. `--all` is reserved for deliberate site-wide refreshes (design-token / font / layout constant changes).
 
    Then ensure the post's front matter ends with:
 

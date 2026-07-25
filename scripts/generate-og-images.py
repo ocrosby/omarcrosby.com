@@ -16,7 +16,7 @@ Modes:
     --all              Regenerate images for every post under content/posts/
     --only <slug> ...  Regenerate only the specified slug(s) — use this for
                        a new post or a title/category edit, so unrelated
-                       posts' PNGs are not rewritten (and don't churn git).
+                       posts' PNG files are not rewritten (and don't churn git).
 
 Re-runnable: overwrites existing images for the selected slugs. Skips
 _index.md.
