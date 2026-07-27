@@ -14,5 +14,3 @@ hiddenInSingle = true
 A touch-centric, sport-agnostic match event–tracking app. Event types aren't hardcoded — they're stored as data rows with behavioral flags, so adding a new sport is a config change rather than a code change.
 
 **Stack:** Go
-
-- **Repo:** [github.com/jedi-knights/touchline](https://github.com/jedi-knights/touchline)
