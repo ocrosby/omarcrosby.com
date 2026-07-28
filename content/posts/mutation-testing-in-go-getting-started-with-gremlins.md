@@ -74,7 +74,7 @@ The reason mutation score beats line coverage as a signal isn't that it replaces
 
 ## Enter gremlins
 
-<a href="https://github.com/go-gremlins/gremlins" target="_blank" rel="noopener">gremlins</a> is a mutation testing tool for Go, inspired by <a href="https://pitest.org/" target="_blank" rel="noopener">PITest</a> (the Java equivalent). The docs live at <a href="https://gremlins.dev" target="_blank" rel="noopener">gremlins.dev</a>.
+<a href="https://github.com/go-gremlins/gremlins" target="_blank" rel="noopener">gremlins</a> is a mutation testing tool for Go, inspired by <a href="https://pitest.org/" target="_blank" rel="noopener">PITest</a> (the Java equivalent). The full docs live in the repo under <a href="https://github.com/go-gremlins/gremlins/tree/main/docs/docs" target="_blank" rel="noopener">docs/docs</a>.
 
 A few properties that matter in practice:
 
@@ -189,7 +189,7 @@ Three things worth naming: the *status* on the left, the *mutator type* (`CONDIT
 
 ### Kill a mutant
 
-Look at the file:line. Look at the mutator type — the mutator docs at <a href="https://gremlins.dev/latest/usage/mutations/" target="_blank" rel="noopener">gremlins.dev</a> list the exact transformation for each type. Mentally apply that transformation. Ask yourself: *what test would catch this specific change?* Write that test. Rerun gremlins.
+Look at the file:line. Look at the mutator type — the <a href="https://github.com/go-gremlins/gremlins/tree/main/docs/docs/usage/mutations" target="_blank" rel="noopener">mutator docs in the repo</a> list the exact transformation for each type. Mentally apply that transformation. Ask yourself: *what test would catch this specific change?* Write that test. Rerun gremlins.
 
 Repeat until the `LIVED` list either goes to zero or narrows down to mutations you consciously decide are not worth killing.
 
