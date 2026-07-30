@@ -2,9 +2,9 @@
 title = "What makes a CLI Claude-friendly"
 date = "2026-07-30T05:48:22-04:00"
 draft = false
-description = "A concrete look at what turns a command-line tool into something an AI coding agent can drive reliably, with contrived before/after examples for structured output, subcommands, non-interactive defaults, exit codes, self-documenting help, and idempotency."
-summary = "A concrete look at what turns a command-line tool into something an AI coding agent can drive reliably, with contrived before/after examples for structured output, subcommands, non-interactive defaults, exit codes, self-documenting help, and idempotency."
-tags = ["claude-code", "cli-design", "ai-assisted-development", "developer-tools"]
+description = "A concrete look at what turns a command-line tool into something an AI coding agent can drive reliably, with contrived before/after examples for structured output, subcommands, non-interactive defaults, exit codes, self-documenting help, idempotency, and when a token-oriented format like TOON is worth adding as a second output mode."
+summary = "A concrete look at what turns a command-line tool into something an AI coding agent can drive reliably, with contrived before/after examples for structured output, subcommands, non-interactive defaults, exit codes, self-documenting help, idempotency, and when a token-oriented format like TOON is worth adding as a second output mode."
+tags = ["claude-code", "cli-design", "ai-assisted-development", "developer-tools", "token-efficiency"]
 categories = ["Claude Code"]
 
 [cover]
@@ -185,6 +185,92 @@ Schedule for zone north already matches — no change.
 ```
 
 Same inputs, same tool, but the second call now returns "already matches" instead of duplicating state. This doesn't mean every command needs an idempotent variant — a one-shot `harvest start` is fine as a mutating command precisely because starting a harvest twice is obviously wrong and easy for a human reviewer to catch in the transcript. It matters most for checks, validations, and setup-style operations that an agent is likely to run speculatively as part of figuring out current state, exactly the operations most likely to get called more than once in a session without anyone deciding that on purpose.
+
+## A further step: TOON, once the array gets large
+
+Everything above assumes JSON is the destination format, and for most of a CLI's output that's still the right call — it's universal, every language parses it, and `jq` doesn't care who's on the other end of the pipe. But JSON's braces, repeated field names, and quoting are pure overhead once the payload an agent has to read is not two trees but four hundred, and that overhead is paid in tokens, which is the one resource an agent's context window actually meters.
+
+[TOON](https://toonformat.dev/) (Token-Oriented Object Notation) is a format built specifically for that case: encode the same data as JSON, but for a *uniform array of flat objects* — the shape `orchardctl trees status` actually returns — fold the repeated field names into a single header and stream the rows underneath it, CSV-style:
+
+```text
+trees[2]{id,variety,status}:
+  T-014,Honeycrisp,healthy
+  T-019,Fuji,stressed
+```
+
+That's the same two trees from the JSON example earlier, and at two rows the difference is cosmetic. It stops being cosmetic at scale: the project's own benchmarks — run against 244 retrieval questions across four models (Claude Haiku, Gemini Flash, GPT-5 nano, Grok) — report TOON using **42.6% fewer tokens than pretty-printed JSON while matching its retrieval accuracy** (72.2% vs. JSON's 71.4%), and on fully-uniform, tabular-eligible datasets specifically, the savings against JSON run from 54.6% to 66.5%. The gain comes from paying for each field name once instead of once per row — the exact overhead JSON can't avoid and TOON is built to fold away.
+
+**What this doesn't buy you.** The project's own "When Not to Use TOON" section is worth reading before reaching for it, because the same benchmark data shows the technique inverting, not just shrinking, outside its sweet spot:
+
+- On a semi-uniform dataset (about 50% tabular-eligible — think event logs where some entries carry extra fields), TOON only beat pretty JSON by 15%, and used **19.9% *more* tokens than compact (minified) JSON** — worse than the format it's supposedly competing with.
+- On deeply nested, non-tabular data (a config tree, ≈0% eligibility), the pattern repeats: 34.9% smaller than pretty JSON, but 6.7% *larger* than compact JSON.
+- On purely flat tabular data where CSV is even an option, CSV still wins outright — TOON's field-list header and length marker are a reliability trade against CSV's smaller size, not a size win.
+- Accuracy parity, not accuracy improvement, is the actual claim — 72.2% vs. 71.4% is a rounding error, not evidence that TOON helps an agent reason better. The entire case for TOON is token count, full stop.
+
+So the rule of thumb `orchardctl` would apply: default `--format=json`, and offer `--format=toon` as an *additional* value on the same flag — consistent with the flags-not-subcommands discipline from earlier in this post — reserved for the specific case of a large, genuinely uniform array. A skill invoking the tool would only reach for `--format=toon` when it already knows the output is going to be long; for everything else, plain JSON stays both simpler and, per the numbers above, sometimes smaller.
+
+**What it would look like in Python.** The reference implementation, `toon_format` on PyPI, is still in beta (`0.9.0b1` as of this writing) — and the trap worth naming explicitly: PyPI's *latest* tag for that project still points at an older `0.1.0` release that is nothing but a namespace reservation with no actual encoder. A bare `pip install toon-format` silently installs the placeholder, not the working library:
+
+```bash
+pip install --pre toon-format  # plain `pip install toon-format` grabs the abandoned 0.1.0 placeholder release
+```
+
+```python
+from toon_format import encode
+
+trees = [
+    {"id": "T-014", "variety": "Honeycrisp", "status": "healthy"},
+    {"id": "T-019", "variety": "Fuji", "status": "stressed"},
+]
+print(encode({"trees": trees}))
+# trees[2]{id,variety,status}:
+#   T-014,Honeycrisp,healthy
+#   T-019,Fuji,stressed
+```
+
+The only dependency it pulls in is `typing-extensions`, and only on Python older than 3.10 — otherwise it's self-contained.
+
+**What it would look like in Go.** `toon-go` is a community-maintained, dependency-free implementation — nothing beyond the standard library — but it has no tagged release yet (you'd pin a commit) and requires Go 1.23, worth checking against whatever version the rest of the codebase targets before adopting it:
+
+```bash
+go get github.com/toon-format/toon-go@latest  # community-maintained; no CLI, library only
+```
+
+```go
+package main
+
+import (
+    "fmt"
+
+    toon "github.com/toon-format/toon-go"
+)
+
+type Tree struct {
+    ID      string `toon:"id"`
+    Variety string `toon:"variety"`
+    Status  string `toon:"status"`
+}
+
+type TreesResponse struct {
+    Trees []Tree `toon:"trees"`
+}
+
+func main() {
+    resp := TreesResponse{Trees: []Tree{
+        {ID: "T-014", Variety: "Honeycrisp", Status: "healthy"},
+        {ID: "T-019", Variety: "Fuji", Status: "stressed"},
+    }}
+    encoded, err := toon.Marshal(resp, toon.WithLengthMarkers(true))
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(string(encoded))
+}
+```
+
+Unlike the Python package, there's no bundled CLI or `--format=toon` for free — a Go-built `orchardctl` would wire `toon.Marshal` into its own flag handling itself.
+
+Both implementations are community-maintained rather than blessed by the TOON project's TypeScript core, and the ecosystem as a whole is under a year old (the spec repo was created in October 2025) — 25,000 GitHub stars and a handful of language ports is real traction for that age, but it's not the multi-decade stability guarantee JSON carries. Add it as a second, opt-in output mode for the specific case where an agent is going to read hundreds of uniform rows and token cost is a real constraint — not as a replacement for the JSON default this post opened with.
 
 ## Structuring the skill folder around the CLI
 
