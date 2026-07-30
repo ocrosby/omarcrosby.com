@@ -7,7 +7,9 @@ paths:
 
 # Hugo Authoring
 
-This skill loads when writing or editing content under `content/` or `archetypes/`. The nine project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md`, `project-title-naming.md`, `per-post-og-image.md`, `per-song-og-image.md`, `now-page-updated-timestamp.md`, `markdown-emphasis-style.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
+This skill loads when writing or editing content under `content/` or `archetypes/`. The ten project rules — `content-frontmatter.md`, `theme-immutable.md`, `hugo-config-urls.md`, `external-link-hygiene.md`, `project-title-naming.md`, `per-post-og-image.md`, `per-song-og-image.md`, `now-page-updated-timestamp.md`, `markdown-emphasis-style.md`, `writing-voice.md` — are the source of truth for enforcement. This skill provides the *how* for common authoring tasks.
+
+**Drafting new post prose**: apply `.claude/rules/writing-voice.md` — concrete opening, early thesis, steelmanned positions, attributed sources, a limitations section, and a one-sentence closing distillation. Read it before drafting, not after.
 
 ## Fast path
 
