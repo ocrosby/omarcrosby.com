@@ -69,6 +69,13 @@
 # ignore is the fix. Referenced from
 # content/posts/regular-expressions-across-unix-python-go-and-rust.md.
 ^https?://(www\.)?regexr\.com
+# byteiota.com — Cloudflare-fronted; returns 429 Too Many Requests to
+# GitHub runner IP ranges (shared address pool). Local lychee from a
+# personal IP passes; CI does not. Same runner-IP failure class as
+# regexr.com / astronvim.com / gnu.org — host-level ignore is the fix.
+# Referenced from
+# content/posts/skills-vs-mcp-what-were-actually-arguing-about.md.
+^https?://(www\.)?byteiota\.com
 # youtube.com/@handle — YouTube's anti-bot layer 429s channel-page requests
 # from GitHub runner IP ranges (shared address pool). Same failure class as
 # Instagram/Facebook per .claude/rules/external-link-hygiene.md. Scope is
