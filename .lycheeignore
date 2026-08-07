@@ -76,6 +76,12 @@
 # different code path and are not affected — do not blanket-ignore all of
 # youtube.com. Referenced from content/posts/the-anatomy-of-a-claude-code-configuration.md.
 ^https?://(www\.)?youtube\.com/@
+# www.lua.org — the Lua project's servers (hosted at a Brazilian university)
+# are frequently slow or unresponsive; requests reliably time out in CI and
+# also fail from personal IPs during outage windows. Not a runner-IP issue —
+# it's a small-project availability issue. Host-level ignore is the fix.
+# Referenced from content/posts/neospec-neovim-test-runner-and-coverage.md.
+^https?://(www\.)?lua\.org
 
 # Specific https://doi.org URLs whose redirect terminates on a fragile host.
 # lychee matches ignore patterns against the *starting* URL and does not
