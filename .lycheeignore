@@ -89,6 +89,12 @@
 # it's a small-project availability issue. Host-level ignore is the fix.
 # Referenced from content/posts/neospec-neovim-test-runner-and-coverage.md.
 ^https?://(www\.)?lua\.org
+# dave.cheney.net — Dave Cheney's personal blog returns intermittent 502 Bad
+# Gateway to lychee (confirmed via direct curl at the same time — genuinely
+# upstream, not a runner-IP issue). Small-project availability class, same
+# fix as lua.org: host-level ignore. Referenced from
+# content/posts/go-concurrency-explained-slowly.md.
+^https?://dave\.cheney\.net
 
 # Specific https://doi.org URLs whose redirect terminates on a fragile host.
 # lychee matches ignore patterns against the *starting* URL and does not
