@@ -16,7 +16,6 @@ import argparse
 import datetime
 import json
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -29,18 +28,18 @@ DEFAULT_REPO = "ocrosby/recipes"
 DEFAULT_OUT = Path("data/recipes.yaml")
 DEFAULT_BRANCH = "main"
 
-# Skip the repo's own README (metadata, not a recipe). Nested README.md files
+# Skip repo-root meta files (not recipes). Nested README.md/CLAUDE.md files
 # are kept — for a single-file dir like sinigang/, README.md IS the recipe.
-SKIP_PATHS = {"README.md"}
+SKIP_PATHS = {"README.md", "CLAUDE.md"}
 
 
 @dataclass
 class Recipe:
-    path: str          # relative path in the source repo, e.g. "chicken/kfc.md"
+    path: str  # relative path in the source repo, e.g. "chicken/kfc.md"
     title: str
     description: str
-    added: str         # ISO-8601 date (YYYY-MM-DD)
-    category: str      # top-level dir, or "General" for repo-root files
+    added: str  # ISO-8601 date (YYYY-MM-DD)
+    category: str  # top-level dir, or "General" for repo-root files
     url: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -55,7 +54,9 @@ ARGS: argparse.Namespace  # populated in main()
 # Extraction
 # --------------------------------------------------------------------------- #
 
-_FRONTMATTER_RE = re.compile(r"^(?:---|\+\+\+)\s*\n(.*?)\n(?:---|\+\+\+)\s*\n", re.DOTALL)
+_FRONTMATTER_RE = re.compile(
+    r"^(?:---|\+\+\+)\s*\n(.*?)\n(?:---|\+\+\+)\s*\n", re.DOTALL
+)
 _H1_RE = re.compile(r"^\s*#\s+(.+?)\s*$", re.MULTILINE)
 # Markdown structural markers we do NOT want as fallback titles: ##+
 # headings, bullet lists, numbered lists. Plain-prose first lines
@@ -229,7 +230,7 @@ def parse_recipe(md_path: Path, rel_path: str) -> Recipe | None:
         fm = fm_match.group(1)
         title = _extract_frontmatter_field(fm, "title")
         description = _extract_frontmatter_field(fm, "description")
-        body = raw[fm_match.end():]
+        body = raw[fm_match.end() :]
 
     # 2. Title derivation delegated to _derive_title so its precedence and
     #    cleanup rules are testable in isolation from I/O.
@@ -241,7 +242,11 @@ def parse_recipe(md_path: Path, rel_path: str) -> Recipe | None:
 
     # 4. Category: top-level dir, else "General".
     parts = rel_path.split("/")
-    category = parts[0].replace("-", " ").replace("_", " ").title() if len(parts) > 1 else "General"
+    category = (
+        parts[0].replace("-", " ").replace("_", " ").title()
+        if len(parts) > 1
+        else "General"
+    )
 
     # 5. Added date via git log (ISO 8601, author date, ascending → first hit is add).
     added = _git_first_added(md_path, rel_path)
@@ -268,7 +273,16 @@ def _git_first_added(md_path: Path, rel_path: str) -> str:
     """
     try:
         out = subprocess.check_output(
-            ["git", "log", "--diff-filter=A", "--follow", "--format=%aI", "--reverse", "--", rel_path],
+            [
+                "git",
+                "log",
+                "--diff-filter=A",
+                "--follow",
+                "--format=%aI",
+                "--reverse",
+                "--",
+                rel_path,
+            ],
             text=True,
         ).strip()
     except subprocess.CalledProcessError:
@@ -310,12 +324,12 @@ def _load_existing_added_map(yaml_path: Path) -> dict[str, str]:
         stripped = line.strip()
         if stripped.startswith("path:"):
             try:
-                current_path = json.loads(stripped[len("path:"):].strip())
+                current_path = json.loads(stripped[len("path:") :].strip())
             except json.JSONDecodeError:
                 current_path = None
         elif stripped.startswith("added:") and current_path:
             try:
-                added = json.loads(stripped[len("added:"):].strip())
+                added = json.loads(stripped[len("added:") :].strip())
                 if added:
                     result[current_path] = added
             except json.JSONDecodeError:
@@ -467,11 +481,16 @@ def _fetch_recipe_image(title: str, dest: Path, tmp_dir: Path) -> bool:
     try:
         subprocess.check_call(
             [
-                "magick", str(tmp_jpg),
-                "-resize", "200x200^",
-                "-gravity", "center",
-                "-extent", "200x200",
-                "-quality", "82",
+                "magick",
+                str(tmp_jpg),
+                "-resize",
+                "200x200^",
+                "-gravity",
+                "center",
+                "-extent",
+                "200x200",
+                "-quality",
+                "82",
                 str(dest),
             ],
             stderr=subprocess.DEVNULL,
@@ -488,6 +507,7 @@ def _fetch_recipe_image(title: str, dest: Path, tmp_dir: Path) -> bool:
 # --------------------------------------------------------------------------- #
 # YAML emission (stdlib-only)
 # --------------------------------------------------------------------------- #
+
 
 def _yaml_escape(s: str) -> str:
     # Always emit as a JSON-quoted string; YAML accepts it and it handles every
@@ -515,6 +535,7 @@ def emit_yaml(recipes: list[Recipe]) -> str:
 # Orchestration
 # --------------------------------------------------------------------------- #
 
+
 def _shallow_clone(repo: str, branch: str, dest: Path) -> None:
     # Full clone (not shallow) so `git log --diff-filter=A` sees the first
     # commit that added each file. Small repo (~60KB), the extra cost is nil.
@@ -540,20 +561,36 @@ def collect_markdown_files(repo_dir: Path) -> list[str]:
 def main(argv: Iterable[str] | None = None) -> int:
     global ARGS
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--repo", default=DEFAULT_REPO,
-                    help=f"GitHub owner/name (default: {DEFAULT_REPO})")
-    ap.add_argument("--branch", default=DEFAULT_BRANCH,
-                    help=f"Branch to sync from (default: {DEFAULT_BRANCH})")
-    ap.add_argument("--out", type=Path, default=DEFAULT_OUT,
-                    help=f"Output YAML path (default: {DEFAULT_OUT})")
-    ap.add_argument("--dry-run", action="store_true",
-                    help="Print the YAML to stdout instead of writing to --out")
-    ap.add_argument("--fetch-images", action="store_true",
-                    help="After writing YAML, fetch a per-recipe Unsplash "
-                         "photo for any recipe missing an image at "
-                         "static/images/recipes/dishes/<slug>.webp. Requires "
-                         "`magick` on PATH; skips recipes whose image already "
-                         "exists so it's safe to re-run.")
+    ap.add_argument(
+        "--repo",
+        default=DEFAULT_REPO,
+        help=f"GitHub owner/name (default: {DEFAULT_REPO})",
+    )
+    ap.add_argument(
+        "--branch",
+        default=DEFAULT_BRANCH,
+        help=f"Branch to sync from (default: {DEFAULT_BRANCH})",
+    )
+    ap.add_argument(
+        "--out",
+        type=Path,
+        default=DEFAULT_OUT,
+        help=f"Output YAML path (default: {DEFAULT_OUT})",
+    )
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the YAML to stdout instead of writing to --out",
+    )
+    ap.add_argument(
+        "--fetch-images",
+        action="store_true",
+        help="After writing YAML, fetch a per-recipe Unsplash "
+        "photo for any recipe missing an image at "
+        "static/images/recipes/dishes/<slug>.webp. Requires "
+        "`magick` on PATH; skips recipes whose image already "
+        "exists so it's safe to re-run.",
+    )
     ARGS = ap.parse_args(list(argv) if argv is not None else None)
 
     # Resolve output path up front so we can read the existing yaml before
@@ -574,6 +611,7 @@ def main(argv: Iterable[str] | None = None) -> int:
 
         # Change into the repo so _git_first_added's git log runs there.
         import os
+
         os.chdir(repo_dir)
 
         rels = collect_markdown_files(repo_dir)

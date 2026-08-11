@@ -138,12 +138,14 @@ class SlugForPathTests(unittest.TestCase):
     def test_readme_lowercased(self):
         # Layout lowercases via `| lower`; the Python side must match.
         self.assertEqual(
-            sync_recipes._slug_for_path("sinigang/README.md"), "sinigang-readme",
+            sync_recipes._slug_for_path("sinigang/README.md"),
+            "sinigang-readme",
         )
 
     def test_deeply_nested(self):
         self.assertEqual(
-            sync_recipes._slug_for_path("ribs/pork/pan.md"), "ribs-pork-pan",
+            sync_recipes._slug_for_path("ribs/pork/pan.md"),
+            "ribs-pork-pan",
         )
 
 
@@ -190,6 +192,7 @@ class FetchRecipeImageTests(unittest.TestCase):
 
     def test_skips_when_dest_already_exists(self):
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             dest = tmp_path / "beef-stew.webp"
@@ -198,6 +201,36 @@ class FetchRecipeImageTests(unittest.TestCase):
             result = sync_recipes._fetch_recipe_image("Beef Stew", dest, tmp_path)
             self.assertTrue(result)
             self.assertEqual(dest.read_bytes(), b"already here")
+
+
+class CollectMarkdownFilesTests(unittest.TestCase):
+    """Repo-root meta files (README, CLAUDE) must not be ingested as recipes.
+
+    The recipes repo contains a top-level ``CLAUDE.md`` describing repo
+    conventions for AI tooling. Without the skip, it surfaces on the
+    site's recipes listing as a bogus "General" recipe titled
+    ``CLAUDE.md`` and the image fetcher pulls an Unsplash photo for it.
+    """
+
+    def test_repo_root_readme_and_claude_are_skipped(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "README.md").write_text("# recipes\n", encoding="utf-8")
+            (repo / "CLAUDE.md").write_text("# Repo conventions\n", encoding="utf-8")
+            (repo / "sinigang").mkdir()
+            (repo / "sinigang" / "README.md").write_text(
+                "# Sinigang\n", encoding="utf-8"
+            )
+            (repo / "lasagna.md").write_text("# Lasagna\n", encoding="utf-8")
+
+            files = sync_recipes.collect_markdown_files(repo)
+
+            self.assertNotIn("README.md", files)
+            self.assertNotIn("CLAUDE.md", files)
+            self.assertIn("sinigang/README.md", files)
+            self.assertIn("lasagna.md", files)
 
 
 if __name__ == "__main__":
