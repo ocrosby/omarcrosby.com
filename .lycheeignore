@@ -95,6 +95,14 @@
 # fix as lua.org: host-level ignore. Referenced from
 # content/posts/go-concurrency-explained-slowly.md.
 ^https?://dave\.cheney\.net
+# www.agilealliance.org — the glossary pages reliably time out from GitHub
+# runner IP ranges (confirmed on two consecutive CI runs at 22:15 and 22:19
+# UTC on 2026-08-14; local curl from a personal IP returned HTTP 301 in
+# under a second). Same runner-IP failure class as astronvim.com /
+# byteiota.com — host-level ignore is the fix, --accept can't help because
+# the failure is a timeout, not a status code. Referenced from
+# content/posts/keeping-the-daily-standup-from-becoming-a-status-meeting.md.
+^https?://(www\.)?agilealliance\.org
 
 # Specific https://doi.org URLs whose redirect terminates on a fragile host.
 # lychee matches ignore patterns against the *starting* URL and does not
