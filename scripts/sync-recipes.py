@@ -198,6 +198,9 @@ def _first_paragraph_after_title(text: str, title_line: str) -> str:
     # Match any heading (# through ######), common bullets, and numbered lists
     # ("1.", "42.", "1)"). All require whitespace after the marker.
     list_marker_re = re.compile(r"^(?:#+|[-*•]|\d+[.)])\s")
+    # A line consisting solely of a Markdown image — recipes may lead with a
+    # header photo, and the raw ``![alt](url)`` markup is not description text.
+    image_only_re = re.compile(r"^!\[[^\]]*\]\([^)]+\)\s*$")
 
     para: list[str] = []
     for line in lines[start:]:
@@ -206,7 +209,7 @@ def _first_paragraph_after_title(text: str, title_line: str) -> str:
             if para:
                 break
             continue
-        if list_marker_re.match(stripped):
+        if list_marker_re.match(stripped) or image_only_re.match(stripped):
             if para:
                 break
             continue
