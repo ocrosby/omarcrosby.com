@@ -233,5 +233,38 @@ class CollectMarkdownFilesTests(unittest.TestCase):
             self.assertIn("lasagna.md", files)
 
 
+class FirstParagraphAfterTitleTests(unittest.TestCase):
+    """Description scraping must skip Markdown image-only lines.
+
+    A recipe that leads with a header image (``![alt](file.jpg)``) would
+    otherwise capture the raw image markup as the description, which
+    renders as literal text on the recipes listing card.
+    """
+
+    def test_skips_leading_markdown_image_line(self):
+        body = (
+            "# Southern Smothered Oxtails\n"
+            "\n"
+            "![Braised oxtails served over rice](smothered-oxtails.jpg)\n"
+            "\n"
+            "Serves 4.\n"
+            "\n"
+            "Slow-cooked oxtails in an onion gravy.\n"
+        )
+        self.assertEqual(
+            sync_recipes._first_paragraph_after_title(
+                body, "# Southern Smothered Oxtails"
+            ),
+            "Serves 4.",
+        )
+
+    def test_first_prose_paragraph_still_wins_when_no_image(self):
+        body = "# Beef Stew\n\nServes 6.\n\nA rich braise.\n"
+        self.assertEqual(
+            sync_recipes._first_paragraph_after_title(body, "# Beef Stew"),
+            "Serves 6.",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

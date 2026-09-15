@@ -14,7 +14,7 @@ recipes:
     url:         "https://github.com/ocrosby/recipes/blob/main/beef/stew.md"
     added:       "2026-07-02"
   - title:       "Southern Smothered Oxtails"
-    description: "![Braised oxtails served over rice](smothered-oxtails.jpg)"
+    description: "Serves 4."
     category:    "Beef"
     path:        "beef/smothered-oxtails.md"
     url:         "https://github.com/ocrosby/recipes/blob/main/beef/smothered-oxtails.md"
