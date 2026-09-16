@@ -265,7 +265,7 @@ The reader market has consolidated to a stable set over the last few years. Here
 
 ### CLI
 
-- **[newsboat](https://newsboat.org/)** — a terminal-based feed reader. Written in C++/Rust, keyboard-driven, ideal if you already live in tmux. Not a beginner's tool, but delightful if you're the target audience.
+- **[newsboat](https://github.com/newsboat/newsboat)** — a terminal-based feed reader. Written in C++/Rust, keyboard-driven, ideal if you already live in tmux. Not a beginner's tool, but delightful if you're the target audience.
 
 Pick one and try it for a week. The muscle memory transfers between readers — the OPML export path means you're never locked in.
 
