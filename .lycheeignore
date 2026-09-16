@@ -19,6 +19,12 @@
 # .claude/rules/external-link-hygiene.md.
 ^https?://(www\.)?instagram\.com
 ^https?://(www\.)?facebook\.com
+# x.com profile pages — 403 Forbidden to non-browser user agents from
+# GitHub runner IPs. Local lychee from a personal IP passes; CI does not.
+# Same failure class as Instagram/Facebook — host-level ignore is the fix;
+# adding 403 to --accept would mask real forbidden responses elsewhere.
+# Referenced from the header/footer profile links across the site.
+^https?://(www\.)?x\.com
 
 # Unsplash — the marketing landing page returns 401 Unauthorized to
 # non-browser user agents (including lychee's default UA). Adding 401 to
