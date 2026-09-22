@@ -119,7 +119,7 @@ Every switching argument owes an honest treatment of what you'd be leaving. Here
 
 ### The bash-forever position
 
-**"My shell scripts have to run on every machine, including the ones I don't control. Bash is on every Linux distribution and every macOS install, and POSIX `sh` is on every Unix ever shipped. Zsh is a preference; bash is a guarantee."**
+> *"My shell scripts have to run on every machine, including the ones I don't control. Bash is on every Linux distribution and every macOS install, and POSIX `sh` is on every Unix ever shipped. Zsh is a preference; bash is a guarantee."*
 
 This is correct for *scripting*. Do not write `#!/usr/bin/env zsh` on top of a tool you plan to ship. Even inside a single organization, the reliable choice for anything that runs unattended is bash — often POSIX `sh` if you're being disciplined. Zsh scripts are a fine choice for personal tools you run interactively; they are a bad choice for anything you'd hand to a colleague or install on a server.
 
@@ -127,7 +127,7 @@ The switch this post argues for is *interactive-shell only*. Keep bash as your s
 
 ### The fish-is-better position
 
-**"Fish has sane defaults, ships syntax highlighting and autosuggestions in the box, and doesn't require a plugin manager. Zsh is a 1990 shell with three decades of accumulated cruft."**
+> *"Fish has sane defaults, ships syntax highlighting and autosuggestions in the box, and doesn't require a plugin manager. Zsh is a 1990 shell with three decades of accumulated cruft."*
 
 This is largely correct. Fish is genuinely a nicer out-of-the-box experience. If you're setting up a shell for someone who does not want to think about shell customization ever, fish is a better recommendation than zsh.
 
@@ -137,7 +137,7 @@ If those two costs don't bind on your workflow, use fish and don't look back.
 
 ### The framework-user position
 
-**"I don't need to know any of this. `oh-my-zsh` and `Powerlevel10k` (or `prezto`, or `zinit`, or `starship` for the prompt) already give me smart completion, autosuggestions, syntax highlighting, a fast prompt, and sensible defaults. I never write a `compdef` or a `${(f)var}` by hand. I never need to."**
+> *"I don't need to know any of this. `oh-my-zsh` and `Powerlevel10k` (or `prezto`, or `zinit`, or `starship` for the prompt) already give me smart completion, autosuggestions, syntax highlighting, a fast prompt, and sensible defaults. I never write a `compdef` or a `${(f)var}` by hand. I never need to."*
 
 Also correct. If your goal is *"a nice shell,"* a framework is the fastest path to it and I'd recommend `oh-my-zsh` or `zinit` for the plugin management and `Powerlevel10k` for the prompt with no hesitation. What frameworks don't give you is a *mental model* — the ability to write a completion function when the tool you use every day doesn't have one, or to compose a glob qualifier when the shell already has the primitives you need. That's the delta this post series is trying to close, and it's a delta most framework users never notice they're missing until they hit it.
 
