@@ -161,5 +161,4 @@ If anyone with access to NCAA's internal RPI code is reading this: I'd love to k
 
 - [How the NCAA women's soccer RPI actually works][prev] — the previous post this builds on
 - [`wsoccer-stats`](https://github.com/jedi-knights/wsoccer-stats) — Rust/Tauri app with the fitted implementation
-- [`athletics-ingest-platform`](https://github.com/jedi-knights/athletics-ingest-platform) — scrapes the schedules the fit feeds on
 - [Rating Percentage Index formula (Division I women's soccer)](https://sites.google.com/site/rpifordivisioniwomenssoccer/rpi-formula) — one of the explainer pages where the commonly-cited numbers live
