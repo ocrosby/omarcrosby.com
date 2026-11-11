@@ -42,7 +42,14 @@
             class="persistent-music-close"
             aria-label="Close player"
             title="Close player">×</button>
-    <div class="persistent-music-embed">
+    {{- /* data-impeccable-ignore: Impeccable's cramped-padding detector
+        flags this div because its children (the iframe and the
+        play-with-sound overlay button) fill the container via inset: 0,
+        which is intentional — the button is a full-container tap target
+        whose text content is already flex-centered inside, not flush
+        against the bg. Adding visible padding would shrink the click
+        area without visual benefit. */ -}}
+    <div class="persistent-music-embed" data-impeccable-ignore="cramped-padding">
         <iframe id="persistent-music-iframe"
                 src=""
                 title="Music player"

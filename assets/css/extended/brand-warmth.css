@@ -228,13 +228,33 @@ body {
 }
 
 /* Inline code — keep it monospace, warm the background slightly so
-   it visibly differs from prose without shouting. */
+   it visibly differs from prose without shouting. Identity comes from
+   the warm-tinted chip background, not from the text color — the
+   previous rule used --accent-strong on --code-bg which read at
+   3.7:1 in dark mode (Impeccable 4.8.2 detector, 2026-11-10), below
+   WCAG AA 4.5:1 for body text. Switching to --primary text raises
+   contrast to ~10:1 in both modes while keeping the inline-code chip
+   affordance intact. --accent-strong continues to own link hover
+   (its primary identity role), so the terracotta family is not lost. */
 .post-content :not(pre) > code {
-    color: var(--accent-strong);
+    color: var(--primary);
     background: var(--code-bg);
     padding: 0.1em 0.35em;
     border-radius: 4px;
     font-size: 0.9em;
+}
+
+/* Code blocks (Chroma-rendered) — add horizontal inset so lines don't
+   sit flush against the --code-block-bg edges. PaperMod's
+   .md-content .highlight pre sets vertical padding via chroma-mod.css
+   but leaves horizontal padding on the per-line .cl spans; the line
+   padding doesn't cover the gutter between the first/last character
+   and the block edge, which Impeccable's cramped-padding detector
+   (2026-11-10) flags as "children flush against bg on right/left".
+   Add 0.75rem horizontal inset on the block itself. */
+.post-content .highlight {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
 }
 
 /* ---- Scrollbar (WebKit) --------------------------------------------- */
