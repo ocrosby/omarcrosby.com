@@ -11,6 +11,18 @@
 # and goes through the submission UI. (HN submitlink was previously here
 # too; removed after the ShareButtons allowlist stopped rendering it.)
 ^https?://(www\.)?reddit\.com/submit
+# LinkedIn shareArticle endpoint — rejects unauthenticated GETs with 403
+# Forbidden from GitHub runner IPs. First surfaced 2026-11-10 on PR #179
+# run 42930440758 (63 errors, one per post on the site). PR #178
+# (2026-10-20) was the last CI run green for these URLs; LinkedIn
+# tightened bot-detection on /shareArticle sometime in those three weeks.
+# Profile URLs (linkedin.com/in/*) still return 999 and continue to pass
+# via --accept 999 in ci.yml; shareArticle now returns 403 which cannot
+# be globally accepted without masking real forbidden responses elsewhere.
+# Scope is narrowed to the /shareArticle path so the profile class stays
+# on its existing accept path — if LinkedIn removes profile share entirely
+# we still want CI to notice. See .claude/rules/external-link-hygiene.md.
+^https?://(www\.)?linkedin\.com/shareArticle
 
 # Instagram, Facebook profile pages — 429 Too Many Requests / login-wall
 # redirects from GitHub runner IPs. Local lychee from a personal IP passes;
