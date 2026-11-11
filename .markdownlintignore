@@ -3,3 +3,4 @@ resources/
 themes/
 node_modules/
 CHANGELOG.md
+.claude/study/

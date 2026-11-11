@@ -20,6 +20,11 @@ TODO.md
 # Claude Code session-runtime state
 .claude/scheduled_tasks.lock
 
+# /study skill research artifacts — session-local notes meant to inform
+# the current conversation, not ship to the repo. INDEX.md stays local
+# too; future Claude sessions regenerate what they need.
+.claude/study/
+
 # YouTube thumbnail cache — populated by scripts/generate-music-og-images.py
 # on demand. Kept out of the repo because it's a re-fetchable local cache.
 scripts/.thumbnail-cache/

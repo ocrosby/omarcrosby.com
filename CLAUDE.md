@@ -96,6 +96,7 @@ flyctl deploy --remote-only
 - `.claude/rules/hugo-config-urls.md` — `url = "..."` in `hugo.toml` must be root-relative or absolute
 - `.claude/rules/turbo-frame-static-link.md` — Markdown links from `content/` to any static HTML page under `static/` (e.g. `/tools/*`) must be raw HTML with `data-turbo-frame="_top"`; a plain Markdown link triggers Turbo's "Content missing" fallback because the target has no `<turbo-frame id="content">` wrapper
 - `.claude/rules/writing-voice.md` — concrete opening, early thesis, steelmanned opposing positions, attributed sources, a limitations section, and a one-sentence closing distillation — derived from reading existing posts. Applies when drafting or editing post prose.
+- `.claude/rules/design-voice.md` — warm-earth palette discipline, Fraunces-for-h1-h3-only, hover-deepens-never-flips, warm-tinted shadows, override-comments-vs-upstream, standalone-tool cross-references to `brand-warmth.css`, section-guarded resource hints — derived from reading the site's own CSS and layouts. Applies when editing `assets/css/**`, `layouts/**`, or `static/**/*.html`.
 - `.claude/commands/new-post.md` — `/new-post <title>` scaffolder
 - `.claude/commands/preview.md` — `/preview` local Docker preview
 - `.claude/commands/verify.md` — `/verify` runs CI gates locally
